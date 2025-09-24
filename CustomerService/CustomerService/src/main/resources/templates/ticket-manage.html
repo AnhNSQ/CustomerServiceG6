@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Ticket - Chăm Sóc Khách Hàng</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #0dcaf0;
+            --light-bg: #f8f9fa;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-header {
+            background: linear-gradient(135deg, var(--primary-color), #4a90e2);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+
+        .main-header h1 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 2px solid #e9ecef;
+            font-weight: 600;
+            color: #495057;
+            padding: 1.5rem;
+        }
+
+        .btn {
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .badge {
+            font-size: 0.75em;
+            padding: 0.5em 0.8em;
+            border-radius: 20px;
+        }
+
+        .priority-basic {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .priority-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .priority-advanced {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-open {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        .status-in-progress {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-resolved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-closed {
+            background-color: #e2e3e5;
+            color: #495057;
+        }
+
+        .table {
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #495057;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f5f5f5;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .pagination {
+            margin: 0;
+        }
+
+        .pagination .page-link {
+            border-radius: var(--border-radius);
+            margin: 0 2px;
+            color: var(--primary-color);
+            border: 1px solid #dee2e6;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .modal-content {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .form-control, .form-select {
+            border-radius: var(--border-radius);
+            border: 1px solid #ced4da;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .stats-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .stats-open { background: linear-gradient(135deg, #17a2b8, #20c997); }
+        .stats-progress { background: linear-gradient(135deg, #ffc107, #fd7e14); }
+        .stats-resolved { background: linear-gradient(135deg, #28a745, #20c997); }
+        .stats-closed { background: linear-gradient(135deg, #6c757d, #495057); }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary-color);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            .filter-section .row {
+                row-gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1><i class="fas fa-ticket-alt me-3"></i>Quản Lý Ticket</h1>
+                    <p class="mb-0">Hệ thống chăm sóc khách hàng</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <button class="btn btn-light btn-lg" onclick="openAddModal()">
+                        <i class="fas fa-plus me-2"></i>Tạo Ticket Mới
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card stats-open">
+                    <h3 id="stat-open">0</h3>
+                    <p class="mb-0">Đang Mở</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card stats-progress">
+                    <h3 id="stat-progress">0</h3>
+                    <p class="mb-0">Đang Xử Lý</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card stats-resolved">
+                    <h3 id="stat-resolved">0</h3>
+                    <p class="mb-0">Đã Giải Quyết</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stats-card stats-closed">
+                    <h3 id="stat-closed">0</h3>
+                    <p class="mb-0">Đã Đóng</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm ticket...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tất cả</option>
+                        <option value="Mở">Mở</option>
+                        <option value="Đang xử lý">Đang xử lý</option>
+                        <option value="Đã giải quyết">Đã giải quyết</option>
+                        <option value="Đã đóng">Đã đóng</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Mức độ</label>
+                    <select class="form-select" id="priorityFilter">
+                        <option value="">Tất cả</option>
+                        <option value="Basic">Basic</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Nhân viên</label>
+                    <select class="form-select" id="assigneeFilter">
+                        <option value="">Tất cả</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Hiển thị</label>
+                    <select class="form-select" id="itemsPerPage">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-outline-secondary w-100" onclick="clearFilters()" title="Xóa bộ lọc">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Danh Sách Ticket</h5>
+                <small class="text-muted" id="recordsInfo">Tổng: 0 tickets</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px">#</th>
+                                <th style="width: 200px">Khách Hàng</th>
+                                <th style="width: 300px">Tiêu Đề</th>
+                                <th style="width: 120px">Trạng Thái</th>
+                                <th style="width: 100px">Mức Độ</th>
+                                <th style="width: 150px">Nhân Viên</th>
+                                <th style="width: 120px">Ngày Tạo</th>
+                                <th style="width: 120px">Cập Nhật</th>
+                                <th style="width: 150px">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketTableBody">
+                            <tr>
+                                <td colspan="9" class="loading">
+                                    <i class="fas fa-spinner fa-spin"></i> Đang tải dữ liệu...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+                <span id="paginationInfo">Hiển thị 0 - 0 của 0 tickets</span>
+            </div>
+            <nav>
+                <ul class="pagination" id="pagination">
+                    <!-- Pagination sẽ được tạo động -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Modal Add/Edit Ticket -->
+    <div class="modal fade" id="ticketModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Thêm Ticket Mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="ticketForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên Khách Hàng *</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email Khách Hàng</label>
+                                <input type="email" class="form-control" id="customerEmail">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Tiêu Đề *</label>
+                                <input type="text" class="form-control" id="ticketTitle" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Mô Tả</label>
+                                <textarea class="form-control" id="ticketDescription" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Trạng Thái</label>
+                                <select class="form-select" id="ticketStatus">
+                                    <option value="Mở">Mở</option>
+                                    <option value="Đang xử lý">Đang xử lý</option>
+                                    <option value="Đã giải quyết">Đã giải quyết</option>
+                                    <option value="Đã đóng">Đã đóng</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Mức Độ</label>
+                                <select class="form-select" id="ticketPriority">
+                                    <option value="Basic">Basic</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Advanced">Advanced</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Nhân Viên</label>
+                                <select class="form-select" id="ticketAssignee">
+                                    <!-- Sẽ được populate bởi JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <input type="hidden" id="ticketId">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTicket()">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal View Ticket -->
+    <div class="modal fade" id="viewTicketModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chi Tiết Ticket</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="viewTicketContent">
+                        <!-- Nội dung sẽ được load bởi JS -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Global variables
+        let tickets = [];
+        let filteredTickets = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let editingTicketId = null;
+
+        // Sample data
+        const employees = [
+            'Nguyễn Văn An', 'Trần Thị Bình', 'Lê Hoài Cường', 'Phạm Minh Đức', 
+            'Hoàng Thị Ewan', 'Vũ Văn Phong', 'Đỗ Thị Giang', 'Bùi Minh Hải'
+        ];
+
+        const sampleTitles = [
+            'Không thể đăng nhập vào tài khoản', 'Lỗi thanh toán online', 
+            'Yêu cầu hoàn tiền đơn hàng', 'Sản phẩm bị lỗi sau khi mua',
+            'Cần hỗ trợ cài đặt phần mềm', 'Tài khoản bị khóa không rõ lý do',
+            'Cần cập nhật thông tin cá nhân', 'Lỗi hiển thị trên mobile',
+            'Yêu cầu thay đổi gói dịch vụ', 'Không nhận được email xác nhận',
+            'Sản phẩm giao sai địa chỉ', 'Cần hướng dẫn sử dụng tính năng mới'
+        ];
+
+        const sampleCustomers = [
+            'Nguyễn Thị Anh', 'Trần Văn Bình', 'Lê Thị Cúc', 'Phạm Văn Dũng',
+            'Hoàng Thị Em', 'Vũ Văn Phúc', 'Đỗ Thị Gấm', 'Bùi Văn Hùng',
+            'Mai Thị Lan', 'Đinh Văn Nam', 'Cao Thị Oanh', 'Lý Văn Phương'
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            generateSampleData();
+            filteredTickets = [...tickets]; // Initialize filtered tickets after generating data
+            populateAssigneeFilters();
+            setupEventListeners();
+            renderTable();
+            renderPagination();
+            updateRecordsInfo();
+            updateStatistics();
+        });
+
+        // Generate sample data
+        function generateSampleData() {
+            const statuses = ['Mở', 'Đang xử lý', 'Đã giải quyết', 'Đã đóng'];
+            const priorities = ['Basic', 'Medium', 'Advanced'];
+            
+            for (let i = 1; i <= 50; i++) {
+                const createdDate = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000);
+                const updatedDate = new Date(createdDate.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000);
+                
+                tickets.push({
+                    id: i,
+                    customerName: sampleCustomers[Math.floor(Math.random() * sampleCustomers.length)],
+                    customerEmail: `khach${i}@email.com`,
+                    title: sampleTitles[Math.floor(Math.random() * sampleTitles.length)],
+                    description: `Mô tả chi tiết cho ticket ${i}. Khách hàng cần hỗ trợ và giải quyết vấn đề này trong thời gian sớm nhất.`,
+                    status: statuses[Math.floor(Math.random() * statuses.length)],
+                    priority: priorities[Math.floor(Math.random() * priorities.length)],
+                    assignee: employees[Math.floor(Math.random() * employees.length)],
+                    createdDate: createdDate,
+                    updatedDate: updatedDate
+                });
+            }
+        }
+
+        // Populate assignee filters and form
+        function populateAssigneeFilters() {
+            const assigneeFilter = document.getElementById('assigneeFilter');
+            const ticketAssignee = document.getElementById('ticketAssignee');
+            
+            employees.forEach(emp => {
+                const option1 = new Option(emp, emp);
+                const option2 = new Option(emp, emp);
+                assigneeFilter.add(option1);
+                ticketAssignee.add(option2);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', debounce(filterAndPaginate, 300));
+            document.getElementById('statusFilter').addEventListener('change', filterAndPaginate);
+            document.getElementById('priorityFilter').addEventListener('change', filterAndPaginate);
+            document.getElementById('assigneeFilter').addEventListener('change', filterAndPaginate);
+            document.getElementById('itemsPerPage').addEventListener('change', () => {
+                itemsPerPage = parseInt(document.getElementById('itemsPerPage').value);
+                currentPage = 1;
+                filterAndPaginate();
+            });
+        }
+
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Filter and paginate
+        function filterAndPaginate() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const assigneeFilter = document.getElementById('assigneeFilter').value;
+
+            filteredTickets = tickets.filter(ticket => {
+                const matchSearch = !search || 
+                    ticket.customerName.toLowerCase().includes(search) ||
+                    ticket.title.toLowerCase().includes(search) ||
+                    ticket.id.toString().includes(search);
+                
+                const matchStatus = !statusFilter || ticket.status === statusFilter;
+                const matchPriority = !priorityFilter || ticket.priority === priorityFilter;
+                const matchAssignee = !assigneeFilter || ticket.assignee === assigneeFilter;
+
+                return matchSearch && matchStatus && matchPriority && matchAssignee;
+            });
+
+            currentPage = 1;
+            renderTable();
+            renderPagination();
+            updateRecordsInfo();
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('priorityFilter').value = '';
+            document.getElementById('assigneeFilter').value = '';
+            filterAndPaginate();
+        }
+
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('ticketTableBody');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentTickets = filteredTickets.slice(startIndex, endIndex);
+
+            if (currentTickets.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="no-data">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <br>Không có ticket nào được tìm thấy
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = currentTickets.map(ticket => `
+                <tr>
+                    <td><strong>#${ticket.id}</strong></td>
+                    <td>
+                        <div>${ticket.customerName}</div>
+                        <small class="text-muted">${ticket.customerEmail}</small>
+                    </td>
+                    <td>
+                        <div class="fw-semibold">${ticket.title}</div>
+                        <small class="text-muted">${ticket.description.substring(0, 50)}...</small>
+                    </td>
+                    <td><span class="badge status-${ticket.status.toLowerCase().replace(' ', '-')}">${ticket.status}</span></td>
+                    <td><span class="badge priority-${ticket.priority.toLowerCase()}">${ticket.priority}</span></td>
+                    <td>${ticket.assignee}</td>
+                    <td>${formatDate(ticket.createdDate)}</td>
+                    <td>${formatDate(ticket.updatedDate)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-outline-info" onclick="viewTicket(${ticket.id})" title="Xem">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="editTicket(${ticket.id})" title="Sửa">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTicket(${ticket.id})" title="Xóa">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render pagination
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // Previous button
+            paginationHTML += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            `;
+
+            // Page numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(1)">1</a></li>`;
+                if (startPage > 2) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                    </li>
+                `;
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+                paginationHTML += `<li class="page-item"><a class="page-link" href="#" onclick="changePage(${totalPages})">${totalPages}</a></li>`;
+            }
+
+            // Next button
+            paginationHTML += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // Change page
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredTickets.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            renderTable();
+            renderPagination();
+            updateRecordsInfo();
+        }
+
+        // Update records info
+        function updateRecordsInfo() {
+            const start = filteredTickets.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, filteredTickets.length);
+            const total = filteredTickets.length;
+            
+            document.getElementById('recordsInfo').textContent = `Tổng: ${total} tickets`;
+            document.getElementById('paginationInfo').textContent = `Hiển thị ${start} - ${end} của ${total} tickets`;
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const stats = {
+                open: tickets.filter(t => t.status === 'Mở').length,
+                progress: tickets.filter(t => t.status === 'Đang xử lý').length,
+                resolved: tickets.filter(t => t.status === 'Đã giải quyết').length,
+                closed: tickets.filter(t => t.status === 'Đã đóng').length
+            };
+
+            document.getElementById('stat-open').textContent = stats.open;
+            document.getElementById('stat-progress').textContent = stats.progress;
+            document.getElementById('stat-resolved').textContent = stats.resolved;
+            document.getElementById('stat-closed').textContent = stats.closed;
+        }
+
+        // Format date
+        function formatDate(date) {
+            return new Date(date).toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Open add modal
+        function openAddModal() {
+            editingTicketId = null;
+            document.getElementById('modalTitle').textContent = 'Thêm Ticket Mới';
+            document.getElementById('ticketForm').reset();
+            document.getElementById('ticketId').value = '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('ticketModal'));
+            modal.show();
+        }
+
+        // Edit ticket
+        function editTicket(id) {
+            const ticket = tickets.find(t => t.id === id);
+            if (!ticket) return;
+
+            editingTicketId = id;
+            document.getElementById('modalTitle').textContent = 'Chỉnh Sửa Ticket';
+            document.getElementById('ticketId').value = ticket.id;
+            document.getElementById('customerName').value = ticket.customerName;
+            document.getElementById('customerEmail').value = ticket.customerEmail;
+            document.getElementById('ticketTitle').value = ticket.title;
+            document.getElementById('ticketDescription').value = ticket.description;
+            document.getElementById('ticketStatus').value = ticket.status;
+            document.getElementById('ticketPriority').value = ticket.priority;
+            document.getElementById('ticketAssignee').value = ticket.assignee;
+
+            const modal = new bootstrap.Modal(document.getElementById('ticketModal'));
+            modal.show();
+        }
+
+        // Save ticket
+        function saveTicket() {
+            const form = document.getElementById('ticketForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const ticketData = {
+                customerName: document.getElementById('customerName').value,
+                customerEmail: document.getElementById('customerEmail').value,
+                title: document.getElementById('ticketTitle').value,
+                description: document.getElementById('ticketDescription').value,
+                status: document.getElementById('ticketStatus').value,
+                priority: document.getElementById('ticketPriority').value,
+                assignee: document.getElementById('ticketAssignee').value,
+                updatedDate: new Date()
+            };
+
+            if (editingTicketId) {
+                // Update existing ticket
+                const index = tickets.findIndex(t => t.id === editingTicketId);
+                if (index !== -1) {
+                    tickets[index] = { ...tickets[index], ...ticketData };
+                }
+            } else {
+                // Add new ticket
+                const newTicket = {
+                    id: Math.max(...tickets.map(t => t.id)) + 1,
+                    ...ticketData,
+                    createdDate: new Date()
+                };
+                tickets.push(newTicket);
+            }
+
+            // Close modal and refresh
+            bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
+            filterAndPaginate();
+            updateStatistics();
+            
+            // Show success message
+            showNotification('Ticket đã được lưu thành công!', 'success');
+        }
+
+        // View ticket
+        function viewTicket(id) {
+            const ticket = tickets.find(t => t.id === id);
+            if (!ticket) return;
+
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Thông Tin Khách Hàng</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Tên:</strong></td><td>${ticket.customerName}</td></tr>
+                            <tr><td><strong>Email:</strong></td><td>${ticket.customerEmail}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Thông Tin Ticket</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>ID:</strong></td><td>#${ticket.id}</td></tr>
+                            <tr><td><strong>Trạng thái:</strong></td><td><span class="badge status-${ticket.status.toLowerCase().replace(' ', '-')}">${ticket.status}</span></td></tr>
+                            <tr><td><strong>Mức độ:</strong></td><td><span class="badge priority-${ticket.priority.toLowerCase()}">${ticket.priority}</span></td></tr>
+                            <tr><td><strong>Nhân viên:</strong></td><td>${ticket.assignee}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6 class="text-primary">Tiêu Đề</h6>
+                        <p class="fw-semibold">${ticket.title}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <h6 class="text-primary">Mô Tả</h6>
+                        <p>${ticket.description}</p>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Ngày Tạo</h6>
+                        <p>${formatDate(ticket.createdDate)}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Cập Nhật Cuối</h6>
+                        <p>${formatDate(ticket.updatedDate)}</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('viewTicketContent').innerHTML = content;
+            const modal = new bootstrap.Modal(document.getElementById('viewTicketModal'));
+            modal.show();
+        }
+
+        // Delete ticket
+        function deleteTicket(id) {
+            if (!confirm('Bạn có chắc chắn muốn xóa ticket này?')) return;
+
+            const index = tickets.findIndex(t => t.id === id);
+            if (index !== -1) {
+                tickets.splice(index, 1);
+                filterAndPaginate();
+                updateStatistics();
+                showNotification('Ticket đã được xóa thành công!', 'success');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+                            }, 3000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Xử lý Ticket</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f8f9fa;
+    }
+    .card-header {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .timeline {
+      border-left: 3px solid #0d6efd;
+      margin-left: 20px;
+      padding-left: 20px;
+    }
+    .timeline-item {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -28px;
+      top: 5px;
+      width: 14px;
+      height: 14px;
+      background: #0d6efd;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+  <h3 class="mb-4 text-primary"><i class="fas fa-ticket-alt"></i> Xử lý Ticket</h3>
+
+  <!-- Thông tin Ticket -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-primary text-white">
+      Thông tin Ticket #12345
+    </div>
+    <div class="card-body">
+      <p><strong>Khách hàng:</strong> Nguyễn Văn A (<a href="mailto:nguyenvana@example.com">nguyenvana@example.com</a>)</p>
+      <p><strong>Tiêu đề:</strong> Lỗi khi thanh toán qua VNPay</p>
+      <p><strong>Mô tả:</strong> Khách hàng báo rằng hệ thống báo lỗi 502 khi thanh toán đơn hàng #ORD1001.</p>
+      <p><strong>Sản phẩm/Dịch vụ:</strong> Đơn hàng #ORD1001</p>
+      <p><strong>Ngày tạo:</strong> 2025-09-15</p>
+      <p><strong>Trạng thái hiện tại:</strong> <span class="badge bg-info">Pending</span></p>
+      <p><strong>Độ ưu tiên:</strong> <span class="badge bg-danger">High</span></p>
+    </div>
+  </div>
+
+  <!-- Form xử lý -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-header bg-light">
+      <i class="fas fa-tasks"></i> Thực hiện xử lý
+    </div>
+    <div class="card-body">
+      <form>
+        <!-- Chọn phòng ban -->
+        <div class="mb-3">
+          <label class="form-label"><strong>Phòng ban xử lý</strong></label>
+          <select class="form-select" required>
+            <option value="">-- Chọn phòng ban --</option>
+            <option>Financial Support</option>
+            <option>Technical Support</option>
+            <option>Cả 2</option>
+          </select>
+        </div>
+
+        <!-- Trạng thái -->
+        <div class="mb-3">
+          <label class="form-label"><strong>Cập nhật trạng thái</strong></label>
+          <select class="form-select" required>
+            <option>Pending</option>
+            <option>In Progress</option>
+            <option>Resolved</option>
+            <option>Closed</option>
+          </select>
+        </div>
+
+        <!-- Phản hồi -->
+        <div class="mb-3">
+          <label class="form-label"><strong>Phản hồi cho khách hàng</strong></label>
+          <textarea class="form-control" rows="4" placeholder="Nhập phản hồi..."></textarea>
+        </div>
+
+        <!-- Nút -->
+        <div class="d-flex justify-content-between">
+          <a href="ticketList.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+          <button type="button" class="btn btn-success"><i class="fas fa-save"></i> Lưu xử lý</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lịch sử xử lý -->
+  <div class="card shadow-sm">
+    <div class="card-header bg-light">
+      <i class="fas fa-history"></i> Lịch sử xử lý
+    </div>
+    <div class="card-body">
+      <div class="timeline">
+        <div class="timeline-item">
+          <p><strong>Bạn</strong> (2025-09-16 10:30)</p>
+          <p class="text-muted">Đã tiếp nhận ticket và chuyển sang Technical Support.</p>
+        </div>
+        <div class="timeline-item">
+          <p><strong>Khách hàng</strong> (2025-09-15 21:00)</p>
+          <p class="text-muted">Tôi bị lỗi khi thanh toán qua VNPay, vui lòng hỗ trợ.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

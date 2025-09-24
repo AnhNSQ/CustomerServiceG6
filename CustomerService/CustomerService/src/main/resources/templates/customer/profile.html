@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Customer Service</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 3rem;
+        }
+        
+        .info-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            color: #6c757d;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-user-circle me-3"></i>Thông tin cá nhân</h1>
+                    <p class="mb-0">Xem và quản lý thông tin tài khoản của bạn</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button onclick="goBack()" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="profile-card">
+                    <!-- Avatar -->
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    
+                    <!-- Profile Info -->
+                    <div class="text-center mb-4">
+                        <h3 th:text="${customer.name}">Nguyễn Văn A</h3>
+                        <p class="text-muted" th:text="${customer.email}">nguyenvana@example.com</p>
+                    </div>
+                    
+                    <!-- Detailed Info -->
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-id-card me-2"></i>ID Khách hàng
+                        </div>
+                        <div class="info-value" th:text="${customer.customerId}">12345</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-user me-2"></i>Họ và tên
+                        </div>
+                        <div class="info-value" th:text="${customer.name}">Nguyễn Văn A</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-envelope me-2"></i>Email
+                        </div>
+                        <div class="info-value" th:text="${customer.email}">nguyenvana@example.com</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-at me-2"></i>Username
+                        </div>
+                        <div class="info-value" th:text="${customer.username}">anguyen</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-phone me-2"></i>Số điện thoại
+                        </div>
+                        <div class="info-value" th:text="${customer.phone ?: 'Chưa cập nhật'}">0123456789</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar me-2"></i>Ngày tham gia
+                        </div>
+                        <div class="info-value" th:text="${#temporals.format(customer.registerDate, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-shield-alt me-2"></i>Vai trò
+                        </div>
+                        <div class="info-value">
+                            <span th:each="role : ${customer.roles}" th:text="${role}" class="badge bg-primary me-1">CUSTOMER</span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-toggle-on me-2"></i>Trạng thái tài khoản
+                        </div>
+                        <div class="info-value">
+                            <span th:if="${customer.isActive}" class="badge bg-success">Hoạt động</span>
+                            <span th:unless="${customer.isActive}" class="badge bg-danger">Bị khóa</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="text-center">
+                    <button onclick="goBack()" class="btn-back me-3">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+                    </button>
+                    <button onclick="logout()" class="btn btn-outline-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function goBack() {
+            window.location.href = '/dashboard';
+        }
+        
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                fetch('/api/customers/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/login';
+                    } else {
+                        alert('Có lỗi xảy ra khi đăng xuất!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Vẫn redirect về login nếu có lỗi
+                    window.location.href = '/login';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

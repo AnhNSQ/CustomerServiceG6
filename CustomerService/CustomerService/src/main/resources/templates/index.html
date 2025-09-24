@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Hỗ trợ Khách hàng</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #f1f5f9;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1e293b;
+            --light-color: #f8fafc;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .main-content {
+            background-color: var(--light-color);
+            min-height: 100vh;
+        }
+
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 15px 15px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .recent-activity {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .badge-custom {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .quick-actions .btn {
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .quick-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .profile-dropdown .dropdown-menu {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+                <div class="p-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white fw-bold">
+                            <i class="fas fa-headset me-2"></i>
+                            Support Admin
+                        </h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#tickets">
+                                <i class="fas fa-ticket-alt me-2"></i>
+                                Ticket Hỗ trợ
+                                <span class="badge bg-danger ms-2">12</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#chat">
+                                <i class="fas fa-comments me-2"></i>
+                                Chat Trực tiếp
+                                <span class="badge bg-success ms-2">3</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#customers">
+                                <i class="fas fa-users me-2"></i>
+                                Khách hàng
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#knowledge">
+                                <i class="fas fa-book me-2"></i>
+                                Cơ sở tri thức
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#reports">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Báo cáo
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#settings">
+                                <i class="fas fa-cog me-2"></i>
+                                Cài đặt
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3">
+                            <a class="nav-link" href="#agents">
+                                <i class="fas fa-user-tie me-2"></i>
+                                Quản lý Agent
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#automation">
+                                <i class="fas fa-robot me-2"></i>
+                                Tự động hóa
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Top Navigation -->
+                <nav class="navbar navbar-expand-lg navbar-light top-navbar mb-4">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler d-md-none" type="button" onclick="toggleSidebar()">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        
+                        <div class="d-flex align-items-center ms-auto">
+                            <!-- Search -->
+                            <form class="d-flex me-3">
+                                <input class="form-control" type="search" placeholder="Tìm kiếm...">
+                            </form>
+                            
+                            <!-- Notifications -->
+                            <div class="dropdown me-3">
+                                <button class="btn btn-outline-secondary position-relative" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-bell"></i>
+                                    <span class="notification-badge">5</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><h6 class="dropdown-header">Thông báo mới</h6></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-ticket-alt text-primary me-2"></i>Ticket mới từ khách hàng</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-comment text-success me-2"></i>Tin nhắn chat mới</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#">Xem tất cả</a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Profile -->
+                            <div class="dropdown profile-dropdown">
+                                <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle me-1"></i>
+                                    Admin
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#profile"><i class="fas fa-user me-2"></i>Hồ sơ</a></li>
+                                    <li><a class="dropdown-item" href="#settings"><i class="fas fa-cog me-2"></i>Cài đặt</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#logout"><i class="fas fa-sign-out-alt me-2"></i>Đăng xuất</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Dashboard Content -->
+                <div class="container-fluid fade-in">
+                    <!-- Welcome Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h1 class="h3 text-dark">Chào mừng trở lại, Admin!</h1>
+                            <p class="text-muted">Tổng quan về hoạt động hỗ trợ khách hàng hôm nay</p>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4 g-3">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon bg-primary">
+                                        <i class="fas fa-ticket-alt"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <h3 class="mb-0">247</h3>
+                                        <p class="text-muted mb-0">Ticket mới</p>
+                                        <small class="text-success"><i class="fas fa-arrow-up"></i> +12%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon bg-success">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <h3 class="mb-0">189</h3>
+                                        <p class="text-muted mb-0">Đã giải quyết</p>
+                                        <small class="text-success"><i class="fas fa-arrow-up"></i> +8%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon bg-warning">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <h3 class="mb-0">58</h3>
+                                        <p class="text-muted mb-0">Đang xử lý</p>
+                                        <small class="text-danger"><i class="fas fa-arrow-down"></i> -3%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3 col-md-6">
+                            <div class="stat-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="stat-icon bg-info">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <h3 class="mb-0">1,234</h3>
+                                        <p class="text-muted mb-0">Khách hàng</p>
+                                        <small class="text-success"><i class="fas fa-arrow-up"></i> +5%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="chart-card">
+                                <h5 class="card-title mb-3">Hành động nhanh</h5>
+                                <div class="quick-actions">
+                                    <button class="btn btn-primary me-2 mb-2" onclick="navigateTo('new-ticket')">
+                                        <i class="fas fa-plus me-1"></i> Tạo Ticket mới
+                                    </button>
+                                    <button class="btn btn-success me-2 mb-2" onclick="navigateTo('live-chat')">
+                                        <i class="fas fa-comments me-1"></i> Bắt đầu Chat
+                                    </button>
+                                    <button class="btn btn-info me-2 mb-2" onclick="navigateTo('customer-search')">
+                                        <i class="fas fa-search me-1"></i> Tìm khách hàng
+                                    </button>
+                                    <button class="btn btn-warning me-2 mb-2" onclick="navigateTo('reports')">
+                                        <i class="fas fa-chart-line me-1"></i> Xem báo cáo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Recent Activities -->
+                        <div class="col-lg-8">
+                            <div class="chart-card">
+                                <h5 class="card-title mb-3">Hoạt động gần đây</h5>
+                                <div class="recent-activity">
+                                    <div class="activity-item d-flex align-items-center">
+                                        <div class="activity-icon me-3">
+                                            <i class="fas fa-ticket-alt text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1"><strong>Ticket #1234</strong> được tạo bởi Nguyễn Văn A</p>
+                                            <small class="text-muted">2 phút trước</small>
+                                        </div>
+                                        <span class="badge-custom bg-primary">Mới</span>
+                                    </div>
+                                    
+                                    <div class="activity-item d-flex align-items-center">
+                                        <div class="activity-icon me-3">
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1"><strong>Ticket #1230</strong> đã được giải quyết</p>
+                                            <small class="text-muted">5 phút trước</small>
+                                        </div>
+                                        <span class="badge-custom bg-success">Hoàn thành</span>
+                                    </div>
+                                    
+                                    <div class="activity-item d-flex align-items-center">
+                                        <div class="activity-icon me-3">
+                                            <i class="fas fa-comment text-info"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1">Tin nhắn mới từ <strong>Trần Thị B</strong></p>
+                                            <small class="text-muted">10 phút trước</small>
+                                        </div>
+                                        <span class="badge-custom bg-info">Chat</span>
+                                    </div>
+                                    
+                                    <div class="activity-item d-flex align-items-center">
+                                        <div class="activity-icon me-3">
+                                            <i class="fas fa-user-plus text-success"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-1">Khách hàng mới đã đăng ký</p>
+                                            <small class="text-muted">15 phút trước</small>
+                                        </div>
+                                        <span class="badge-custom bg-success">Mới</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="col-lg-4">
+                            <div class="chart-card">
+                                <h5 class="card-title mb-3">Thống kê nhanh</h5>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Tỷ lệ giải quyết</span>
+                                        <strong>76%</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-success" style="width: 76%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Thời gian phản hồi trung bình</span>
+                                        <strong>2.5h</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-warning" style="width: 65%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Độ hài lòng khách hàng</span>
+                                        <strong>94%</strong>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar bg-info" style="width: 94%"></div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                <div class="text-center">
+                                    <h6 class="text-muted">Agent online</h6>
+                                    <h3 class="text-success">8/12</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle sidebar on mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('show');
+        }
+
+        // Navigation function
+        function navigateTo(page) {
+            // Simulate navigation
+            alert(`Điều hướng đến: ${page}`);
+            
+            // In real implementation, you would use:
+            // window.location.href = page + '.html';
+            // or use a router for SPA
+        }
+
+        // Add click handlers for navigation links
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Get the page from href
+                const page = this.getAttribute('href').substring(1);
+                
+                // Simulate page navigation
+                console.log('Navigating to:', page);
+                
+                // You can implement actual navigation here
+                // For example: loadPage(page);
+            });
+        });
+
+        // Auto-hide sidebar on mobile when clicking outside
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleButton = document.querySelector('.navbar-toggler');
+            
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && !toggleButton.contains(e.target)) {
+                    sidebar.classList.remove('show');
+                }
+            }
+        });
+
+        // Add smooth animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add staggered animation to stat cards
+            const cards = document.querySelectorAll('.stat-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Simulate real-time updates (demo purpose)
+        setInterval(function() {
+            // Update notification badge
+            const badge = document.querySelector('.notification-badge');
+            const currentCount = parseInt(badge.textContent);
+            if(Math.random() > 0.7) { // 30% chance to get new notification
+                badge.textContent = currentCount + 1;
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
