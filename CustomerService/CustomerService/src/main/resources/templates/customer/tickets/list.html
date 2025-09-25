@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticket của tôi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        body { background-color: #f7f9fc; }
+        .page-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; border-radius: 0 0 1rem 1rem; padding: 2rem 0; margin-bottom: 2rem; }
+        .ticket-card { border: none; box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08); border-radius: 12px; }
+        .status-badge { padding: .35rem .75rem; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+        .status-open { background: #cce5ff; color: #004085; }
+        .status-in-progress { background: #fff3cd; color: #856404; }
+        .status-resolved { background: #d4edda; color: #155724; }
+        .status-closed { background: #e2e3e5; color: #495057; }
+        .quick-action-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none; color: white; padding: 0.6rem 1rem; border-radius: 10px; font-weight: 600; text-decoration: none;
+        }
+        .quick-action-btn:hover { opacity: .95; color: #fff; }
+        .filter-bar .form-select, .filter-bar .form-control { background-color: #fff; }
+    </style>
+</head>
+<body>
+<header class="page-header">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h1 class="h3 mb-1">Ticket của tôi</h1>
+                <p class="mb-0 opacity-75">Xem và theo dõi các phiếu hỗ trợ bạn đã tạo</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/customer/tickets/create" class="btn btn-outline-light"><i class="fa fa-plus me-2"></i>Tạo ticket</a>
+                <a href="/dashboard" class="btn btn-outline-light">Bảng điều khiển</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container" style="max-width: 1100px;">
+
+    <div class="card ticket-card mb-3">
+        <div class="card-body filter-bar">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label mb-1">Tìm theo tiêu đề/Mã</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Nhập từ khoá..." />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1">Trạng thái</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tất cả</option>
+                        <option value="OPEN">Mở</option>
+                        <option value="IN_PROGRESS">Đang xử lý</option>
+                        <option value="RESOLVED">Đã giải quyết</option>
+                        <option value="CLOSED">Đã đóng</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label mb-1">Ưu tiên</label>
+                    <select class="form-select" id="priorityFilter">
+                        <option value="">Tất cả</option>
+                        <option value="LOW">Thấp</option>
+                        <option value="MEDIUM">Trung bình</option>
+                        <option value="HIGH">Cao</option>
+                        <option value="URGENT">Khẩn cấp</option>
+                    </select>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-primary w-100" id="applyFilterBtn"><i class="fa fa-filter me-1"></i>Lọc</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách ticket (dữ liệu giả) -->
+    <div class="card ticket-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 120px;">Mã</th>
+                            <th>Tiêu đề</th>
+                            <th style="width: 140px;">Danh mục</th>
+                            <th style="width: 130px;">Ưu tiên</th>
+                            <th style="width: 160px;">Ngày tạo</th>
+                            <th style="width: 140px;">Trạng thái</th>
+                            <th style="width: 110px;" class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketsBody">
+                        <!-- Ticket giả 1 -->
+                        <tr data-status="OPEN" data-priority="HIGH">
+                            <td>#TCK-2025-001</td>
+                            <td>
+                                Không thanh toán được đơn hàng
+                                <div class="text-muted small">Hệ thống báo lỗi khi nhập thẻ VISA</div>
+                            </td>
+                            <td>PAYMENT</td>
+                            <td><span class="badge text-bg-danger">Cao</span></td>
+                            <td>25/09/2025 09:15</td>
+                            <td><span class="status-badge status-open">Mở</span></td>
+                            <td class="text-center"><button class="btn btn-sm btn-outline-primary">Xem</button></td>
+                        </tr>
+                        <!-- Ticket giả 2 -->
+                        <tr data-status="IN_PROGRESS" data-priority="MEDIUM">
+                            <td>#TCK-2025-002</td>
+                            <td>
+                                Đơn hàng giao chậm so với dự kiến
+                                <div class="text-muted small">Đơn hàng ORD-2025-000123 chưa nhận được</div>
+                            </td>
+                            <td>DELIVERY</td>
+                            <td><span class="badge text-bg-warning">Trung bình</span></td>
+                            <td>24/09/2025 16:40</td>
+                            <td><span class="status-badge status-in-progress">Đang xử lý</span></td>
+                            <td class="text-center"><button class="btn btn-sm btn-outline-primary">Xem</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Lọc đơn giản trên frontend cho dữ liệu giả
+    document.getElementById('applyFilterBtn').addEventListener('click', function () {
+        const q = (document.getElementById('searchInput').value || '').toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+        const pri = document.getElementById('priorityFilter').value;
+        const rows = document.querySelectorAll('#ticketsBody tr');
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const s = row.getAttribute('data-status');
+            const p = row.getAttribute('data-priority');
+            const matchText = !q || text.includes(q);
+            const matchStatus = !status || s === status;
+            const matchPri = !pri || p === pri;
+            row.style.display = (matchText && matchStatus && matchPri) ? '' : 'none';
+        });
+    });
+</script>
+</body>
+</html>

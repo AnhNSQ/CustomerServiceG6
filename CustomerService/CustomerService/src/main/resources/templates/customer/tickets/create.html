@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tạo phiếu hỗ trợ mới</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        body { background-color: #f7f9fc; }
+        .page-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+            color: #fff; border-radius: 0 0 1rem 1rem; padding: 2rem 0; margin-bottom: 2rem;
+        }
+        .ticket-card { border: none; box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08); }
+        .form-label.required:after { content: " *"; color: #dc2626; }
+        .help-text { font-size: .875rem; color: #6b7280; }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <h1 class="h3 mb-1">Tạo phiếu hỗ trợ mới</h1>
+                    <p class="mb-0 opacity-75">Vui lòng điền thông tin chi tiết về vấn đề bạn gặp phải</p>
+                </div>
+                <div>
+                    <a href="/dashboard" class="btn btn-outline-light">Quay về Bảng điều khiển</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 980px;">
+        <div class="card ticket-card">
+            <div class="card-body p-4 p-md-5">
+                <form id="createTicketForm" novalidate>
+                    <!-- Thông tin liên hệ -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Họ và tên</label>
+                            <input type="text" class="form-control" th:value="${customer != null} ? ${customer.name} : ''" placeholder="Tên của bạn" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" th:value="${customer != null} ? ${customer.email} : ''" placeholder="email@domain.com" disabled />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Số điện thoại</label>
+                            <input type="text" class="form-control" th:value="${customer != null} ? ${customer.phone} : ''" placeholder="0123 456 789" disabled />
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+
+                    <!-- Nội dung phiếu -->
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label required">Tiêu đề vấn đề</label>
+                            <input type="text" class="form-control" id="subject" placeholder="Ví dụ: Không thanh toán được đơn hàng" required />
+                            <div class="help-text">Mô tả ngắn gọn về vấn đề của bạn</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label required">Mức độ ưu tiên</label>
+                            <select class="form-select" id="priority" required>
+                                <option value="" selected disabled>Chọn mức độ</option>
+                                <option value="LOW">Thấp</option>
+                                <option value="MEDIUM">Trung bình</option>
+                                <option value="HIGH">Cao</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required">Danh mục</label>
+                            <select class="form-select" id="category" required>
+                                <option value="" selected disabled>Chọn danh mục</option>
+                                <option value="ORDER">Đơn hàng</option>
+                                <option value="PAYMENT">Thanh toán</option>
+                                <option value="DELIVERY">Vận chuyển</option>
+                                <option value="PRODUCT">Sản phẩm</option>
+                                <option value="ACCOUNT">Tài khoản</option>
+                                <option value="OTHER">Khác</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mã đơn hàng (nếu có)</label>
+                            <input type="text" class="form-control" id="orderNumber" placeholder="VD: ORD-2025-000123" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label required">Mô tả chi tiết</label>
+                            <textarea class="form-control" id="description" rows="6" placeholder="Vui lòng mô tả chi tiết vấn đề, các bước bạn đã thực hiện, thông báo lỗi (nếu có)..." required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Tệp đính kèm (tuỳ chọn)</label>
+                            <input class="form-control" type="file" id="attachments" multiple disabled />
+                            <div class="help-text">Chức năng upload sẽ được cung cấp sau</div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">Gửi phiếu</button>
+                        <a href="/dashboard" class="btn btn-outline-secondary">Huỷ</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="text-center text-muted mt-3">
+            Lưu ý: Đây chỉ là giao diện. Tính năng gửi phiếu sẽ được triển khai ở bước sau.
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('createTicketForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            // Hiện thông báo tạm thời vì chưa có backend
+            alert('Chức năng tạo phiếu sẽ được triển khai sớm. Hiện tại chỉ là giao diện.');
+        });
+    </script>
+</body>
+</html>

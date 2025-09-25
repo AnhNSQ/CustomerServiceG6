@@ -103,4 +103,46 @@ public class WebController {
             return "redirect:/login";
         }
     }
+
+    /**
+     * Trang tạo Ticket mới (frontend only)
+     */
+    @GetMapping("/customer/tickets/create")
+    public String createTicketPage(Model model, HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+            if (customerId == null) {
+                return "redirect:/login";
+            }
+
+            CustomerResponse customer = customerService.findById(customerId)
+                .orElse(null);
+            model.addAttribute("customer", customer);
+            return "customer/tickets/create";
+        } catch (Exception e) {
+            log.error("Error loading create ticket page: ", e);
+            return "redirect:/dashboard";
+        }
+    }
+
+    /**
+     * Trang danh sách Ticket của tôi (frontend only)
+     */
+    @GetMapping("/customer/tickets")
+    public String myTicketsPage(Model model, HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+            if (customerId == null) {
+                return "redirect:/login";
+            }
+
+            CustomerResponse customer = customerService.findById(customerId).orElse(null);
+            model.addAttribute("customer", customer);
+            // Chỉ hiển thị dữ liệu mẫu trên frontend, chưa gọi backend
+            return "customer/tickets/list";
+        } catch (Exception e) {
+            log.error("Error loading tickets list page: ", e);
+            return "redirect:/dashboard";
+        }
+    }
 }
