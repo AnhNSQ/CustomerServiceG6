@@ -7,22 +7,30 @@ import CustomerService.entity.Customer;
 import CustomerService.entity.Role;
 import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.RoleRepository;
-import lombok.RequiredArgsConstructor;
+import CustomerService.repository.StaffRepository;
+import CustomerService.service.PasswordValidator;
+import CustomerService.service.UserConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class CustomerService {
+public class CustomerService extends BaseUserService {
 
-    private final CustomerRepository customerRepository;
     private final RoleRepository roleRepository;
+    
+    public CustomerService(CustomerRepository customerRepository, 
+                          StaffRepository staffRepository,
+                          PasswordValidator passwordValidator,
+                          UserConverter userConverter,
+                          RoleRepository roleRepository) {
+        super(customerRepository, staffRepository, passwordValidator, userConverter);
+        this.roleRepository = roleRepository;
+    }
 
     /**
      * Đăng ký tài khoản customer mới
@@ -59,31 +67,26 @@ public class CustomerService {
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Đăng ký thành công customer với ID: {}", savedCustomer.getCustomerId());
 
-        return convertToResponse(savedCustomer);
+        return convertToCustomerResponse(savedCustomer);
     }
 
     /**
      * Đăng nhập customer
+     * @deprecated Sử dụng AuthenticationService thay thế
      */
+    @Deprecated
     public CustomerResponse login(CustomerLoginRequest request) {
         log.info("Bắt đầu đăng nhập với email/username: {}", request.getEmailOrUsername());
 
         // Tìm customer theo email hoặc username
-        Optional<Customer> customerOpt = customerRepository.findActiveByEmailOrUsername(request.getEmailOrUsername());
+        Customer customer = findCustomerByEmailOrUsername(request.getEmailOrUsername())
+            .orElseThrow(() -> new RuntimeException("Email/Username hoặc mật khẩu không đúng"));
 
-        if (customerOpt.isEmpty()) {
-            throw new RuntimeException("Email/Username hoặc mật khẩu không đúng");
-        }
-
-        Customer customer = customerOpt.get();
-
-        // Kiểm tra mật khẩu (không encode theo yêu cầu)
-        if (!customer.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Email/Username hoặc mật khẩu không đúng");
-        }
+        // Xác thực mật khẩu
+        validateCustomerPassword(request.getPassword(), customer);
 
         log.info("Đăng nhập thành công customer với ID: {}", customer.getCustomerId());
-        return convertToResponse(customer);
+        return convertToCustomerResponse(customer);
     }
 
     /**
@@ -92,7 +95,7 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public Optional<CustomerResponse> findById(Long customerId) {
         return customerRepository.findByIdWithRole(customerId)
-            .map(this::convertToResponse);
+            .map(this::convertToCustomerResponse);
     }
 
     /**
@@ -101,7 +104,7 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public Optional<CustomerResponse> findByEmailOrUsername(String emailOrUsername) {
         return customerRepository.findActiveByEmailOrUsername(emailOrUsername)
-            .map(this::convertToResponse);
+            .map(this::convertToCustomerResponse);
     }
 
     /**
@@ -120,27 +123,4 @@ public class CustomerService {
         return customerRepository.existsByUsername(username);
     }
 
-    /**
-     * Chuyển đổi Customer entity thành CustomerResponse DTO
-     */
-    private CustomerResponse convertToResponse(Customer customer) {
-        Set<String> roleNames;
-        if (customer.getRole() != null) {
-            roleNames = Set.of(customer.getRole().getRoleName());
-        } else {
-            log.warn("Customer {} has null role", customer.getCustomerId());
-            roleNames = Set.of("UNKNOWN");
-        }
-
-        return new CustomerResponse(
-            customer.getCustomerId(),
-            customer.getName(),
-            customer.getEmail(),
-            customer.getUsername(),
-            customer.getPhone(),
-            customer.getIsActive(),
-            customer.getRegisterDate(),
-            roleNames
-        );
-    }
 }

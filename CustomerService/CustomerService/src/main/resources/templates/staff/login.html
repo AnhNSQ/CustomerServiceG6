@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Staff - Customer Service</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --danger-color: #f56565;
+            --success-color: #48bb78;
+            --warning-color: #ed8936;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border-color: #e2e8f0;
+            --bg-light: #f7fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .auth-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .logo-icon i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .form-title {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+            letter-spacing: -0.025em;
+        }
+
+        .form-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 0;
+            font-weight: 400;
+        }
+
+        .staff-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1rem 1rem 3rem;
+            font-size: 1rem;
+            font-weight: 400;
+            transition: all 0.3s ease;
+            background-color: #ffffff;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .form-floating > label {
+            padding-left: 3rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-floating > label i {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            z-index: 10;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            border: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-check-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 400;
+            cursor: pointer;
+        }
+
+        .form-check-input {
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .back-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .back-link a:hover {
+            color: var(--secondary-color);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .security-notice {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .security-notice i {
+            color: var(--warning-color);
+            margin-right: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .security-notice strong {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo-icon">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <div class="staff-badge">
+                <i class="fas fa-id-badge me-1"></i>Khu vực nhân viên
+            </div>
+            <h2 class="form-title">Đăng nhập Staff</h2>
+            <p class="form-subtitle">Dành cho nhân viên hệ thống</p>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="errorAlert" class="alert alert-danger d-none" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span id="errorMessage"></span>
+        </div>
+        
+        <div id="successAlert" class="alert alert-success d-none" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span id="successMessage"></span>
+        </div>
+
+        <!-- Login Form -->
+        <form id="staffLoginForm">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="emailOrUsername" name="emailOrUsername" 
+                       placeholder="Email hoặc Username" required>
+                <label for="emailOrUsername"><i class="fas fa-user me-2"></i>Email hoặc Username</label>
+            </div>
+
+            <div class="form-floating position-relative">
+                <input type="password" class="form-control" id="password" name="password" 
+                       placeholder="Password" required>
+                <label for="password"><i class="fas fa-lock me-2"></i>Mật khẩu</label>
+                <span class="password-toggle" onclick="togglePassword()">
+                    <i class="fas fa-eye" id="toggleIcon"></i>
+                </span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="rememberMe" name="rememberMe">
+                <label class="form-check-label" for="rememberMe">
+                    Ghi nhớ đăng nhập
+                </label>
+            </div>
+
+            <button class="btn btn-primary w-100 mb-3" type="submit" id="loginBtn">
+                <div class="loading-spinner" id="loadingSpinner"></div>
+                <i class="fas fa-sign-in-alt me-2" id="loginIcon"></i>
+                <span id="loginText">Đăng nhập</span>
+            </button>
+        </form>
+
+        <!-- Security Notice -->
+        <div class="security-notice">
+            <i class="fas fa-shield-alt"></i>
+            <strong>Lưu ý bảo mật:</strong> Chỉ sử dụng tài khoản được cấp phép. Không chia sẻ thông tin đăng nhập.
+        </div>
+
+        <div class="back-link">
+            <a href="/">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại trang chủ
+            </a>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            const successAlert = document.getElementById('successAlert');
+            
+            successAlert.classList.add('d-none');
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('d-none');
+            
+            setTimeout(() => {
+                errorAlert.classList.add('d-none');
+            }, 5000);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successAlert = document.getElementById('successAlert');
+            const successMessage = document.getElementById('successMessage');
+            const errorAlert = document.getElementById('errorAlert');
+            
+            errorAlert.classList.add('d-none');
+            successMessage.textContent = message;
+            successAlert.classList.remove('d-none');
+        }
+
+        // Set loading state
+        function setLoadingState(isLoading) {
+            const loginBtn = document.getElementById('loginBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const loginIcon = document.getElementById('loginIcon');
+            const loginText = document.getElementById('loginText');
+            
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loadingSpinner.style.display = 'inline-block';
+                loginIcon.style.display = 'none';
+                loginText.textContent = 'Đang đăng nhập...';
+            } else {
+                loginBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+                loginIcon.style.display = 'inline';
+                loginText.textContent = 'Đăng nhập';
+            }
+        }
+
+        // Handle login form submission
+        document.getElementById('staffLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            setLoadingState(true);
+            
+            const formData = {
+                emailOrUsername: document.getElementById('emailOrUsername').value.trim(),
+                password: document.getElementById('password').value
+            };
+            
+            // Basic validation
+            if (!formData.emailOrUsername || !formData.password) {
+                showError('Vui lòng nhập đầy đủ thông tin đăng nhập!');
+                setLoadingState(false);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/staff/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Đăng nhập thành công! Đang chuyển hướng...');
+                    
+                    // Save remember me preference
+                    if (document.getElementById('rememberMe').checked) {
+                        localStorage.setItem('staffRememberMe', 'true');
+                        localStorage.setItem('staffEmailOrUsername', formData.emailOrUsername);
+                    } else {
+                        localStorage.removeItem('staffRememberMe');
+                        localStorage.removeItem('staffEmailOrUsername');
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/staff/dashboard';
+                    }, 1000);
+                } else {
+                    showError(data.message || 'Đăng nhập thất bại!');
+                    setLoadingState(false);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại!');
+                setLoadingState(false);
+            }
+        });
+
+        // Load remembered credentials
+        document.addEventListener('DOMContentLoaded', function() {
+            const rememberMe = localStorage.getItem('staffRememberMe');
+            const savedEmailOrUsername = localStorage.getItem('staffEmailOrUsername');
+            
+            if (rememberMe === 'true' && savedEmailOrUsername) {
+                document.getElementById('emailOrUsername').value = savedEmailOrUsername;
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+
+        // Handle Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('staffLoginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Auto-focus on first input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('emailOrUsername').focus();
+        });
+    </script>
+</body>
+</html>

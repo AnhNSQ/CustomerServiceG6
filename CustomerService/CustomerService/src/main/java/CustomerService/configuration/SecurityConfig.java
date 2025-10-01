@@ -22,59 +22,59 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF để hỗ trợ API calls
-            .csrf(AbstractHttpConfigurer::disable)
-            
-            // Cấu hình CORS
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // Cấu hình session management
-            .sessionManagement(session -> 
-                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            )
+                // Disable CSRF để hỗ trợ API calls
+                .csrf(AbstractHttpConfigurer::disable)
 
-            .authorizeHttpRequests(authz -> authz
+                // Cấu hình CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                .requestMatchers(
-                    "/static/**",
-                    "/css/**",
-                    "/js/**",
-                    "/images/**",
-                    "/favicon.ico",
-                    "/error"
-                ).permitAll()
+                // Cấu hình session management
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
 
-                .requestMatchers(
-                    "/login",
-                    "/register",
-                    "/dashboard",
-                    "/profile"
-                ).permitAll()
+                .authorizeHttpRequests(authz -> authz
 
-                .requestMatchers(
-                    "/api/customers/register",
-                    "/api/customers/login",
-                    "/api/customers/check-email",
-                    "/api/customers/check-username"
-                ).permitAll()
+                        .requestMatchers(
+                                "/static/**",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/favicon.ico",
+                                "/error"
+                        ).permitAll()
 
-                .requestMatchers(
-                    "/api/customers/profile",
-                    "/api/customers/logout"
-                ).authenticated()
+                        .requestMatchers(
+                                "/login",
+                                "/register",
+                                "/dashboard",
+                                "/profile"
+                        ).permitAll()
 
-                .anyRequest().permitAll()
-            )
+                        .requestMatchers(
+                                "/api/customers/register",
+                                "/api/customers/login",
+                                "/api/customers/check-email",
+                                "/api/customers/check-username"
+                        ).permitAll()
 
-            .formLogin(AbstractHttpConfigurer::disable)
+                        .requestMatchers(
+                                "/api/customers/profile",
+                                "/api/customers/logout"
+                        ).authenticated()
 
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login?logout=true")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-                .permitAll()
-            );
+                        .anyRequest().permitAll()
+                )
+
+                .formLogin(AbstractHttpConfigurer::disable)
+
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
+                );
 
         return http.build();
     }
@@ -93,10 +93,10 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
 
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        
+
         return source;
     }
 }

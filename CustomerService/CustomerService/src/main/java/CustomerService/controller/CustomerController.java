@@ -4,7 +4,11 @@ import CustomerService.dto.ApiResponse;
 import CustomerService.dto.CustomerLoginRequest;
 import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
+import CustomerService.exception.AuthenticationException;
+import CustomerService.exception.UserNotFoundException;
+import CustomerService.service.AuthenticationService;
 import CustomerService.service.CustomerService;
+import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final AuthenticationService authenticationService;
+    private final SessionManager sessionManager;
 
     /**
      * Đăng ký tài khoản customer mới
@@ -57,27 +63,25 @@ public class CustomerController {
         try {
             log.info("Nhận yêu cầu đăng nhập từ: {}", request.getEmailOrUsername());
             
-            CustomerResponse customer = customerService.login(request);
+            // Sử dụng AuthenticationService để xác thực
+            CustomerResponse customer = authenticationService.authenticateCustomer(request);
             
             // Lưu thông tin customer vào session
-            try {
-                session.setAttribute("customerId", customer.getCustomerId());
-                session.setAttribute("customerName", customer.getName());
-                session.setAttribute("customerEmail", customer.getEmail());
-                session.setAttribute("customerRoles", customer.getRoles());
-                log.info("Session attributes set successfully");
-            } catch (Exception sessionError) {
-                log.error("Error setting session attributes: ", sessionError);
-                // Vẫn trả về success nhưng không có session
-            }
+            sessionManager.setCustomerSession(
+                session, 
+                customer.getCustomerId(), 
+                customer.getName(), 
+                customer.getEmail(), 
+                customer.getRoles()
+            );
             
             log.info("Đăng nhập thành công cho customer ID: {}", customer.getCustomerId());
             
             return ResponseEntity.ok()
                 .body(ApiResponse.success("Đăng nhập thành công", customer));
                 
-        } catch (RuntimeException e) {
-            log.error("Lỗi đăng nhập: {}", e.getMessage());
+        } catch (AuthenticationException e) {
+            log.error("Lỗi xác thực: {}", e.getMessage());
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
@@ -93,14 +97,13 @@ public class CustomerController {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(HttpSession session) {
         try {
-            Long customerId = (Long) session.getAttribute("customerId");
+            Long customerId = sessionManager.getCustomerId(session);
             if (customerId != null) {
                 log.info("Customer ID {} đăng xuất", customerId);
             }
             
-            // Xóa session
-            session.invalidate();
-            
+            sessionManager.invalidateSession(session);
+
             return ResponseEntity.ok()
                 .body(ApiResponse.success("Đăng xuất thành công", null));
                 
@@ -117,20 +120,19 @@ public class CustomerController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<CustomerResponse>> getProfile(HttpSession session) {
         try {
-            Long customerId = (Long) session.getAttribute("customerId");
-            
-            if (customerId == null) {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error("Chưa đăng nhập"));
             }
             
+            Long customerId = sessionManager.getCustomerId(session);
             CustomerResponse customer = customerService.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy thông tin customer"));
             
             return ResponseEntity.ok()
                 .body(ApiResponse.success(customer));
                 
-        } catch (RuntimeException e) {
+        } catch (UserNotFoundException e) {
             log.error("Lỗi lấy profile: {}", e.getMessage());
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error(e.getMessage()));
