@@ -55,6 +55,10 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Invoice invoice;
 
+    // Quan hệ với Ticket
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Ticket> tickets;
+
     // Enum cho ShippingStatus
     public enum ShippingStatus {
         PENDING, SHIPPED, DELIVERED, RETURNED

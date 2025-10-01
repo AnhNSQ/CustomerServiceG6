@@ -24,6 +24,10 @@ public class Ticket {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "order_id")
+    private Order order;
+
     @Column(name = "subject", nullable = false, length = 255)
     private String subject;
 
@@ -66,6 +70,16 @@ public class Ticket {
     // Constructor để tạo ticket mới
     public Ticket(Customer customer, String subject, String description, Priority priority) {
         this.customer = customer;
+        this.subject = subject;
+        this.description = description;
+        this.priority = priority;
+        this.status = Status.OPEN;
+    }
+
+    // Constructor để tạo ticket mới với order
+    public Ticket(Customer customer, Order order, String subject, String description, Priority priority) {
+        this.customer = customer;
+        this.order = order;
         this.subject = subject;
         this.description = description;
         this.priority = priority;
