@@ -26,6 +26,18 @@ public class TicketService {
     private final OrderValidationService orderValidationService;
     
     /**
+     * Lấy tất cả ticket (dành cho staff/admin)
+     */
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getAllTickets() {
+        log.info("Lấy tất cả ticket cho staff/admin");
+        return ticketRepository.findAllWithCustomerOrderByCreatedAtDesc()
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
      * Tạo ticket mới cho customer
      * @param customerId ID của customer
      * @param request Thông tin ticket cần tạo

@@ -151,4 +151,33 @@ public class WebController {
             return "redirect:/staff/login";
         }
     }
+
+    /**
+     * Trang tất cả ticket cho staff
+     */
+    @GetMapping("/staff/tickets")
+    public String staffTickets(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            if (staffId == null) {
+                log.warn("Unauthorized access to staff tickets - redirecting to login");
+                return "redirect:/staff/login";
+            }
+
+            // Optional: load staff info for header
+            StaffResponse staff = staffService.findById(staffId)
+                    .orElse(null);
+            if (staff != null) {
+                model.addAttribute("staff", staff);
+                model.addAttribute("staffName", staff.getName());
+                model.addAttribute("staffEmail", staff.getEmail());
+                model.addAttribute("staffRoles", staff.getRoles());
+            }
+
+            return "staff/tickets";
+        } catch (Exception e) {
+            log.error("Error loading staff tickets page: ", e);
+            return "redirect:/staff/login";
+        }
+    }
 }

@@ -3,6 +3,7 @@ package CustomerService.controller;
 import CustomerService.dto.ApiResponse;
 import CustomerService.dto.TicketCreateRequest;
 import CustomerService.dto.TicketResponse;
+import CustomerService.service.SessionManager;
 import CustomerService.service.TicketService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import java.util.List;
 public class TicketController {
     
     private final TicketService ticketService;
+    private final SessionManager sessionManager;
     
     /**
      * Tạo ticket mới
@@ -80,6 +82,27 @@ public class TicketController {
             log.error("Lỗi không mong muốn khi lấy danh sách ticket: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Lấy tất cả ticket (chỉ dành cho staff/admin)
+     */
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> getAllTicketsForStaff(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("Chưa đăng nhập"));
+            }
+
+            log.info("Staff yêu cầu lấy tất cả ticket");
+            List<TicketResponse> tickets = ticketService.getAllTickets();
+            return ResponseEntity.ok(ApiResponse.success(tickets));
+        } catch (Exception e) {
+            log.error("Lỗi khi lấy tất cả ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
     }
     
