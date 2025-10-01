@@ -125,3 +125,64 @@ WHERE NOT EXISTS (SELECT 1 FROM shipping_methods WHERE name = 'Giao hàng nhanh'
 INSERT INTO shipping_methods (name, cost_estimate, estimated_time) 
 SELECT 'Giao hàng siêu tốc', 100000, 'Trong ngày'
 WHERE NOT EXISTS (SELECT 1 FROM shipping_methods WHERE name = 'Giao hàng siêu tốc');
+
+--ticket data
+
+-- Customer 0 tickets
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 0, 'Login issue', 'User cannot log into account.', 'OPEN', 'HIGH', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Login issue' AND customer_id = 0);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 0, 'Password reset', 'User requests a password reset link.', 'IN_PROGRESS', 'MEDIUM', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Password reset' AND customer_id = 0);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 0, 'App crash', 'Mobile app crashes when opening profile.', 'RESOLVED', 'HIGH', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'App crash' AND customer_id = 0);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 0, 'Feature request', 'User requests dark mode support.', 'CLOSED', 'LOW', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Feature request' AND customer_id = 0);
+
+-- Customer 1 tickets
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 1, 'Payment failed', 'Customer cannot complete payment.', 'OPEN', 'HIGH', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Payment failed' AND customer_id = 1);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 1, 'Slow website', 'Website takes too long to load.', 'IN_PROGRESS', 'MEDIUM', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Slow website' AND customer_id = 1);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 1, 'Refund request', 'Customer requests refund for recent purchase.', 'RESOLVED', 'HIGH', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Refund request' AND customer_id = 1);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 1, 'Account locked', 'Customer account locked after failed attempts.', 'CLOSED', 'MEDIUM', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Account locked' AND customer_id = 1);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 1, 'Invoice error', 'Invoice shows wrong billing amount.', 'ASSIGNED', 'HIGH', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Invoice error' AND customer_id = 1);
+
+-- Customer 2 tickets
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 2, 'Wrong item delivered', 'Delivered product does not match order.', 'OPEN', 'HIGH', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Wrong item delivered' AND customer_id = 2);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 2, 'Change shipping address', 'Customer wants to update delivery address.', 'ASSIGNED', 'LOW', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Change shipping address' AND customer_id = 2);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 2, 'Warranty claim', 'Customer requests warranty support.', 'RESOLVED', 'MEDIUM', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Warranty claim' AND customer_id = 2);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 2, 'Cancel order', 'Customer wants to cancel recent order.', 'CLOSED', 'HIGH', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Cancel order' AND customer_id = 2);
+
+INSERT INTO tickets (customer_id, subject, description, status, priority, created_at)
+SELECT 2, 'Delivery delay', 'Order delivery taking longer than expected.', 'IN_PROGRESS', 'MEDIUM', GETDATE()
+    WHERE NOT EXISTS (SELECT 1 FROM tickets WHERE subject = 'Delivery delay' AND customer_id = 2);

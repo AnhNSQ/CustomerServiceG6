@@ -263,6 +263,14 @@
                     </div>
                 </div>
 
+                <!-- Dynamic All Tickets Container -->
+                <div id="allTicketsContainer" class="dashboard-card" style="display: none;">
+                    <h5 class="section-title">
+                        <i class="fas fa-list"></i>Tất cả Ticket
+                    </h5>
+                    <div id="allTicketsContent"></div>
+                </div>
+
                 <!-- Recent Tickets -->
                 <div class="dashboard-card">
                     <h5 class="section-title">
@@ -398,7 +406,63 @@
         }
 
         function viewAllTickets() {
-            alert('Tính năng đang phát triển - Xem tất cả ticket');
+            window.location.href = '/staff/tickets';
+        }
+
+        function renderTicketItem(t) {
+            const statusClass = mapStatusToClass(t.status);
+            const createdAt = formatDateTime(t.createdAt);
+            return `
+                <div class="ticket-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">#${t.ticketId} - ${escapeHtml(t.subject)}</h6>
+                            <p class="text-muted mb-2">${escapeHtml(t.description || '')}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>
+                                Customer ID: ${t.customerId}
+                                <i class="fas fa-calendar ms-3 me-1"></i>
+                                ${createdAt}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="status-badge ${statusClass}">${t.status}</span>
+                            <br>
+                            <small class="text-muted mt-1 d-block">${t.priority}</small>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function mapStatusToClass(status) {
+            switch ((status || '').toUpperCase()) {
+                case 'OPEN': return 'status-open';
+                case 'ASSIGNED': return 'status-in-progress';
+                case 'IN_PROGRESS': return 'status-in-progress';
+                case 'RESOLVED': return 'status-resolved';
+                case 'CLOSED': return 'status-closed';
+                default: return 'status-open';
+            }
+        }
+
+        function formatDateTime(iso) {
+            try {
+                if (!iso) return '';
+                const d = new Date(iso);
+                const pad = n => String(n).padStart(2, '0');
+                return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            } catch {
+                return '';
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         function viewAssignedTickets() {
