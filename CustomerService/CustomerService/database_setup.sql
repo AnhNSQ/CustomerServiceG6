@@ -105,19 +105,21 @@ BEGIN
 END
 GO
 
--- 6. Tạo bảng tickets (phụ thuộc vào customers)
+-- 6. Tạo bảng tickets (phụ thuộc vào customers và orders)
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='tickets' AND xtype='U')
 BEGIN
     CREATE TABLE tickets (
         ticket_id BIGINT IDENTITY(1,1) PRIMARY KEY,
         customer_id BIGINT NOT NULL,
+        order_id BIGINT,
         subject NVARCHAR(255) NOT NULL,
         description TEXT,
         priority NVARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
         status NVARCHAR(20) NOT NULL DEFAULT 'OPEN',
         created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
         closed_at DATETIME2,
-        FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+        FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
+        FOREIGN KEY (order_id) REFERENCES orders(order_id)
     );
     PRINT 'Table tickets created successfully';
 END
@@ -372,6 +374,7 @@ CREATE NONCLUSTERED INDEX IX_staff_role_id ON staff(role_id);
 
 -- Index cho bảng tickets
 CREATE NONCLUSTERED INDEX IX_tickets_customer_id ON tickets(customer_id);
+CREATE NONCLUSTERED INDEX IX_tickets_order_id ON tickets(order_id);
 CREATE NONCLUSTERED INDEX IX_tickets_status ON tickets(status);
 CREATE NONCLUSTERED INDEX IX_tickets_priority ON tickets(priority);
 CREATE NONCLUSTERED INDEX IX_tickets_created_at ON tickets(created_at);
