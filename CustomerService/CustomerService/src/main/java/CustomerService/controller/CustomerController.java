@@ -4,6 +4,7 @@ import CustomerService.dto.ApiResponse;
 import CustomerService.dto.CustomerLoginRequest;
 import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
+import CustomerService.dto.CustomerUpdateRequest;
 import CustomerService.service.CustomerService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -12,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -117,25 +121,30 @@ public class CustomerController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<CustomerResponse>> getProfile(HttpSession session) {
         try {
+            log.info("API: Getting profile...");
             Long customerId = (Long) session.getAttribute("customerId");
+            log.info("API: Customer ID from session: {}", customerId);
             
             if (customerId == null) {
+                log.warn("API: No customer ID in session");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error("Chưa đăng nhập"));
             }
             
+            log.info("API: Looking for customer with ID: {}", customerId);
             CustomerResponse customer = customerService.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer với ID: " + customerId));
             
+            log.info("API: Customer found: {}", customer.getEmail());
             return ResponseEntity.ok()
                 .body(ApiResponse.success(customer));
                 
         } catch (RuntimeException e) {
-            log.error("Lỗi lấy profile: {}", e.getMessage());
+            log.error("API: Runtime error getting profile: {}", e.getMessage());
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
-            log.error("Lỗi không mong muốn khi lấy profile: ", e);
+            log.error("API: Unexpected error getting profile: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
@@ -164,6 +173,72 @@ public class CustomerController {
             log.error("Lỗi kiểm tra username: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra khi kiểm tra username"));
+        }
+    }
+
+    /**
+     * Kiểm tra session hiện tại
+     */
+    @GetMapping("/session-check")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkSession(HttpSession session) {
+        try {
+            Map<String, Object> sessionInfo = new HashMap<>();
+            Long customerId = (Long) session.getAttribute("customerId");
+            String customerName = (String) session.getAttribute("customerName");
+            String customerEmail = (String) session.getAttribute("customerEmail");
+            
+            sessionInfo.put("customerId", customerId);
+            sessionInfo.put("customerName", customerName);
+            sessionInfo.put("customerEmail", customerEmail);
+            sessionInfo.put("sessionId", session.getId());
+            sessionInfo.put("isValid", customerId != null);
+            
+            log.info("Session check - Customer ID: {}, Name: {}, Email: {}", customerId, customerName, customerEmail);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success("Session info", sessionInfo));
+                
+        } catch (Exception e) {
+            log.error("Lỗi kiểm tra session: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra khi kiểm tra session"));
+        }
+    }
+
+    /**
+     * Cập nhật thông tin customer
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<CustomerResponse>> updateProfile(
+            @Valid @RequestBody CustomerUpdateRequest request,
+            HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+            
+            if (customerId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Chưa đăng nhập"));
+            }
+            
+            log.info("Nhận yêu cầu cập nhật thông tin từ customer ID: {}", customerId);
+            
+            CustomerResponse updatedCustomer = customerService.updateProfile(customerId, request);
+            
+            // Cập nhật session với thông tin mới
+            session.setAttribute("customerName", updatedCustomer.getName());
+            session.setAttribute("customerEmail", updatedCustomer.getEmail());
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success("Cập nhật thông tin thành công", updatedCustomer));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi cập nhật thông tin: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi cập nhật thông tin: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
     }
 }

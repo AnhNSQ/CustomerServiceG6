@@ -48,20 +48,22 @@ public class SecurityConfig {
                     "/login",
                     "/register",
                     "/dashboard",
-                    "/profile"
+                    "/profile",
+                    "/customer/edit-profile"
                 ).permitAll()
 
                 .requestMatchers(
                     "/api/customers/register",
                     "/api/customers/login",
                     "/api/customers/check-email",
-                    "/api/customers/check-username"
+                    "/api/customers/check-username",
+                    "/api/customers/session-check"
                 ).permitAll()
 
                 .requestMatchers(
                     "/api/customers/profile",
                     "/api/customers/logout"
-                ).authenticated()
+                ).permitAll()
 
                 .anyRequest().permitAll()
             )

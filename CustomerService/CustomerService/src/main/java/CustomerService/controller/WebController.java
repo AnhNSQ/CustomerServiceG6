@@ -26,6 +26,7 @@ public class WebController {
         return "redirect:/login";
     }
 
+
     /**
      * Trang đăng nhập
      */
@@ -85,6 +86,39 @@ public class WebController {
     @GetMapping("/profile")
     public String profile(Model model, HttpSession session) {
         try {
+            log.info("Loading profile page...");
+            Long customerId = (Long) session.getAttribute("customerId");
+            log.info("Customer ID from session: {}", customerId);
+            
+            if (customerId == null) {
+                log.warn("No customer ID in session, redirecting to login");
+                return "redirect:/login";
+            }
+            
+            log.info("Looking for customer with ID: {}", customerId);
+            CustomerResponse customer = customerService.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer với ID: " + customerId));
+            
+            log.info("Customer found: {}", customer.getEmail());
+            model.addAttribute("customer", customer);
+            
+            return "customer/profile";
+            
+        } catch (RuntimeException e) {
+            log.error("Runtime error loading profile: {}", e.getMessage());
+            return "redirect:/login";
+        } catch (Exception e) {
+            log.error("Unexpected error loading profile: ", e);
+            return "redirect:/login";
+        }
+    }
+
+    /**
+     * Trang edit profile - chỉnh sửa thông tin cá nhân
+     */
+    @GetMapping("/customer/edit-profile")
+    public String editProfile(Model model, HttpSession session) {
+        try {
             Long customerId = (Long) session.getAttribute("customerId");
             
             if (customerId == null) {
@@ -96,10 +130,10 @@ public class WebController {
             
             model.addAttribute("customer", customer);
             
-            return "customer/profile";
+            return "customer/edit-profile";
             
         } catch (Exception e) {
-            log.error("Error loading profile: ", e);
+            log.error("Error loading edit profile: ", e);
             return "redirect:/login";
         }
     }

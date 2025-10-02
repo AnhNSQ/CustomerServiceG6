@@ -126,7 +126,7 @@ function handleLogin(e) {
             hideLoadingState(button);
             
             // Redirect to customer dashboard
-            window.location.href = '/customer/dashboard';
+            window.location.href = '/dashboard';
         }, 1000);
     }, 2000);
 }
@@ -205,7 +205,7 @@ function loginWithGoogle() {
     setTimeout(() => {
         showAlert('success', 'Đăng nhập Google thành công!');
         // Redirect to dashboard
-        window.location.href = '/customer/dashboard';
+        window.location.href = '/dashboard';
     }, 1500);
 }
 
@@ -216,7 +216,7 @@ function registerWithGoogle() {
     setTimeout(() => {
         showAlert('success', 'Đăng ký Google thành công!');
         // Redirect to dashboard
-        window.location.href = '/customer/dashboard';
+        window.location.href = '/dashboard';
     }, 1500);
 }
 

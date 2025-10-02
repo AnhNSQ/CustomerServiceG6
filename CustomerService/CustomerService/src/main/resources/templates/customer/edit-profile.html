@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cập nhật thông tin - Customer Service</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .edit-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .edit-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            border: 1px solid #e9ecef;
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn-update {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-update:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.active {
+            display: inline-block;
+        }
+        
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+        
+        .invalid-feedback {
+            display: block;
+        }
+        
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        
+        .is-valid {
+            border-color: #28a745;
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Edit Header -->
+    <div class="edit-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-user-edit me-3"></i>Cập nhật thông tin</h1>
+                    <p class="mb-0">Chỉnh sửa thông tin cá nhân của bạn</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button onclick="goBack()" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="edit-card">
+                    <form id="update-form" novalidate>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Họ và tên *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       th:value="${customer.name}"
+                                       required 
+                                       minlength="2" 
+                                       maxlength="100">
+                                <div class="invalid-feedback">
+                                    Họ và tên phải có từ 2 đến 100 ký tự
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i>Email *
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       th:value="${customer.email}"
+                                       required 
+                                       maxlength="100">
+                                <div class="invalid-feedback">
+                                    Email không hợp lệ
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-at me-2"></i>Username *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="username" 
+                                       name="username" 
+                                       th:value="${customer.username}"
+                                       required 
+                                       minlength="3" 
+                                       maxlength="50"
+                                       pattern="^[a-zA-Z0-9_]+$">
+                                <div class="invalid-feedback">
+                                    Username phải có từ 3 đến 50 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-2"></i>Số điện thoại
+                                </label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone" 
+                                       name="phone" 
+                                       th:value="${customer.phone}"
+                                       maxlength="20"
+                                       pattern="^[0-9+\-\s()]*$">
+                                <div class="invalid-feedback">
+                                    Số điện thoại không hợp lệ
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Lưu ý:</strong> Các trường có dấu * là bắt buộc. 
+                                    Email và Username phải là duy nhất trong hệ thống.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="button" onclick="goBack()" class="btn-cancel me-3">
+                                <i class="fas fa-times me-2"></i>Hủy bỏ
+                            </button>
+                            <button type="submit" class="btn-update me-3">
+                                <span class="btn-text">
+                                    <i class="fas fa-save me-2"></i>Cập nhật thông tin
+                                </span>
+                                <span class="loading">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Đang cập nhật...
+                                </span>
+                            </button>
+                            <button type="button" onclick="saveAndGoBack()" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Lưu và quay lại
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+        });
+
+        function initializeForm() {
+            const form = document.getElementById('update-form');
+            const inputs = form.querySelectorAll('.form-control');
+            
+            // Add event listeners for real-time validation
+            inputs.forEach(input => {
+                // Mark field as touched when user interacts
+                input.addEventListener('blur', function() {
+                    this.setAttribute('data-touched', 'true');
+                    validateField(this);
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.hasAttribute('data-touched')) {
+                        validateField(this);
+                    }
+                });
+            });
+            
+            // Form submission
+            form.addEventListener('submit', handleUpdate);
+        }
+
+        function handleUpdate(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            // Mark all required fields as touched and validate
+            let isValid = true;
+            const inputs = form.querySelectorAll('.form-control[required]');
+            
+            inputs.forEach(input => {
+                input.setAttribute('data-touched', 'true');
+                if (!validateField(input)) {
+                    isValid = false;
+                }
+            });
+            
+            if (!isValid) {
+                showAlert('danger', 'Vui lòng kiểm tra lại thông tin!');
+                return;
+            }
+            
+            // Show loading state
+            const button = form.querySelector('button[type="submit"]');
+            showLoadingState(button);
+            
+            // Prepare data
+            const updateData = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                username: formData.get('username'),
+                phone: formData.get('phone') || null
+            };
+            
+            // Make API call
+            fetch('/api/customers/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoadingState(button);
+                
+                if (data.success) {
+                    showAlert('success', data.message || 'Cập nhật thông tin thành công!');
+                    
+                    // Check session before redirecting
+                    checkSessionAndRedirect();
+                } else {
+                    showAlert('danger', data.message || 'Có lỗi xảy ra khi cập nhật thông tin!');
+                }
+            })
+            .catch(error => {
+                hideLoadingState(button);
+                console.error('Error:', error);
+                showAlert('danger', 'Có lỗi xảy ra, vui lòng thử lại sau!');
+            });
+        }
+
+        function validateField(field) {
+            const value = field.value.trim();
+            let isValid = true;
+            let message = '';
+
+            // Remove existing validation classes
+            field.classList.remove('is-valid', 'is-invalid');
+
+            if (field.hasAttribute('required') && !value) {
+                isValid = false;
+                message = 'Trường này không được để trống';
+            } else if (value) {
+                switch (field.type) {
+                    case 'email':
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        isValid = emailRegex.test(value);
+                        message = 'Email không hợp lệ';
+                        break;
+                    case 'text':
+                        if (field.id === 'name') {
+                            isValid = value.length >= 2 && value.length <= 100;
+                            message = 'Họ và tên phải có từ 2 đến 100 ký tự';
+                        } else if (field.id === 'username') {
+                            const usernameRegex = /^[a-zA-Z0-9_]+$/;
+                            isValid = value.length >= 3 && value.length <= 50 && usernameRegex.test(value);
+                            message = 'Username phải có từ 3 đến 50 ký tự và chỉ chứa chữ cái, số, dấu gạch dưới';
+                        }
+                        break;
+                    case 'tel':
+                        if (value) {
+                            const phoneRegex = /^[0-9+\-\s()]*$/;
+                            isValid = phoneRegex.test(value) && value.length <= 20;
+                            message = 'Số điện thoại không hợp lệ';
+                        }
+                        break;
+                }
+            }
+
+            // Add validation classes only for touched fields or fields with values
+            if (field.hasAttribute('data-touched') || value.length > 0) {
+                field.classList.add(isValid ? 'is-valid' : 'is-invalid');
+                
+                // Update or create feedback message
+                let feedback = field.parentElement.querySelector('.invalid-feedback');
+                if (!isValid) {
+                    if (!feedback) {
+                        feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        field.parentElement.appendChild(feedback);
+                    }
+                    feedback.textContent = message;
+                } else if (feedback) {
+                    feedback.remove();
+                }
+            }
+
+            return isValid;
+        }
+
+        function showLoadingState(button) {
+            const btnText = button.querySelector('.btn-text');
+            const loading = button.querySelector('.loading');
+            
+            if (btnText) btnText.style.display = 'none';
+            if (loading) loading.classList.add('active');
+            
+            button.disabled = true;
+        }
+
+        function hideLoadingState(button) {
+            const btnText = button.querySelector('.btn-text');
+            const loading = button.querySelector('.loading');
+            
+            if (btnText) btnText.style.display = 'inline';
+            if (loading) loading.classList.remove('active');
+            
+            button.disabled = false;
+        }
+
+        function showAlert(type, message) {
+            // Remove existing alerts
+            const existingAlert = document.querySelector('.alert:not(.alert-info)');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type === 'info' ? 'primary' : type} alert-dismissible fade show`;
+            
+            const iconClass = getAlertIcon(type);
+            alert.innerHTML = `
+                <i class="fas fa-${iconClass} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert at the beginning of the form
+            const form = document.getElementById('update-form');
+            form.insertBefore(alert, form.firstChild);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alert && alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        function getAlertIcon(type) {
+            switch (type) {
+                case 'success': return 'check-circle';
+                case 'danger': return 'exclamation-circle';
+                case 'warning': return 'exclamation-triangle';
+                case 'info': return 'info-circle';
+                default: return 'info-circle';
+            }
+        }
+
+        function goBack() {
+            // Check if form has been modified
+            if (isFormModified()) {
+                if (confirm('Bạn có thay đổi thông tin chưa lưu. Bạn có chắc chắn muốn quay lại?')) {
+                    window.location.href = '/profile';
+                }
+            } else {
+                window.location.href = '/profile';
+            }
+        }
+
+        function isFormModified() {
+            const form = document.getElementById('update-form');
+            const formData = new FormData(form);
+            
+            // Get original values from Thymeleaf
+            const originalName = '[[${customer.name}]]';
+            const originalEmail = '[[${customer.email}]]';
+            const originalUsername = '[[${customer.username}]]';
+            const originalPhone = '[[${customer.phone}]]' || '';
+            
+            // Compare with current values
+            return formData.get('name') !== originalName ||
+                   formData.get('email') !== originalEmail ||
+                   formData.get('username') !== originalUsername ||
+                   (formData.get('phone') || '') !== originalPhone;
+        }
+
+        function saveAndGoBack() {
+            // Trigger form submission
+            const form = document.getElementById('update-form');
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+        }
+
+        function checkSessionAndRedirect() {
+            // Check session before redirecting
+            fetch('/api/customers/session-check')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data.isValid) {
+                        // Session is valid, redirect to profile
+                        setTimeout(() => {
+                            window.location.href = '/profile?updated=true';
+                        }, 2000);
+                    } else {
+                        // Session is invalid, redirect to login
+                        showAlert('warning', 'Session đã hết hạn. Vui lòng đăng nhập lại.');
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking session:', error);
+                    // If session check fails, still try to redirect to profile
+                    setTimeout(() => {
+                        window.location.href = '/profile?updated=true';
+                    }, 2000);
+                });
+        }
+
+        // Warn user before leaving page if form is modified
+        window.addEventListener('beforeunload', function(e) {
+            if (isFormModified()) {
+                e.preventDefault();
+                e.returnValue = 'Bạn có thay đổi thông tin chưa lưu. Bạn có chắc chắn muốn rời khỏi trang?';
+                return e.returnValue;
+            }
+        });
+    </script>
+</body>
+</html>

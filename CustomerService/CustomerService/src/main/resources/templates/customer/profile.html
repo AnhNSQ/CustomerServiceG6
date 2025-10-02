@@ -11,6 +11,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
         .profile-header {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -20,10 +25,11 @@
         
         .profile-card {
             background: white;
-            border-radius: 15px;
+            border-radius: 12px;
             padding: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
             margin-bottom: 2rem;
+            border: 1px solid #e9ecef;
         }
         
         .profile-avatar {
@@ -70,8 +76,34 @@
         
         .btn-back:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             color: white;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+            color: #212529;
+        }
+        
+        .btn-outline-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+        
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .container {
+            max-width: 1200px;
         }
     </style>
 </head>
@@ -176,6 +208,9 @@
                     <button onclick="goBack()" class="btn-back me-3">
                         <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
                     </button>
+                    <button onclick="editProfile()" class="btn btn-warning me-3">
+                        <i class="fas fa-edit me-2"></i>Chỉnh sửa thông tin
+                    </button>
                     <button onclick="logout()" class="btn btn-outline-danger">
                         <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
                     </button>
@@ -188,8 +223,89 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Check for success message from edit profile
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check session first
+            checkSession();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('updated') === 'true') {
+                showSuccessMessage();
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
+
+        function checkSession() {
+            fetch('/api/customers/session-check')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success || !data.data.isValid) {
+                        // Session is invalid, redirect to login
+                        showAlert('warning', 'Session đã hết hạn. Vui lòng đăng nhập lại.');
+                        setTimeout(() => {
+                            window.location.href = '/login';
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking session:', error);
+                    // If session check fails, show warning but don't redirect
+                    showAlert('warning', 'Không thể kiểm tra session. Vui lòng đăng nhập lại nếu gặp lỗi.');
+                });
+        }
+
+        function showAlert(type, message) {
+            // Remove existing alerts
+            const existingAlert = document.querySelector('.alert:not(.alert-info)');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type === 'info' ? 'primary' : type} alert-dismissible fade show`;
+            
+            const iconClass = getAlertIcon(type);
+            alert.innerHTML = `
+                <i class="fas fa-${iconClass} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            // Insert at the beginning of the profile card
+            const profileCard = document.querySelector('.profile-card');
+            if (profileCard) {
+                profileCard.insertBefore(alert, profileCard.firstChild);
+            }
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alert && alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        function getAlertIcon(type) {
+            switch (type) {
+                case 'success': return 'check-circle';
+                case 'danger': return 'exclamation-circle';
+                case 'warning': return 'exclamation-triangle';
+                case 'info': return 'info-circle';
+                default: return 'info-circle';
+            }
+        }
+
+        function showSuccessMessage() {
+            showAlert('success', '<strong>Thành công!</strong> Thông tin của bạn đã được cập nhật.');
+        }
+
         function goBack() {
             window.location.href = '/dashboard';
+        }
+        
+        function editProfile() {
+            window.location.href = '/customer/edit-profile';
         }
         
         function logout() {

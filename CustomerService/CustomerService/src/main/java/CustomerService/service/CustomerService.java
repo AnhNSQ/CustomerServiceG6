@@ -3,6 +3,7 @@ package CustomerService.service;
 import CustomerService.dto.CustomerLoginRequest;
 import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
+import CustomerService.dto.CustomerUpdateRequest;
 import CustomerService.entity.Customer;
 import CustomerService.entity.Role;
 import CustomerService.repository.CustomerRepository;
@@ -118,6 +119,41 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
         return customerRepository.existsByUsername(username);
+    }
+
+    /**
+     * Cập nhật thông tin customer
+     */
+    public CustomerResponse updateProfile(Long customerId, CustomerUpdateRequest request) {
+        log.info("Bắt đầu cập nhật thông tin customer với ID: {}", customerId);
+
+        // Tìm customer hiện tại
+        Customer existingCustomer = customerRepository.findByIdWithRole(customerId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+
+        // Kiểm tra email đã tồn tại (trừ email hiện tại)
+        if (!existingCustomer.getEmail().equals(request.getEmail()) && 
+            customerRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email đã được sử dụng");
+        }
+
+        // Kiểm tra username đã tồn tại (trừ username hiện tại)
+        if (!existingCustomer.getUsername().equals(request.getUsername()) && 
+            customerRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username đã được sử dụng");
+        }
+
+        // Cập nhật thông tin
+        existingCustomer.setName(request.getName());
+        existingCustomer.setEmail(request.getEmail());
+        existingCustomer.setUsername(request.getUsername());
+        existingCustomer.setPhone(request.getPhone());
+
+        // Lưu thay đổi
+        Customer updatedCustomer = customerRepository.save(existingCustomer);
+        log.info("Cập nhật thành công thông tin customer với ID: {}", updatedCustomer.getCustomerId());
+
+        return convertToResponse(updatedCustomer);
     }
 
     /**

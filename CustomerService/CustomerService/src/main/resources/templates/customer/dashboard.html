@@ -13,8 +13,13 @@
     <link th:href="@{/css/customer-auth.css}" rel="stylesheet">
     
     <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
         .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             padding: 2rem 0;
             margin-bottom: 2rem;
@@ -22,47 +27,56 @@
         
         .dashboard-card {
             background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
-            transition: transform 0.3s ease;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
         }
         
         .dashboard-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+        
+        .dashboard-card h5 {
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 1rem;
         }
         
         .quick-action-btn {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border: none;
             color: white;
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-weight: 600;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            font-size: 0.9rem;
         }
         
         .quick-action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             color: white;
         }
         
         .ticket-item {
             background: #f8f9fa;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 1rem;
             margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
+            border-left: 4px solid #667eea;
         }
         
         .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.75rem;
             font-weight: 600;
         }
         
@@ -70,6 +84,55 @@
         .status-in-progress { background: #fff3cd; color: #856404; }
         .status-resolved { background: #d4edda; color: #155724; }
         .status-closed { background: #e2e3e5; color: #495057; }
+        
+        .btn-outline-primary {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .text-primary {
+            color: #667eea !important;
+        }
+        
+        .text-success {
+            color: #28a745 !important;
+        }
+        
+        .text-warning {
+            color: #ffc107 !important;
+        }
+        
+        .text-info {
+            color: #17a2b8 !important;
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+        
+        .dashboard-card strong {
+            color: #495057;
+            font-weight: 600;
+        }
+        
+        .dashboard-card span {
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -91,39 +154,79 @@
     </div>
 
     <div class="container">
-        <!-- Quick Actions -->
-        <div class="dashboard-card">
-            <h4 class="mb-4"><i class="fas fa-bolt me-2"></i>Hành động nhanh</h4>
-            <div class="row">
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="createNewTicket()">
-                        <i class="fas fa-plus-circle mb-2 d-block"></i>
-                        Tạo Ticket mới
-                    </a>
+        <div class="row">
+            <!-- Quick Actions - Top Left -->
+            <div class="col-md-6 mb-4">
+                <div class="dashboard-card">
+                    <h5 class="mb-4"><i class="fas fa-bolt me-2"></i>Hành động nhanh</h5>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <a href="#" class="quick-action-btn w-100 text-center" onclick="createNewTicket()">
+                                <i class="fas fa-plus-circle mb-2 d-block"></i>
+                                Tạo Ticket mới
+                            </a>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <a href="#" class="quick-action-btn w-100 text-center" onclick="viewMyTickets()">
+                                <i class="fas fa-ticket-alt mb-2 d-block"></i>
+                                Xem Ticket của tôi
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="quick-action-btn w-100 text-center" onclick="startLiveChat()">
+                                <i class="fas fa-comments mb-2 d-block"></i>
+                                Chat trực tiếp
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="#" class="quick-action-btn w-100 text-center" onclick="viewProfile()">
+                                <i class="fas fa-user-edit mb-2 d-block"></i>
+                                Cập nhật hồ sơ
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="viewMyTickets()">
-                        <i class="fas fa-ticket-alt mb-2 d-block"></i>
-                        Xem Ticket của tôi
-                    </a>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="startLiveChat()">
-                        <i class="fas fa-comments mb-2 d-block"></i>
-                        Chat trực tiếp
-                    </a>
-                </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="viewProfile()">
-                        <i class="fas fa-user-edit mb-2 d-block"></i>
-                        Cập nhật hồ sơ
-                    </a>
+            </div>
+
+            <!-- Account Info - Top Right -->
+            <div class="col-md-6 mb-4">
+                <div class="dashboard-card">
+                    <h5 class="mb-4"><i class="fas fa-user-circle me-2"></i>Thông tin tài khoản</h5>
+                    
+                    <div class="mb-3">
+                        <strong>Họ và tên:</strong><br>
+                        <span th:text="${customer.name}">Nguyễn Văn A</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Email:</strong><br>
+                        <span th:text="${customer.email}">nguyenvana@example.com</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Số điện thoại:</strong><br>
+                        <span th:text="${customer.phone ?: 'Chưa cập nhật'}">0123456789</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Ngày tham gia:</strong><br>
+                        <span th:text="${#temporals.format(customer.registerDate, 'dd/MM/yyyy')}">01/01/2024</span>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="#" class="btn btn-outline-primary me-2" onclick="viewProfile()">
+                            <i class="fas fa-edit me-2"></i>Cập nhật thông tin
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary" onclick="viewFullProfile()">
+                            <i class="fas fa-user me-2"></i>Xem hồ sơ
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="row">
-            <!-- Recent Tickets -->
+            <!-- Recent Tickets - Bottom Left -->
             <div class="col-md-8">
                 <div class="dashboard-card">
                     <h5 class="mb-4"><i class="fas fa-history me-2"></i>Ticket gần đây</h5>
@@ -148,78 +251,60 @@
                         </div>
                     </div>
                     
-                    <div th:if="${tickets == null or tickets.empty}" class="text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Bạn chưa có ticket nào</p>
+                    <div th:if="${tickets == null or tickets.empty}" class="text-center py-5">
+                        <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-3">Bạn chưa có ticket nào</p>
                         <a href="#" class="quick-action-btn" onclick="createNewTicket()">Tạo ticket đầu tiên</a>
                     </div>
                 </div>
             </div>
 
-            <!-- Account Info -->
+            <!-- Statistics - Bottom Right -->
             <div class="col-md-4">
-                <div class="dashboard-card">
-                    <h5 class="mb-4"><i class="fas fa-user-circle me-2"></i>Thông tin tài khoản</h5>
-                    
-                    <div class="mb-3">
-                        <strong>Họ và tên:</strong><br>
-                        <span th:text="${customer.name}">Nguyễn Văn A</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Email:</strong><br>
-                        <span th:text="${customer.email}">nguyenvana@example.com</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Số điện thoại:</strong><br>
-                        <span th:text="${customer.phone ?: 'Chưa cập nhật'}">0123456789</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Ngày tham gia:</strong><br>
-                        <span th:text="${#temporals.format(customer.registerDate, 'dd/MM/yyyy')}">01/01/2024</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Vai trò:</strong><br>
-                        <span th:each="role : ${customer.roles}" th:text="${role}" class="badge bg-primary me-1">CUSTOMER</span>
-                    </div>
-                    
-                    <hr>
-                    
-                    <div class="text-center">
-                        <a href="#" class="btn btn-outline-primary" onclick="viewProfile()">
-                            <i class="fas fa-edit me-2"></i>Cập nhật thông tin
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Statistics -->
                 <div class="dashboard-card">
                     <h5 class="mb-4"><i class="fas fa-chart-pie me-2"></i>Thống kê</h5>
                     
                     <div class="row text-center">
                         <div class="col-6 mb-3">
                             <div class="border-end">
-                                <h4 class="text-primary mb-1" th:text="${totalTickets ?: 0}">5</h4>
+                                <h4 class="text-primary mb-1" th:text="${totalTickets ?: 0}">0</h4>
                                 <small class="text-muted">Tổng ticket</small>
                             </div>
                         </div>
                         <div class="col-6 mb-3">
-                            <h4 class="text-success mb-1" th:text="${resolvedTickets ?: 0}">3</h4>
+                            <h4 class="text-success mb-1" th:text="${resolvedTickets ?: 0}">0</h4>
                             <small class="text-muted">Đã giải quyết</small>
                         </div>
                         <div class="col-6">
                             <div class="border-end">
-                                <h4 class="text-warning mb-1" th:text="${pendingTickets ?: 0}">1</h4>
+                                <h4 class="text-warning mb-1" th:text="${pendingTickets ?: 0}">0</h4>
                                 <small class="text-muted">Đang xử lý</small>
                             </div>
                         </div>
                         <div class="col-6">
-                            <h4 class="text-info mb-1" th:text="${closedTickets ?: 0}">1</h4>
+                            <h4 class="text-info mb-1" th:text="${closedTickets ?: 0}">0</h4>
                             <small class="text-muted">Đã đóng</small>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="dashboard-card">
+                    <h5 class="mb-4"><i class="fas fa-link me-2"></i>Liên kết nhanh</h5>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-outline-primary" onclick="viewProfile()">
+                            <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                        </a>
+                        <a href="#" class="btn btn-outline-success" onclick="createNewTicket()">
+                            <i class="fas fa-plus me-2"></i>Tạo ticket mới
+                        </a>
+                        <a href="#" class="btn btn-outline-info" onclick="viewMyTickets()">
+                            <i class="fas fa-list me-2"></i>Danh sách ticket
+                        </a>
+                        <a href="#" class="btn btn-outline-warning" onclick="startLiveChat()">
+                            <i class="fas fa-comments me-2"></i>Hỗ trợ trực tiếp
+                        </a>
                     </div>
                 </div>
             </div>
@@ -246,6 +331,11 @@
         }
         
         function viewProfile() {
+            // Redirect to edit profile page
+            window.location.href = '/customer/edit-profile';
+        }
+        
+        function viewFullProfile() {
             // Redirect to profile page
             window.location.href = '/profile';
         }
