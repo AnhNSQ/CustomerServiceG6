@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j
 public class WebController {
 
+    private static final String CUSTOMER_ATTRIBUTE = "customer";
+    
     private final CustomerService customerService;
 
     /**
@@ -65,10 +67,17 @@ public class WebController {
             log.info("Customer found: {}", customer.getEmail());
             
             // Thêm thông tin vào model
-            model.addAttribute("customer", customer);
+            model.addAttribute(CUSTOMER_ATTRIBUTE, customer);
             model.addAttribute("customerName", customer.getName());
             model.addAttribute("customerEmail", customer.getEmail());
             model.addAttribute("customerRoles", customer.getRoles());
+            
+            // Thêm dữ liệu giả lập cho dashboard (sẽ được thay thế bằng dữ liệu thực tế sau)
+            model.addAttribute("tickets", java.util.Collections.emptyList());
+            model.addAttribute("totalTickets", 0);
+            model.addAttribute("resolvedTickets", 0);
+            model.addAttribute("pendingTickets", 0);
+            model.addAttribute("closedTickets", 0);
             
             log.info("Customer {} accessed dashboard successfully", customerId);
             
@@ -100,7 +109,7 @@ public class WebController {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer với ID: " + customerId));
             
             log.info("Customer found: {}", customer.getEmail());
-            model.addAttribute("customer", customer);
+            model.addAttribute(CUSTOMER_ATTRIBUTE, customer);
             
             return "customer/profile";
             
@@ -128,7 +137,7 @@ public class WebController {
             CustomerResponse customer = customerService.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
             
-            model.addAttribute("customer", customer);
+            model.addAttribute(CUSTOMER_ATTRIBUTE, customer);
             
             return "customer/edit-profile";
             

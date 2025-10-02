@@ -231,15 +231,18 @@
                 <div class="dashboard-card">
                     <h5 class="mb-4"><i class="fas fa-history me-2"></i>Ticket gần đây</h5>
                     
-                    <div th:if="${tickets != null and !tickets.empty}" th:each="ticket : ${tickets}">
+                    <div th:if="${tickets != null and not #lists.isEmpty(tickets)}" th:each="ticket : ${tickets}">
                         <div class="ticket-item">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h6 class="mb-1" th:text="'#' + ${ticket.id} + ' - ' + ${ticket.title}">#1234 - Lỗi đăng nhập</h6>
+                                    <h6 class="mb-1"
+                                        th:text="'#' + ticket.ticketId + ' - ' + ticket.subject">
+                                        #1234 - Lỗi đăng nhập
+                                    </h6>
                                     <p class="text-muted mb-2" th:text="${ticket.description}">Không thể đăng nhập vào tài khoản của tôi...</p>
                                     <small class="text-muted">
                                         <i class="fas fa-calendar me-1"></i>
-                                        <span th:text="${#temporals.format(ticket.createdDate, 'dd/MM/yyyy HH:mm')}">15/01/2024 10:30</span>
+                                        <span th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">15/01/2024 10:30</span>
                                     </small>
                                 </div>
                                 <div class="text-end">
@@ -251,7 +254,7 @@
                         </div>
                     </div>
                     
-                    <div th:if="${tickets == null or tickets.empty}" class="text-center py-5">
+                    <div th:if="${tickets == null or #lists.isEmpty(tickets)}" class="text-center py-5">
                         <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
                         <p class="text-muted mb-3">Bạn chưa có ticket nào</p>
                         <a href="#" class="quick-action-btn" onclick="createNewTicket()">Tạo ticket đầu tiên</a>
