@@ -1,6 +1,7 @@
 package CustomerService.service;
 
 import CustomerService.dto.TicketCreateRequest;
+import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
 import CustomerService.entity.Customer;
 import CustomerService.entity.Ticket;
@@ -32,6 +33,30 @@ public class TicketService {
     public List<TicketResponse> getAllTickets() {
         log.info("Lấy tất cả ticket cho staff/admin");
         return ticketRepository.findAllWithCustomerOrderByCreatedAtDesc()
+                .stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Lấy thống kê cho dashboard staff
+     */
+    @Transactional(readOnly = true)
+    public TicketDashboardStats getDashboardStats() {
+        long total = ticketRepository.count();
+        long pending = ticketRepository.countByStatus(Ticket.Status.OPEN);
+        long resolved = ticketRepository.countByStatus(Ticket.Status.RESOLVED);
+        long urgent = ticketRepository.countByPriorityAndStatus(Ticket.Priority.HIGH, Ticket.Status.OPEN);
+        return new TicketDashboardStats(total, pending, resolved, urgent);
+    }
+
+    /**
+     * Lấy 5 ticket gần đây nhất
+     */
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getRecentTickets(int limit) {
+        // hiện sử dụng top5 theo createdAt desc, tham số limit để mở rộng sau
+        return ticketRepository.findTop5ByOrderByCreatedAtDesc()
                 .stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
@@ -97,14 +122,22 @@ public class TicketService {
     
 
     private TicketResponse convertToResponse(Ticket ticket) {
+        Long customerId = null;
+        try {
+            if (ticket.getCustomer() != null) {
+                customerId = ticket.getCustomer().getCustomerId();
+            }
+        } catch (Exception e) {
+            log.warn("Ticket {} has no associated customer or failed to load customer: {}", ticket.getTicketId(), e.getMessage());
+        }
         return new TicketResponse(
             ticket.getTicketId(),
             ticket.getSubject(),
             ticket.getDescription(),
-            ticket.getPriority().name(),
-            ticket.getStatus().name(),
+            ticket.getPriority() != null ? ticket.getPriority().name() : null,
+            ticket.getStatus() != null ? ticket.getStatus().name() : null,
             ticket.getCreatedAt(),
-            ticket.getCustomer().getCustomerId()
+                ticket.getCustomer().getCustomerId()
         );
     }
 }

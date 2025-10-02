@@ -36,4 +36,19 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
      */
     @Query("SELECT t FROM Ticket t LEFT JOIN FETCH t.customer ORDER BY t.createdAt DESC")
     List<Ticket> findAllWithCustomerOrderByCreatedAtDesc();
+
+    /**
+     * Đếm số lượng theo trạng thái
+     */
+    long countByStatus(Ticket.Status status);
+
+    /**
+     * Đếm số lượng ticket có priority và status cụ thể
+     */
+    long countByPriorityAndStatus(Ticket.Priority priority, Ticket.Status status);
+
+    /**
+     * Lấy 5 ticket gần nhất
+     */
+    List<Ticket> findTop5ByOrderByCreatedAtDesc();
 }

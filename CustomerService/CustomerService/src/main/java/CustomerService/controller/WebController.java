@@ -4,6 +4,7 @@ import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
 import CustomerService.service.CustomerService;
 import CustomerService.service.StaffService;
+import CustomerService.service.TicketService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public class WebController {
 
     private final CustomerService customerService;
     private final StaffService staffService;
+    private final TicketService ticketService;
 
     /**
      * Trang chủ - redirect đến login
@@ -136,11 +138,21 @@ public class WebController {
             
             log.info("Staff found: {}", staff.getEmail());
             
-            // Thêm thông tin vào model
+            // Thêm thông tin staff vào model
             model.addAttribute("staff", staff);
             model.addAttribute("staffName", staff.getName());
             model.addAttribute("staffEmail", staff.getEmail());
             model.addAttribute("staffRoles", staff.getRoles());
+
+            // Thêm thống kê ticket vào model
+            var stats = ticketService.getDashboardStats();
+            model.addAttribute("totalTickets", stats.getTotalTickets());
+            model.addAttribute("pendingTickets", stats.getPendingTickets());
+            model.addAttribute("resolvedTickets", stats.getResolvedTickets());
+            model.addAttribute("urgentTickets", stats.getUrgentTickets());
+
+            // Ticket gần đây
+            model.addAttribute("tickets", ticketService.getRecentTickets(5));
             
             log.info("Staff {} accessed dashboard successfully", staffId);
             
