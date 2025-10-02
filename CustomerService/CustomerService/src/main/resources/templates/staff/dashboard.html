@@ -281,13 +281,13 @@
                         <div class="ticket-item">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h6 class="mb-1" th:text="'#' + ${ticket.id} + ' - ' + ${ticket.title}">#1234 - Yêu cầu hỗ trợ</h6>
+                                    <h6 class="mb-1" th:text="'#' + ${ticket.ticketId} + ' - ' + ${ticket.subject}">#1234 - Yêu cầu hỗ trợ</h6>
                                     <p class="text-muted mb-2" th:text="${ticket.description}">Mô tả ticket...</p>
                                     <small class="text-muted">
                                         <i class="fas fa-user me-1"></i>
-                                        <span th:text="${ticket.customerName}">Khách hàng</span>
+                                        <span th:text="'Khách hàng #' + ${ticket.customerId}">Khách hàng</span>
                                         <i class="fas fa-calendar ms-3 me-1"></i>
-                                        <span th:text="${#temporals.format(ticket.createdDate, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
+                                        <span th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
                                     </small>
                                 </div>
                                 <div class="text-end">
