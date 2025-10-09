@@ -2,11 +2,7 @@ package CustomerService.controller;
 
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
-import CustomerService.service.CustomerService;
-import CustomerService.service.StaffService;
-import CustomerService.service.TicketService;
-import CustomerService.service.ProductService;
-import CustomerService.service.CategoryService;
+import CustomerService.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +19,10 @@ public class WebController {
 
     private final CustomerService customerService;
     private final StaffService staffService;
-    private final TicketService ticketService;
+    private final ITicketService ticketService;
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final OrderValidationService orderValidationService;
 
     /**
      * Trang chủ - hiển thị sản phẩm từ database
@@ -42,20 +39,20 @@ public class WebController {
     public String homePage(Model model) {
         try {
             log.info("Loading home page with products from database");
-            
+
             // Lấy sản phẩm nổi bật từ database
             var featuredProducts = productService.getFeaturedProducts(8);
             model.addAttribute("featuredProducts", featuredProducts);
-            
+
             // Lấy categories để hiển thị trong navigation
             var categories = categoryService.getAllActiveCategories();
             model.addAttribute("categories", categories);
-            
-            log.info("Home page loaded successfully with {} featured products and {} categories", 
+
+            log.info("Home page loaded successfully with {} featured products and {} categories",
                     featuredProducts.size(), categories.size());
-            
+
             return "home";
-            
+
         } catch (Exception e) {
             log.error("Error loading home page: ", e);
             // Fallback về trang login nếu có lỗi
@@ -100,12 +97,27 @@ public class WebController {
             
             log.info("Customer found: {}", customer.getEmail());
             
+            // Lấy danh sách ticket của customer
+            var tickets = ticketService.getTicketsByCustomerId(customerId);
+
             // Thêm thông tin vào model
             model.addAttribute("customer", customer);
             model.addAttribute("customerName", customer.getName());
             model.addAttribute("customerEmail", customer.getEmail());
             model.addAttribute("customerRoles", customer.getRoles());
-            
+            model.addAttribute("tickets", tickets);
+
+            // Thống kê ticket
+            long totalTickets = tickets.size();
+            long resolvedTickets = tickets.stream().filter(t -> "RESOLVED".equals(t.getStatus())).count();
+            long pendingTickets = tickets.stream().filter(t -> "OPEN".equals(t.getStatus()) || "ASSIGNED".equals(t.getStatus()) || "IN_PROGRESS".equals(t.getStatus())).count();
+            long closedTickets = tickets.stream().filter(t -> "CLOSED".equals(t.getStatus())).count();
+
+            model.addAttribute("totalTickets", totalTickets);
+            model.addAttribute("resolvedTickets", resolvedTickets);
+            model.addAttribute("pendingTickets", pendingTickets);
+            model.addAttribute("closedTickets", closedTickets);
+
             log.info("Customer {} accessed dashboard successfully", customerId);
             
             return "customer/dashboard";
@@ -119,7 +131,7 @@ public class WebController {
     /**
      * Trang profile - chi tiết thông tin cá nhân
      */
-    @GetMapping("/profile")
+    @GetMapping("customer/profile")
     public String profile(Model model, HttpSession session) {
         try {
             Long customerId = (Long) session.getAttribute("customerId");
@@ -138,6 +150,47 @@ public class WebController {
         } catch (Exception e) {
             log.error("Error loading profile: ", e);
             return "redirect:/login";
+        }
+    }
+
+    /**
+     * Trang tạo ticket mới
+     */
+    @GetMapping("/customer/tickets/create")
+    public String createTicketPage(Model model, HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+
+            if (customerId == null) {
+                log.warn("Unauthorized access to create ticket - redirecting to login");
+                return "redirect:/login";
+            }
+
+            log.info("Loading create ticket page for customer ID: {}", customerId);
+
+            // Lấy danh sách đơn hàng của customer
+            var orders = orderRepository.findByCustomerIdOrderByOrderDateDesc(customerId);
+
+            if (orders.isEmpty()) {
+                log.warn("Customer {} has no orders - redirecting to dashboard", customerId);
+                model.addAttribute("error", "Bạn cần có ít nhất một đơn hàng để tạo ticket hỗ trợ");
+                return "customer/dashboard";
+            }
+
+            // Lấy thông tin customer
+            CustomerResponse customer = customerService.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+
+            model.addAttribute("customer", customer);
+            model.addAttribute("orders", orders);
+
+            log.info("Create ticket page loaded successfully for customer {}", customerId);
+
+            return "customer/create-ticket";
+
+        } catch (Exception e) {
+            log.error("Error loading create ticket page: ", e);
+            return "customer/dashboard";
         }
     }
 

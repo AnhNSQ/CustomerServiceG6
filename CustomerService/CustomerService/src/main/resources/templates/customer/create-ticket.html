@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Ticket Hỗ Trợ - Customer Service</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link th:href="@{/css/customer-auth.css}" rel="stylesheet">
+    
+    <style>
+        .create-ticket-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .create-ticket-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-create {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #6c757d;
+            border: none;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+        }
+        
+        .order-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .required {
+            color: #dc3545;
+        }
+        
+        .help-text {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="create-ticket-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-plus-circle me-3"></i>Tạo Ticket Hỗ Trợ</h1>
+                    <p class="mb-0">Mô tả chi tiết vấn đề bạn gặp phải để chúng tôi có thể hỗ trợ tốt nhất</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/customer/dashboard" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="create-ticket-card">
+                    <form id="createTicketForm" th:action="@{/api/tickets/create}" method="post">
+                        <!-- Select Order -->
+                        <div class="form-group">
+                            <label for="orderId" class="form-label">
+                                <i class="fas fa-shopping-cart me-2"></i>Chọn đơn hàng cần hỗ trợ <span class="required">*</span>
+                            </label>
+                            <select class="form-select" id="orderId" name="orderId" required>
+                                <option value="">-- Chọn đơn hàng --</option>
+                                <option th:each="order : ${orders}" 
+                                        th:value="${order.orderId}" 
+                                        th:text="'Đơn hàng #' + ${order.orderId} + ' - ' + ${#temporals.format(order.orderDate, 'dd/MM/yyyy')} + ' (' + ${order.totalAmount} + ' VNĐ)'">
+                                    Đơn hàng #1234 - 15/01/2024 (500,000 VNĐ)
+                                </option>
+                            </select>
+                            <div class="help-text">Chọn đơn hàng mà bạn gặp vấn đề để chúng tôi có thể hỗ trợ tốt nhất</div>
+                            
+                            <!-- Order Details (sẽ hiển thị khi chọn order) -->
+                            <div id="orderDetails" class="order-info" style="display: none;">
+                                <h6><i class="fas fa-info-circle me-2"></i>Thông tin đơn hàng</h6>
+                                <div id="orderInfoContent">
+                                    <!-- Nội dung sẽ được load bằng JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subject -->
+                        <div class="form-group">
+                            <label for="subject" class="form-label">
+                                <i class="fas fa-heading me-2"></i>Tiêu đề vấn đề <span class="required">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="subject" name="subject" 
+                                   placeholder="Ví dụ: Sản phẩm bị lỗi, không nhận được hàng, vấn đề thanh toán..." 
+                                   maxlength="255" required>
+                            <div class="help-text">Mô tả ngắn gọn vấn đề bạn gặp phải (tối đa 255 ký tự)</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Mô tả chi tiết <span class="required">*</span>
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="6" 
+                                      placeholder="Mô tả chi tiết vấn đề bạn gặp phải, bao gồm thời gian, tình huống cụ thể..." 
+                                      maxlength="2000" required></textarea>
+                            <div class="help-text">Mô tả chi tiết để chúng tôi hiểu rõ vấn đề và hỗ trợ tốt nhất (tối đa 2000 ký tự)</div>
+                            <div class="text-end">
+                                <small class="text-muted">
+                                    <span id="charCount">0</span>/2000 ký tự
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-cancel" onclick="goBack()">
+                                <i class="fas fa-times me-2"></i>Hủy
+                            </button>
+                            <button type="submit" class="btn btn-create">
+                                <i class="fas fa-paper-plane me-2"></i>Tạo Ticket
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Character counter for description
+        const descriptionTextarea = document.getElementById('description');
+        const charCount = document.getElementById('charCount');
+        
+        descriptionTextarea.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            charCount.textContent = currentLength;
+            
+            if (currentLength > 1800) {
+                charCount.style.color = '#dc3545';
+            } else if (currentLength > 1500) {
+                charCount.style.color = '#ffc107';
+            } else {
+                charCount.style.color = '#6c757d';
+            }
+        });
+
+        // Order selection handler
+        const orderSelect = document.getElementById('orderId');
+        const orderDetails = document.getElementById('orderDetails');
+        const orderInfoContent = document.getElementById('orderInfoContent');
+        
+        orderSelect.addEventListener('change', function() {
+            const selectedOrderId = this.value;
+            
+            if (selectedOrderId) {
+                // Hiển thị thông tin đơn hàng (có thể load từ server nếu cần)
+                orderInfoContent.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Mã đơn hàng:</strong> #${selectedOrderId}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Trạng thái:</strong> <span class="badge bg-primary">Đang xử lý</span>
+                        </div>
+                    </div>
+                `;
+                orderDetails.style.display = 'block';
+            } else {
+                orderDetails.style.display = 'none';
+            }
+        });
+
+        // Form submission
+        document.getElementById('createTicketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const ticketData = {
+                orderId: formData.get('orderId'),
+                subject: formData.get('subject'),
+                description: formData.get('description')
+            };
+            
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo...';
+            submitBtn.disabled = true;
+            
+            fetch('/api/customers/tickets/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(ticketData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Success - redirect to dashboard
+                    alert('Tạo ticket thành công!');
+                    window.location.href = '/customer/dashboard';
+                } else {
+                    // Error
+                    alert('Lỗi: ' + data.message);
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra, vui lòng thử lại!');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        function goBack() {
+            if (confirm('Bạn có chắc chắn muốn hủy? Dữ liệu đã nhập sẽ bị mất.')) {
+                window.location.href = '/dashboard';
+            }
+        }
+    </script>
+</body>
+</html>
+
