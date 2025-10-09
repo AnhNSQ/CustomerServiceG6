@@ -40,16 +40,4 @@ public class Category {
         this.description = description;
         this.isActive = true;
     }
-
-    // Helper method để thêm product vào category
-    public void addProduct(Product product) {
-        products.add(product);
-        product.setCategory(this);
-    }
-
-    // Helper method để xóa product khỏi category
-    public void removeProduct(Product product) {
-        products.remove(product);
-        product.setCategory(null);
-    }
 }
