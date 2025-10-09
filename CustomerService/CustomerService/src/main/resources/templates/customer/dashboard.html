@@ -65,7 +65,10 @@
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
+        .text{
+            color: #1a202c;
+        }
+
         .status-open { background: #cce5ff; color: #004085; }
         .status-in-progress { background: #fff3cd; color: #856404; }
         .status-resolved { background: #d4edda; color: #155724; }
@@ -77,9 +80,9 @@
     <div class="dashboard-header">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h1><i class="fas fa-tachometer-alt me-3"></i>Dashboard Khách hàng</h1>
-                    <p class="mb-0">Chào mừng, <span th:text="${customer.name}">Nguyễn Văn A</span>!</p>
+                <div class="col-md-8 text">
+                    <h1><i class="fas fa-tachometer-alt me-3 text"></i>Dashboard Khách hàng</h1>
+                    <p class="mb-0 text">Chào mừng, <span th:text="${customer.name}">Nguyễn Văn A</span>!</p>
                 </div>
                 <div class="col-md-4 text-md-end">
                     <button onclick="logout()" class="btn btn-light">
@@ -95,26 +98,26 @@
         <div class="dashboard-card">
             <h4 class="mb-4"><i class="fas fa-bolt me-2"></i>Hành động nhanh</h4>
             <div class="row">
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="createNewTicket()">
+                <div class="col-md-3 col-sm-6 mb-3 text">
+                    <a href="#" class="quick-action-btn w-100 text-center text" onclick="createNewTicket()">
                         <i class="fas fa-plus-circle mb-2 d-block"></i>
                         Tạo Ticket mới
                     </a>
                 </div>
-                <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="viewMyTickets()">
+                <div class="col-md-3 col-sm-6 mb-3 text">
+                    <a href="#" class="quick-action-btn w-100 text-center text" onclick="viewMyTickets()">
                         <i class="fas fa-ticket-alt mb-2 d-block"></i>
                         Xem Ticket của tôi
                     </a>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="startLiveChat()">
+                    <a href="#" class="quick-action-btn w-100 text-center text" onclick="startLiveChat()">
                         <i class="fas fa-comments mb-2 d-block"></i>
                         Chat trực tiếp
                     </a>
                 </div>
                 <div class="col-md-3 col-sm-6 mb-3">
-                    <a href="#" class="quick-action-btn w-100 text-center" onclick="viewProfile()">
+                    <a href="#" class="quick-action-btn w-100 text-center text" onclick="viewProfile()">
                         <i class="fas fa-user-edit mb-2 d-block"></i>
                         Cập nhật hồ sơ
                     </a>
@@ -128,15 +131,16 @@
                 <div class="dashboard-card">
                     <h5 class="mb-4"><i class="fas fa-history me-2"></i>Ticket gần đây</h5>
                     
-                    <div th:if="${tickets != null and !tickets.empty}" th:each="ticket : ${tickets}">
+                    <div th:if="${tickets != null and !tickets.isEmpty()}" th:each="ticket : ${tickets}">
                         <div class="ticket-item">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h6 class="mb-1" th:text="'#' + ${ticket.id} + ' - ' + ${ticket.title}">#1234 - Lỗi đăng nhập</h6>
+                                    <h6 class="mb-1" th:text="${'#' + ticket.ticketId + ' - ' + ticket.subject +
+              (ticket.orderId != null ? ' (Đơn hàng #' + ticket.orderId + ')' : '')}">#1234 - Lỗi đăng nhập (Đơn hàng #5678)</h6>
                                     <p class="text-muted mb-2" th:text="${ticket.description}">Không thể đăng nhập vào tài khoản của tôi...</p>
                                     <small class="text-muted">
                                         <i class="fas fa-calendar me-1"></i>
-                                        <span th:text="${#temporals.format(ticket.createdDate, 'dd/MM/yyyy HH:mm')}">15/01/2024 10:30</span>
+                                        <span th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">15/01/2024 10:30</span>
                                     </small>
                                 </div>
                                 <div class="text-end">
@@ -148,7 +152,7 @@
                         </div>
                     </div>
                     
-                    <div th:if="${tickets == null or tickets.empty}" class="text-center py-4">
+                    <div th:if="${tickets == null or tickets.isEmpty()}" class="text-center py-4">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                         <p class="text-muted">Bạn chưa có ticket nào</p>
                         <a href="#" class="quick-action-btn" onclick="createNewTicket()">Tạo ticket đầu tiên</a>
@@ -247,7 +251,7 @@
         
         function viewProfile() {
             // Redirect to profile page
-            window.location.href = '/profile';
+            window.location.href = '/customer/profile';
         }
         
         function logout() {

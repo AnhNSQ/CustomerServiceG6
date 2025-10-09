@@ -30,7 +30,7 @@ public class Evaluation {
     @Column(name = "score", nullable = false)
     private Integer score;
 
-    @Column(name = "comment", columnDefinition = "TEXT")
+    @Column(name = "comment", columnDefinition = "NVARCHAR(MAX)")
     private String comment;
 
     @CreationTimestamp

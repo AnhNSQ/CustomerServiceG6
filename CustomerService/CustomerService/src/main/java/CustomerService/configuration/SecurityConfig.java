@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "/login",
                                 "/register",
                                 "/dashboard",
-                                "/profile"
+                                "/customer/profile",
+                                "/customer/tickets/create"
                         ).permitAll()
 
                         .requestMatchers(

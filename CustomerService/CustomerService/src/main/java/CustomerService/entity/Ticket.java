@@ -31,7 +31,7 @@ public class Ticket {
     @Column(name = "subject", nullable = false, length = 255)
     private String subject;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Enumerated(EnumType.STRING)

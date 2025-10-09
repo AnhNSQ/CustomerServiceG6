@@ -21,7 +21,7 @@ public class Vendor {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Column(name = "contact_info", columnDefinition = "TEXT")
+    @Column(name = "contact_info", columnDefinition = "NVARCHAR(MAX)")
     private String contactInfo;
 
     // Quan hệ với Products

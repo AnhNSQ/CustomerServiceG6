@@ -18,4 +18,5 @@ public class TicketResponse {
     private String status;
     private LocalDateTime createdAt;
     private Long customerId;
+    private Long orderId;
 }
