@@ -2,11 +2,7 @@ package CustomerService.controller;
 
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
-import CustomerService.service.CustomerService;
-import CustomerService.service.StaffService;
-import CustomerService.service.TicketService;
-import CustomerService.service.ProductService;
-import CustomerService.service.CategoryService;
+import CustomerService.service.*;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +19,10 @@ public class WebController {
 
     private final CustomerService customerService;
     private final StaffService staffService;
-    private final TicketService ticketService;
+    private final ITicketService ticketService;
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final OrderValidationService orderValidationService;
 
     /**
      * Trang chủ - hiển thị sản phẩm từ database
