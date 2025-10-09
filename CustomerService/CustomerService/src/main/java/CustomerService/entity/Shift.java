@@ -19,7 +19,7 @@ public class Shift {
     @Column(name = "shift_id")
     private Long shiftId;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", nullable = false, columnDefinition = "nvarchar(100)")
     private String name;
 
     @Column(name = "start_time", nullable = false)

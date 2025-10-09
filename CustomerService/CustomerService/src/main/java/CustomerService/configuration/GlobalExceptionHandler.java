@@ -8,11 +8,14 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+@ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
@@ -36,7 +39,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Xử lý RuntimeException
+     * Xử lý RuntimeException cho REST API
      */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException ex) {
@@ -46,7 +49,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Xử lý Exception chung
+     * Xử lý Exception chung cho REST API
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<String>> handleGenericException(Exception ex) {

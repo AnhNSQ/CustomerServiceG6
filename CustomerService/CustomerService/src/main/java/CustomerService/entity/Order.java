@@ -44,7 +44,7 @@ public class Order {
     @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus = OrderStatus.PENDING;
 
-    @Column(name = "shipping_address", columnDefinition = "TEXT")
+    @Column(name = "shipping_address", columnDefinition = "nvarchar(MAX)")
     private String shippingAddress;
 
     // Quan hệ với OrderDetail

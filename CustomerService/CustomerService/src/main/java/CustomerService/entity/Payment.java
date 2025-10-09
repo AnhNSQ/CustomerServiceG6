@@ -27,7 +27,7 @@ public class Payment {
     @Column(name = "payment_date", nullable = false, updatable = false)
     private LocalDateTime paymentDate;
 
-    @Column(name = "method", nullable = false, length = 50)
+    @Column(name = "method", nullable = false, columnDefinition = "nvarchar(50)")
     private String method;
 
     @Enumerated(EnumType.STRING)
