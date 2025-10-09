@@ -1,247 +1,303 @@
--- =============================================
--- Customer Service Database - Sample Data for MSSQL
--- =============================================
--- This file contains sample data for testing the Customer Service application
--- Note: Passwords are stored as plain text (not using bcrypt as requested)
+-- Sample data for Customer Service System
+-- Using MSSQL syntax with nvarchar for all text fields
 
--- =============================================
--- 1. ROLES TABLE
--- =============================================
-INSERT INTO roles (role_name, description) VALUES 
-('CUSTOMER', 'Regular customer role'),
-('ADMIN', 'System administrator'),
-('FINANCIAL_STAFF', 'Financial department staff'),
-('TECHNICAL_SUPPORT', 'Technical support staff'),
-('MANAGER', 'Department manager');
+-- Insert Roles (if not exists)
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'CUSTOMER')
+INSERT INTO roles (role_name, description) VALUES (N'CUSTOMER', N'Khách hàng');
 
--- =============================================
--- 2. VENDORS TABLE
--- =============================================
-INSERT INTO vendors (name, contact_info) VALUES 
-('TechCorp Solutions', 'Email: contact@techcorp.com, Phone: +1-555-0101'),
-('ElectroWorld', 'Email: sales@electroworld.com, Phone: +1-555-0102'),
-('HomeGadgets Inc', 'Email: info@homegadgets.com, Phone: +1-555-0103'),
-('MobileTech Pro', 'Email: support@mobiletech.com, Phone: +1-555-0104'),
-('FashionStore Ltd', 'Email: orders@fashionstore.com, Phone: +1-555-0105');
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'ADMIN')
+INSERT INTO roles (role_name, description) VALUES (N'ADMIN', N'Quản trị viên');
 
--- =============================================
--- 3. SHIPPING METHODS TABLE
--- =============================================
-INSERT INTO shipping_methods (name, cost_estimate, estimated_time) VALUES 
-('Standard Shipping', 5.99, '3-5 business days'),
-('Express Shipping', 12.99, '1-2 business days'),
-('Overnight Shipping', 24.99, 'Next business day'),
-('Free Shipping', 0.00, '5-7 business days'),
-('International Shipping', 29.99, '7-14 business days');
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'FINANCIAL_STAFF')
+INSERT INTO roles (role_name, description) VALUES (N'FINANCIAL_STAFF', N'Nhân viên tài chính');
 
--- =============================================
--- 4. SHIFTS TABLE
--- =============================================
-INSERT INTO shifts (name, start_time, end_time) VALUES 
-('Morning Shift', '08:00:00', '16:00:00'),
-('Evening Shift', '16:00:00', '00:00:00'),
-('Night Shift', '00:00:00', '08:00:00'),
-('Weekend Shift', '10:00:00', '18:00:00'),
-('Part-time Shift', '12:00:00', '16:00:00');
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'TECHNICAL_SUPPORT')
+INSERT INTO roles (role_name, description) VALUES (N'TECHNICAL_SUPPORT', N'Nhân viên hỗ trợ kỹ thuật');
 
--- =============================================
--- 5. STAFF TABLE
--- =============================================
-INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id) VALUES 
-('John Admin', 'john.admin@company.com', 'jadmin', 'admin123', '+1-555-1001', 1, GETDATE(), 2),
-('Sarah Manager', 'sarah.manager@company.com', 'smanager', 'manager123', '+1-555-1002', 1, GETDATE(), 5),
-('Mike Financial', 'mike.financial@company.com', 'mfinancial', 'finance123', '+1-555-1003', 1, GETDATE(), 3),
-('Lisa Technical', 'lisa.technical@company.com', 'ltechnical', 'tech123', '+1-555-1004', 1, GETDATE(), 4),
-('David Support', 'david.support@company.com', 'dsupport', 'support123', '+1-555-1005', 1, GETDATE(), 4),
-('Emma Financial', 'emma.financial@company.com', 'efinancial', 'finance456', '+1-555-1006', 1, GETDATE(), 3),
-('Tom Technical', 'tom.technical@company.com', 'ttechnical', 'tech456', '+1-555-1007', 1, GETDATE(), 4);
+-- Insert Categories (if not exists)
+IF NOT EXISTS (SELECT 1 FROM categories WHERE name = N'Gaming Gear')
+INSERT INTO categories (name, description, is_active) VALUES (N'Gaming Gear', N'Thiết bị chơi game chuyên nghiệp', 1);
 
--- =============================================
--- 6. CUSTOMERS TABLE
--- =============================================
-INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id) VALUES 
-('Alice Johnson', 'alice.johnson@email.com', 'alicej', 'password123', '+1-555-2001', 1, GETDATE(), 1),
-('Bob Smith', 'bob.smith@email.com', 'bobsmith', 'password456', '+1-555-2002', 1, GETDATE(), 1),
-('Carol Davis', 'carol.davis@email.com', 'carold', 'password789', '+1-555-2003', 1, GETDATE(), 1),
-('David Wilson', 'david.wilson@email.com', 'davidw', 'password101', '+1-555-2004', 1, GETDATE(), 1),
-('Eva Brown', 'eva.brown@email.com', 'evabrown', 'password202', '+1-555-2005', 1, GETDATE(), 1),
-('Frank Miller', 'frank.miller@email.com', 'frankm', 'password303', '+1-555-2006', 1, GETDATE(), 1),
-('Grace Lee', 'grace.lee@email.com', 'gracelee', 'password404', '+1-555-2007', 1, GETDATE(), 1),
-('Henry Taylor', 'henry.taylor@email.com', 'henryt', 'password505', '+1-555-2008', 1, GETDATE(), 1);
+IF NOT EXISTS (SELECT 1 FROM categories WHERE name = N'Console')
+INSERT INTO categories (name, description, is_active) VALUES (N'Console', N'Máy chơi game thế hệ mới', 1);
 
--- =============================================
--- 7. PRODUCTS TABLE
--- =============================================
-INSERT INTO products (vendor_id, name, description, price, quantity, status) VALUES 
-(1, 'Laptop Pro 15"', 'High-performance laptop with 16GB RAM and 512GB SSD', 1299.99, 50, 'ACTIVE'),
-(1, 'Gaming Mouse', 'RGB gaming mouse with programmable buttons', 79.99, 100, 'ACTIVE'),
-(2, 'Smart TV 55"', '4K Ultra HD Smart TV with HDR support', 899.99, 25, 'ACTIVE'),
-(2, 'Bluetooth Speaker', 'Portable wireless speaker with 20W output', 149.99, 75, 'ACTIVE'),
-(3, 'Coffee Maker', 'Programmable coffee maker with thermal carafe', 89.99, 30, 'ACTIVE'),
-(3, 'Air Purifier', 'HEPA air purifier for rooms up to 500 sq ft', 199.99, 20, 'ACTIVE'),
-(4, 'Smartphone Pro', 'Latest smartphone with 128GB storage', 699.99, 40, 'ACTIVE'),
-(4, 'Wireless Earbuds', 'True wireless earbuds with noise cancellation', 199.99, 60, 'ACTIVE'),
-(5, 'Designer T-Shirt', 'Premium cotton t-shirt with modern design', 29.99, 200, 'ACTIVE'),
-(5, 'Jeans Classic', 'Classic fit jeans made from organic cotton', 79.99, 150, 'ACTIVE');
+IF NOT EXISTS (SELECT 1 FROM categories WHERE name = N'Monitor')
+INSERT INTO categories (name, description, is_active) VALUES (N'Monitor', N'Màn hình gaming chất lượng cao', 1);
 
--- =============================================
--- 8. ORDERS TABLE
--- =============================================
-INSERT INTO orders (customer_id, order_date, total_amount, shipping_method_id, shipping_status, order_status, shipping_address) VALUES 
-(1, GETDATE(), 1379.98, 1, 'PENDING', 'PENDING', '123 Main St, New York, NY 10001'),
-(2, GETDATE(), 1049.98, 2, 'PENDING', 'PENDING', '456 Oak Ave, Los Angeles, CA 90210'),
-(3, GETDATE(), 279.98, 3, 'PENDING', 'PENDING', '789 Pine Rd, Chicago, IL 60601'),
-(4, GETDATE(), 899.99, 4, 'PENDING', 'PENDING', '321 Elm St, Houston, TX 77001'),
-(5, GETDATE(), 289.98, 1, 'PENDING', 'PENDING', '654 Maple Dr, Phoenix, AZ 85001'),
-(6, GETDATE(), 199.99, 2, 'PENDING', 'PENDING', '987 Cedar Ln, Philadelphia, PA 19101'),
-(7, GETDATE(), 699.99, 3, 'PENDING', 'PENDING', '147 Birch St, San Antonio, TX 78201'),
-(8, GETDATE(), 109.98, 4, 'PENDING', 'PENDING', '258 Spruce Ave, San Diego, CA 92101');
+IF NOT EXISTS (SELECT 1 FROM categories WHERE name = N'Laptop')
+INSERT INTO categories (name, description, is_active) VALUES (N'Laptop', N'Laptop gaming và công việc', 1);
 
--- =============================================
--- 9. ORDER DETAILS TABLE
--- =============================================
-INSERT INTO order_details (order_id, product_id, unit_price, quantity, sub_total) VALUES 
--- Order 1: Alice Johnson
-(1, 1, 1299.99, 1, 1299.99),
-(1, 2, 79.99, 1, 79.99),
--- Order 2: Bob Smith
-(2, 3, 899.99, 1, 899.99),
-(2, 4, 149.99, 1, 149.99),
--- Order 3: Carol Davis
-(3, 5, 89.99, 1, 89.99),
-(3, 6, 199.99, 1, 199.99),
--- Order 4: David Wilson
-(4, 3, 899.99, 1, 899.99),
--- Order 5: Eva Brown
-(5, 5, 89.99, 1, 89.99),
-(5, 6, 199.99, 1, 199.99),
--- Order 6: Frank Miller
-(6, 6, 199.99, 1, 199.99),
--- Order 7: Grace Lee
-(7, 7, 699.99, 1, 699.99),
--- Order 8: Henry Taylor
-(8, 9, 29.99, 1, 29.99),
-(8, 10, 79.99, 1, 79.99);
+IF NOT EXISTS (SELECT 1 FROM categories WHERE name = N'Smartphone')
+INSERT INTO categories (name, description, is_active) VALUES (N'Smartphone', N'Điện thoại thông minh', 1);
 
--- =============================================
--- 10. INVOICES TABLE
--- =============================================
-INSERT INTO invoices (order_id, invoice_date, total_amount, tax_amount, invoice_number, issued_by, status) VALUES 
-(1, GETDATE(), 1379.98, 124.80, 'INV-2024-001', 3, 'PENDING'),
-(2, GETDATE(), 1049.98, 94.50, 'INV-2024-002', 3, 'PENDING'),
-(3, GETDATE(), 279.98, 25.20, 'INV-2024-003', 6, 'PENDING'),
-(4, GETDATE(), 899.99, 81.00, 'INV-2024-004', 3, 'PENDING'),
-(5, GETDATE(), 289.98, 26.10, 'INV-2024-005', 6, 'PENDING'),
-(6, GETDATE(), 199.99, 18.00, 'INV-2024-006', 3, 'PENDING'),
-(7, GETDATE(), 699.99, 63.00, 'INV-2024-007', 6, 'PENDING'),
-(8, GETDATE(), 109.98, 9.90, 'INV-2024-008', 3, 'PENDING');
+IF NOT EXISTS (SELECT 1 FROM categories WHERE name = N'Accessories')
+INSERT INTO categories (name, description, is_active) VALUES (N'Accessories', N'Phụ kiện công nghệ', 1);
 
--- =============================================
--- 11. PAYMENTS TABLE
--- =============================================
-INSERT INTO payments (invoice_id, payment_date, method, status) VALUES 
-(1, GETDATE(), 'Credit Card', 'SUCCEEDED'),
-(2, GETDATE(), 'PayPal', 'SUCCEEDED'),
-(3, GETDATE(), 'Bank Transfer', 'SUCCEEDED'),
-(4, GETDATE(), 'Credit Card', 'SUCCEEDED'),
-(5, GETDATE(), 'PayPal', 'SUCCEEDED'),
-(6, GETDATE(), 'Credit Card', 'SUCCEEDED'),
-(7, GETDATE(), 'Bank Transfer', 'SUCCEEDED'),
-(8, GETDATE(), 'PayPal', 'SUCCEEDED');
+-- Insert Vendors (if not exists)
+IF NOT EXISTS (SELECT 1 FROM vendors WHERE name = N'Công ty ABC')
+INSERT INTO vendors (name, contact_info) VALUES (N'Công ty ABC', N'Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM\nĐiện thoại: 0123456789\nEmail: contact@abc.com');
 
--- =============================================
--- 12. TICKETS TABLE
--- =============================================
-INSERT INTO tickets (customer_id, order_id, subject, description, priority, status, created_at) VALUES 
-(1, 1, 'Order Delivery Issue', 'My order was supposed to arrive yesterday but I haven''t received it yet. Can you please check the status?', 'HIGH', 'OPEN', GETDATE()),
-(2, 2, 'Product Defect', 'The smart TV I received has a cracked screen. I need a replacement or refund.', 'HIGH', 'OPEN', GETDATE()),
-(3, 3, 'Wrong Item Shipped', 'I ordered a coffee maker but received an air purifier instead. Please help me exchange this.', 'MEDIUM', 'OPEN', GETDATE()),
-(4, 4, 'Billing Question', 'I was charged twice for the same order. Can you please check my invoice?', 'HIGH', 'OPEN', GETDATE()),
-(5, 5, 'Return Request', 'I want to return the air purifier as it doesn''t work as expected.', 'MEDIUM', 'OPEN', GETDATE()),
-(6, 6, 'Technical Support', 'I need help setting up the air purifier. The instructions are unclear.', 'LOW', 'OPEN', GETDATE()),
-(7, 7, 'Warranty Claim', 'My smartphone stopped working after 2 weeks. I need warranty service.', 'HIGH', 'OPEN', GETDATE()),
-(8, 8, 'Size Exchange', 'The t-shirt I ordered is too small. Can I exchange it for a larger size?', 'LOW', 'OPEN', GETDATE());
+IF NOT EXISTS (SELECT 1 FROM vendors WHERE name = N'Công ty XYZ')
+INSERT INTO vendors (name, contact_info) VALUES (N'Công ty XYZ', N'Địa chỉ: 456 Đường XYZ, Quận 2, TP.HCM\nĐiện thoại: 0987654321\nEmail: info@xyz.com');
 
--- =============================================
--- 13. TICKET ASSIGNMENTS TABLE
--- =============================================
-INSERT INTO ticket_assign (ticket_id, assigned_to, assigned_by, assigned_at, role_needed) VALUES 
-(1, 4, 2, GETDATE(), 'TECHNICAL_SUPPORT'),
-(2, 4, 2, GETDATE(), 'TECHNICAL_SUPPORT'),
-(3, 7, 2, GETDATE(), 'TECHNICAL_SUPPORT'),
-(4, 3, 2, GETDATE(), 'FINANCIAL_STAFF'),
-(5, 6, 2, GETDATE(), 'FINANCIAL_STAFF'),
-(6, 7, 2, GETDATE(), 'TECHNICAL_SUPPORT'),
-(7, 4, 2, GETDATE(), 'TECHNICAL_SUPPORT'),
-(8, 6, 2, GETDATE(), 'FINANCIAL_STAFF');
+IF NOT EXISTS (SELECT 1 FROM vendors WHERE name = N'Công ty DEF')
+INSERT INTO vendors (name, contact_info) VALUES (N'Công ty DEF', N'Địa chỉ: 789 Đường DEF, Quận 3, TP.HCM\nĐiện thoại: 0369258147\nEmail: sales@def.com');
 
--- =============================================
--- 14. EVALUATIONS TABLE
--- =============================================
-INSERT INTO evaluations (ticket_id, customer_id, score, comment, created_at) VALUES 
-(1, 1, 4, 'Issue was resolved quickly. Staff was very helpful.', GETDATE()),
-(2, 2, 5, 'Excellent service! Got a replacement within 2 days.', GETDATE()),
-(3, 3, 3, 'The exchange process took longer than expected.', GETDATE()),
-(4, 4, 4, 'Billing issue was resolved promptly.', GETDATE()),
-(5, 5, 5, 'Return process was smooth and easy.', GETDATE()),
-(6, 6, 4, 'Technical support was knowledgeable and helpful.', GETDATE()),
-(7, 7, 3, 'Warranty claim is still being processed.', GETDATE()),
-(8, 8, 5, 'Size exchange was handled perfectly.', GETDATE());
+-- Insert Shipping Methods (if not exists)
+IF NOT EXISTS (SELECT 1 FROM shipping_methods WHERE name = N'Giao hàng tiêu chuẩn')
+INSERT INTO shipping_methods (name, cost_estimate, estimated_time) VALUES (N'Giao hàng tiêu chuẩn', 30000.00, N'3-5 ngày làm việc');
 
--- =============================================
--- 15. STAFF SHIFT ASSIGNMENTS TABLE
--- =============================================
-INSERT INTO staff_shift_assign (staff_id, shift_id, date) VALUES 
--- Assignments for current week
-(1, 1, CAST(GETDATE() AS DATE)), -- John Admin - Morning Shift today
-(2, 1, CAST(GETDATE() AS DATE)), -- Sarah Manager - Morning Shift today
-(3, 1, CAST(GETDATE() AS DATE)), -- Mike Financial - Morning Shift today
-(4, 2, CAST(GETDATE() AS DATE)), -- Lisa Technical - Evening Shift today
-(5, 2, CAST(GETDATE() AS DATE)), -- David Support - Evening Shift today
-(6, 1, CAST(GETDATE() AS DATE)), -- Emma Financial - Morning Shift today
-(7, 2, CAST(GETDATE() AS DATE)), -- Tom Technical - Evening Shift today
+IF NOT EXISTS (SELECT 1 FROM shipping_methods WHERE name = N'Giao hàng nhanh')
+INSERT INTO shipping_methods (name, cost_estimate, estimated_time) VALUES (N'Giao hàng nhanh', 50000.00, N'1-2 ngày làm việc');
 
--- Assignments for tomorrow
-(1, 1, CAST(DATEADD(day, 1, GETDATE()) AS DATE)), -- John Admin - Morning Shift tomorrow
-(2, 1, CAST(DATEADD(day, 1, GETDATE()) AS DATE)), -- Sarah Manager - Morning Shift tomorrow
-(3, 1, CAST(DATEADD(day, 1, GETDATE()) AS DATE)), -- Mike Financial - Morning Shift tomorrow
-(4, 2, CAST(DATEADD(day, 1, GETDATE()) AS DATE)), -- Lisa Technical - Evening Shift tomorrow
-(5, 2, CAST(DATEADD(day, 1, GETDATE()) AS DATE)), -- David Support - Evening Shift tomorrow
-(6, 1, CAST(DATEADD(day, 1, GETDATE()) AS DATE)), -- Emma Financial - Morning Shift tomorrow
-(7, 2, CAST(DATEADD(day, 1, GETDATE()) AS DATE)); -- Tom Technical - Evening Shift tomorrow
+IF NOT EXISTS (SELECT 1 FROM shipping_methods WHERE name = N'Giao hàng siêu tốc')
+INSERT INTO shipping_methods (name, cost_estimate, estimated_time) VALUES (N'Giao hàng siêu tốc', 80000.00, N'Same day delivery');
 
--- =============================================
--- UPDATE INVOICE STATUS AFTER PAYMENT
--- =============================================
-UPDATE invoices SET status = 'PAID' WHERE invoice_id IN (1, 2, 3, 4, 5, 6, 7, 8);
+-- Insert Shifts (if not exists)
+IF NOT EXISTS (SELECT 1 FROM shifts WHERE name = N'Ca sáng')
+INSERT INTO shifts (name, start_time, end_time) VALUES (N'Ca sáng', '08:00:00', '16:00:00');
 
--- =============================================
--- UPDATE ORDER STATUS AFTER PAYMENT
--- =============================================
-UPDATE orders SET order_status = 'PAID' WHERE order_id IN (1, 2, 3, 4, 5, 6, 7, 8);
+IF NOT EXISTS (SELECT 1 FROM shifts WHERE name = N'Ca chiều')
+INSERT INTO shifts (name, start_time, end_time) VALUES (N'Ca chiều', '16:00:00', '00:00:00');
 
--- =============================================
--- UPDATE TICKET STATUS AFTER ASSIGNMENT
--- =============================================
-UPDATE tickets SET status = 'ASSIGNED' WHERE ticket_id IN (1, 2, 3, 4, 5, 6, 7, 8);
+IF NOT EXISTS (SELECT 1 FROM shifts WHERE name = N'Ca đêm')
+INSERT INTO shifts (name, start_time, end_time) VALUES (N'Ca đêm', '00:00:00', '08:00:00');
 
--- =============================================
--- SAMPLE DATA SUMMARY
--- =============================================
--- Total Records Inserted:
--- - 5 Roles
--- - 5 Vendors  
--- - 5 Shipping Methods
--- - 5 Shifts
--- - 7 Staff Members
--- - 8 Customers
--- - 10 Products
--- - 8 Orders
--- - 13 Order Details
--- - 8 Invoices
--- - 8 Payments
--- - 8 Tickets
--- - 8 Ticket Assignments
--- - 8 Evaluations
--- - 14 Staff Shift Assignments
--- =============================================
+-- Insert Customers (if not exists)
+IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'an.nguyen@email.com')
+INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Nguyễn Văn An', N'an.nguyen@email.com', N'nguyenvanan', N'password123', N'0123456789', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'CUSTOMER';
+
+IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'binh.tran@email.com')
+INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Trần Thị Bình', N'binh.tran@email.com', N'tranthibinh', N'password123', N'0987654321', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'CUSTOMER';
+
+IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'cuong.le@email.com')
+INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Lê Văn Cường', N'cuong.le@email.com', N'levancuong', N'password123', N'0369258147', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'CUSTOMER';
+
+IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'dung.pham@email.com')
+INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Phạm Thị Dung', N'dung.pham@email.com', N'phamthidung', N'password123', N'0147258369', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'CUSTOMER';
+
+-- Insert Staff (if not exists)
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'admin@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Admin Nguyễn', N'admin@company.com', N'admin', N'admin123', N'0123456780', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'ADMIN';
+
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'finance1@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Nhân viên Tài chính A', N'finance1@company.com', N'finance1', N'finance123', N'0123456781', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'FINANCIAL_STAFF';
+
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'finance2@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Nhân viên Tài chính B', N'finance2@company.com', N'finance2', N'finance123', N'0123456782', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'FINANCIAL_STAFF';
+
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'tech1@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Nhân viên Kỹ thuật A', N'tech1@company.com', N'tech1', N'tech123', N'0123456783', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'TECHNICAL_SUPPORT';
+
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'tech2@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id)
+SELECT N'Nhân viên Kỹ thuật B', N'tech2@company.com', N'tech2', N'tech123', N'0123456784', 1, GETDATE(), role_id
+FROM roles WHERE role_name = N'TECHNICAL_SUPPORT';
+
+-- Insert Products (if not exists)
+IF NOT EXISTS (SELECT 1 FROM products WHERE name = N'Laptop Dell Inspiron 15')
+INSERT INTO products (vendor_id, category_id, name, description, price, quantity, status)
+SELECT v.vendor_id, c.category_id, N'Laptop Dell Inspiron 15', N'Laptop Dell Inspiron 15 inch, RAM 8GB, SSD 256GB, Intel Core i5', 15000000.00, 50, N'ACTIVE'
+FROM vendors v, categories c WHERE v.name = N'Công ty ABC' AND c.name = N'Laptop';
+
+IF NOT EXISTS (SELECT 1 FROM products WHERE name = N'Laptop HP Pavilion 14')
+INSERT INTO products (vendor_id, category_id, name, description, price, quantity, status)
+SELECT v.vendor_id, c.category_id, N'Laptop HP Pavilion 14', N'Laptop HP Pavilion 14 inch, RAM 8GB, SSD 512GB, AMD Ryzen 5', 12000000.00, 30, N'ACTIVE'
+FROM vendors v, categories c WHERE v.name = N'Công ty ABC' AND c.name = N'Laptop';
+
+IF NOT EXISTS (SELECT 1 FROM products WHERE name = N'Điện thoại Samsung Galaxy S23')
+INSERT INTO products (vendor_id, category_id, name, description, price, quantity, status)
+SELECT v.vendor_id, c.category_id, N'Điện thoại Samsung Galaxy S23', N'Điện thoại Samsung Galaxy S23, 128GB, Camera 50MP', 20000000.00, 100, N'ACTIVE'
+FROM vendors v, categories c WHERE v.name = N'Công ty XYZ' AND c.name = N'Smartphone';
+
+IF NOT EXISTS (SELECT 1 FROM products WHERE name = N'Điện thoại iPhone 14')
+INSERT INTO products (vendor_id, category_id, name, description, price, quantity, status)
+SELECT v.vendor_id, c.category_id, N'Điện thoại iPhone 14', N'Điện thoại iPhone 14, 128GB, Camera 12MP', 25000000.00, 80, N'ACTIVE'
+FROM vendors v, categories c WHERE v.name = N'Công ty XYZ' AND c.name = N'Smartphone';
+
+IF NOT EXISTS (SELECT 1 FROM products WHERE name = N'Bàn phím cơ Logitech')
+INSERT INTO products (vendor_id, category_id, name, description, price, quantity, status)
+SELECT v.vendor_id, c.category_id, N'Bàn phím cơ Logitech', N'Bàn phím cơ Logitech G Pro X, switch Blue, RGB', 2500000.00, 200, N'ACTIVE'
+FROM vendors v, categories c WHERE v.name = N'Công ty DEF' AND c.name = N'Gaming Gear';
+
+IF NOT EXISTS (SELECT 1 FROM products WHERE name = N'Chuột gaming Razer')
+INSERT INTO products (vendor_id, category_id, name, description, price, quantity, status)
+SELECT v.vendor_id, c.category_id, N'Chuột gaming Razer', N'Chuột gaming Razer DeathAdder V2, 20000 DPI', 1500000.00, 150, N'ACTIVE'
+FROM vendors v, categories c WHERE v.name = N'Công ty DEF' AND c.name = N'Gaming Gear';
+
+-- Insert Orders (if not exists)
+IF NOT EXISTS (SELECT 1 FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'an.nguyen@email.com'))
+INSERT INTO orders (customer_id, order_date, total_amount, shipping_method_id, shipping_status, order_status, shipping_address)
+SELECT c.customer_id, GETDATE(), 17500000.00, sm.shipping_method_id, N'PENDING', N'PENDING', N'123 Đường ABC, Phường 1, Quận 1, TP.HCM'
+FROM customers c, shipping_methods sm
+WHERE c.email = N'an.nguyen@email.com' AND sm.name = N'Giao hàng tiêu chuẩn';
+
+IF NOT EXISTS (SELECT 1 FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'binh.tran@email.com'))
+INSERT INTO orders (customer_id, order_date, total_amount, shipping_method_id, shipping_status, order_status, shipping_address)
+SELECT c.customer_id, GETDATE(), 26500000.00, sm.shipping_method_id, N'PENDING', N'PENDING', N'456 Đường XYZ, Phường 2, Quận 2, TP.HCM'
+FROM customers c, shipping_methods sm
+WHERE c.email = N'binh.tran@email.com' AND sm.name = N'Giao hàng nhanh';
+
+IF NOT EXISTS (SELECT 1 FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'cuong.le@email.com'))
+INSERT INTO orders (customer_id, order_date, total_amount, shipping_method_id, shipping_status, order_status, shipping_address)
+SELECT c.customer_id, GETDATE(), 4000000.00, sm.shipping_method_id, N'SHIPPED', N'PAID', N'789 Đường DEF, Phường 3, Quận 3, TP.HCM'
+FROM customers c, shipping_methods sm
+WHERE c.email = N'cuong.le@email.com' AND sm.name = N'Giao hàng tiêu chuẩn';
+
+-- Insert Order Details (if not exists)
+IF NOT EXISTS (SELECT 1 FROM order_details WHERE order_id = (SELECT order_id FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'an.nguyen@email.com')) AND product_id = (SELECT product_id FROM products WHERE name = N'Laptop Dell Inspiron 15'))
+INSERT INTO order_details (order_id, product_id, unit_price, quantity, sub_total)
+SELECT o.order_id, p.product_id, 15000000.00, 1, 15000000.00
+FROM orders o, products p, customers c
+WHERE c.email = N'an.nguyen@email.com' AND o.customer_id = c.customer_id AND p.name = N'Laptop Dell Inspiron 15';
+
+IF NOT EXISTS (SELECT 1 FROM order_details WHERE order_id = (SELECT order_id FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'an.nguyen@email.com')) AND product_id = (SELECT product_id FROM products WHERE name = N'Bàn phím cơ Logitech'))
+INSERT INTO order_details (order_id, product_id, unit_price, quantity, sub_total)
+SELECT o.order_id, p.product_id, 2500000.00, 1, 2500000.00
+FROM orders o, products p, customers c
+WHERE c.email = N'an.nguyen@email.com' AND o.customer_id = c.customer_id AND p.name = N'Bàn phím cơ Logitech';
+
+IF NOT EXISTS (SELECT 1 FROM order_details WHERE order_id = (SELECT order_id FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'binh.tran@email.com')) AND product_id = (SELECT product_id FROM products WHERE name = N'Điện thoại Samsung Galaxy S23'))
+INSERT INTO order_details (order_id, product_id, unit_price, quantity, sub_total)
+SELECT o.order_id, p.product_id, 20000000.00, 1, 20000000.00
+FROM orders o, products p, customers c
+WHERE c.email = N'binh.tran@email.com' AND o.customer_id = c.customer_id AND p.name = N'Điện thoại Samsung Galaxy S23';
+
+IF NOT EXISTS (SELECT 1 FROM order_details WHERE order_id = (SELECT order_id FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'binh.tran@email.com')) AND product_id = (SELECT product_id FROM products WHERE name = N'Điện thoại iPhone 14'))
+INSERT INTO order_details (order_id, product_id, unit_price, quantity, sub_total)
+SELECT o.order_id, p.product_id, 25000000.00, 1, 25000000.00
+FROM orders o, products p, customers c
+WHERE c.email = N'binh.tran@email.com' AND o.customer_id = c.customer_id AND p.name = N'Điện thoại iPhone 14';
+
+IF NOT EXISTS (SELECT 1 FROM order_details WHERE order_id = (SELECT order_id FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'cuong.le@email.com')) AND product_id = (SELECT product_id FROM products WHERE name = N'Bàn phím cơ Logitech'))
+INSERT INTO order_details (order_id, product_id, unit_price, quantity, sub_total)
+SELECT o.order_id, p.product_id, 2500000.00, 1, 2500000.00
+FROM orders o, products p, customers c
+WHERE c.email = N'cuong.le@email.com' AND o.customer_id = c.customer_id AND p.name = N'Bàn phím cơ Logitech';
+
+IF NOT EXISTS (SELECT 1 FROM order_details WHERE order_id = (SELECT order_id FROM orders WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'cuong.le@email.com')) AND product_id = (SELECT product_id FROM products WHERE name = N'Chuột gaming Razer'))
+INSERT INTO order_details (order_id, product_id, unit_price, quantity, sub_total)
+SELECT o.order_id, p.product_id, 1500000.00, 1, 1500000.00
+FROM orders o, products p, customers c
+WHERE c.email = N'cuong.le@email.com' AND o.customer_id = c.customer_id AND p.name = N'Chuột gaming Razer';
+
+-- Insert Invoices (if not exists)
+IF NOT EXISTS (SELECT 1 FROM invoices WHERE invoice_number = N'INV-001-2024')
+INSERT INTO invoices (order_id, invoice_date, total_amount, tax_amount, invoice_number, issued_by, status)
+SELECT o.order_id, GETDATE(), 17500000.00, 1750000.00, N'INV-001-2024', s.staff_id, N'PENDING'
+FROM orders o, staff s, customers c
+WHERE c.email = N'an.nguyen@email.com' AND o.customer_id = c.customer_id AND s.email = N'finance1@company.com';
+
+IF NOT EXISTS (SELECT 1 FROM invoices WHERE invoice_number = N'INV-002-2024')
+INSERT INTO invoices (order_id, invoice_date, total_amount, tax_amount, invoice_number, issued_by, status)
+SELECT o.order_id, GETDATE(), 26500000.00, 2650000.00, N'INV-002-2024', s.staff_id, N'PENDING'
+FROM orders o, staff s, customers c
+WHERE c.email = N'binh.tran@email.com' AND o.customer_id = c.customer_id AND s.email = N'finance1@company.com';
+
+IF NOT EXISTS (SELECT 1 FROM invoices WHERE invoice_number = N'INV-003-2024')
+INSERT INTO invoices (order_id, invoice_date, total_amount, tax_amount, invoice_number, issued_by, status)
+SELECT o.order_id, GETDATE(), 4000000.00, 400000.00, N'INV-003-2024', s.staff_id, N'PAID'
+FROM orders o, staff s, customers c
+WHERE c.email = N'cuong.le@email.com' AND o.customer_id = c.customer_id AND s.email = N'finance2@company.com';
+
+-- Insert Payments (if not exists)
+IF NOT EXISTS (SELECT 1 FROM payments WHERE invoice_id = (SELECT invoice_id FROM invoices WHERE invoice_number = N'INV-001-2024'))
+INSERT INTO payments (invoice_id, payment_date, method, status)
+SELECT invoice_id, GETDATE(), N'Chuyển khoản ngân hàng', N'SUCCEEDED'
+FROM invoices WHERE invoice_number = N'INV-001-2024';
+
+IF NOT EXISTS (SELECT 1 FROM payments WHERE invoice_id = (SELECT invoice_id FROM invoices WHERE invoice_number = N'INV-002-2024'))
+INSERT INTO payments (invoice_id, payment_date, method, status)
+SELECT invoice_id, GETDATE(), N'Thẻ tín dụng', N'SUCCEEDED'
+FROM invoices WHERE invoice_number = N'INV-002-2024';
+
+IF NOT EXISTS (SELECT 1 FROM payments WHERE invoice_id = (SELECT invoice_id FROM invoices WHERE invoice_number = N'INV-003-2024'))
+INSERT INTO payments (invoice_id, payment_date, method, status)
+SELECT invoice_id, GETDATE(), N'Ví điện tử', N'SUCCEEDED'
+FROM invoices WHERE invoice_number = N'INV-003-2024';
+
+-- Insert Tickets (if not exists)
+IF NOT EXISTS (SELECT 1 FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'an.nguyen@email.com'))
+INSERT INTO tickets (customer_id, order_id, subject, description, priority, status, created_at, closed_at)
+SELECT c.customer_id, o.order_id, N'Vấn đề về giao hàng', N'Tôi đã đặt hàng từ 3 ngày trước nhưng chưa nhận được hàng. Xin hỗ trợ kiểm tra tình trạng giao hàng.', N'HIGH', N'OPEN', GETDATE(), NULL
+FROM customers c, orders o
+WHERE c.email = N'an.nguyen@email.com' AND o.customer_id = c.customer_id;
+
+IF NOT EXISTS (SELECT 1 FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'binh.tran@email.com'))
+INSERT INTO tickets (customer_id, order_id, subject, description, priority, status, created_at, closed_at)
+SELECT c.customer_id, o.order_id, N'Hỏi về chính sách đổi trả', N'Tôi muốn đổi sản phẩm iPhone 14 sang màu khác. Xin hỗ trợ thông tin về chính sách đổi trả.', N'MEDIUM', N'ASSIGNED', GETDATE(), NULL
+FROM customers c, orders o
+WHERE c.email = N'binh.tran@email.com' AND o.customer_id = c.customer_id;
+
+IF NOT EXISTS (SELECT 1 FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'cuong.le@email.com'))
+INSERT INTO tickets (customer_id, order_id, subject, description, priority, status, created_at, closed_at)
+SELECT c.customer_id, o.order_id, N'Lỗi sản phẩm', N'Bàn phím Logitech tôi mua có một số phím không hoạt động. Xin hỗ trợ xử lý.', N'HIGH', N'RESOLVED', GETDATE(), GETDATE()
+FROM customers c, orders o
+WHERE c.email = N'cuong.le@email.com' AND o.customer_id = c.customer_id;
+
+-- Insert Ticket Assignments (if not exists)
+IF NOT EXISTS (SELECT 1 FROM ticket_assign WHERE ticket_id = (SELECT ticket_id FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'an.nguyen@email.com')))
+INSERT INTO ticket_assign (ticket_id, assigned_to, assigned_by, assigned_at, role_needed)
+SELECT t.ticket_id, s1.staff_id, s2.staff_id, GETDATE(), N'TECHNICAL_SUPPORT'
+FROM tickets t, staff s1, staff s2, customers c
+WHERE c.email = N'an.nguyen@email.com' AND t.customer_id = c.customer_id AND s1.email = N'tech1@company.com' AND s2.email = N'admin@company.com';
+
+IF NOT EXISTS (SELECT 1 FROM ticket_assign WHERE ticket_id = (SELECT ticket_id FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'binh.tran@email.com')))
+INSERT INTO ticket_assign (ticket_id, assigned_to, assigned_by, assigned_at, role_needed)
+SELECT t.ticket_id, s1.staff_id, s2.staff_id, GETDATE(), N'FINANCIAL_STAFF'
+FROM tickets t, staff s1, staff s2, customers c
+WHERE c.email = N'binh.tran@email.com' AND t.customer_id = c.customer_id AND s1.email = N'finance1@company.com' AND s2.email = N'admin@company.com';
+
+IF NOT EXISTS (SELECT 1 FROM ticket_assign WHERE ticket_id = (SELECT ticket_id FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'cuong.le@email.com')))
+INSERT INTO ticket_assign (ticket_id, assigned_to, assigned_by, assigned_at, role_needed)
+SELECT t.ticket_id, s1.staff_id, s2.staff_id, GETDATE(), N'TECHNICAL_SUPPORT'
+FROM tickets t, staff s1, staff s2, customers c
+WHERE c.email = N'cuong.le@email.com' AND t.customer_id = c.customer_id AND s1.email = N'tech1@company.com' AND s2.email = N'admin@company.com';
+
+-- Insert Evaluations (if not exists)
+IF NOT EXISTS (SELECT 1 FROM evaluations WHERE ticket_id = (SELECT ticket_id FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'cuong.le@email.com')))
+INSERT INTO evaluations (ticket_id, customer_id, score, comment, created_at)
+SELECT t.ticket_id, c.customer_id, 5, N'Dịch vụ hỗ trợ rất tốt, nhân viên nhiệt tình và giải quyết vấn đề nhanh chóng.', GETDATE()
+FROM tickets t, customers c
+WHERE c.email = N'cuong.le@email.com' AND t.customer_id = c.customer_id;
+
+-- Insert Staff Shift Assignments (if not exists)
+IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'finance1@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca sáng') AND date = CAST(GETDATE() AS DATE))
+INSERT INTO staff_shift_assign (staff_id, shift_id, date)
+SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
+FROM staff s, shifts sh
+WHERE s.email = N'finance1@company.com' AND sh.name = N'Ca sáng';
+
+IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'finance2@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca sáng') AND date = CAST(GETDATE() AS DATE))
+INSERT INTO staff_shift_assign (staff_id, shift_id, date)
+SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
+FROM staff s, shifts sh
+WHERE s.email = N'finance2@company.com' AND sh.name = N'Ca sáng';
+
+IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'tech1@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca chiều') AND date = CAST(GETDATE() AS DATE))
+INSERT INTO staff_shift_assign (staff_id, shift_id, date)
+SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
+FROM staff s, shifts sh
+WHERE s.email = N'tech1@company.com' AND sh.name = N'Ca chiều';
+
+IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'tech2@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca chiều') AND date = CAST(GETDATE() AS DATE))
+INSERT INTO staff_shift_assign (staff_id, shift_id, date)
+SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
+FROM staff s, shifts sh
+WHERE s.email = N'tech2@company.com' AND sh.name = N'Ca chiều';

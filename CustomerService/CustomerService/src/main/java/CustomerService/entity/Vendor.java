@@ -18,10 +18,10 @@ public class Vendor {
     @Column(name = "vendor_id")
     private Long vendorId;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", nullable = false, columnDefinition = "nvarchar(100)")
     private String name;
 
-    @Column(name = "contact_info", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "contact_info", columnDefinition = "nvarchar(MAX)")
     private String contactInfo;
 
     // Quan hệ với Products

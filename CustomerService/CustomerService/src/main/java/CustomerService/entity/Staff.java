@@ -20,19 +20,19 @@ public class Staff {
     @Column(name = "staff_id")
     private Long staffId;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", nullable = false, columnDefinition = "nvarchar(100)")
     private String name;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false, unique = true, columnDefinition = "nvarchar(100)")
     private String email;
 
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Column(name = "username", nullable = false, unique = true, columnDefinition = "nvarchar(50)")
     private String username;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", nullable = false, columnDefinition = "nvarchar(255)")
     private String password;
 
-    @Column(name = "phone", length = 20)
+    @Column(name = "phone", columnDefinition = "nvarchar(20)")
     private String phone;
 
     @Column(name = "is_active", nullable = false)
