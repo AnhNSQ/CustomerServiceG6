@@ -35,7 +35,7 @@ public class Invoice {
     @Column(name = "tax_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal taxAmount;
 
-    @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
+    @Column(name = "invoice_number", nullable = false, unique = true, columnDefinition = "nvarchar(50)")
     private String invoiceNumber;
 
     @ManyToOne(fetch = FetchType.EAGER)

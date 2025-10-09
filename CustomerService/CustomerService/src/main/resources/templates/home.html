@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSave - Tech Store</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #d32f2f;
+            padding: 10px 0;
+        }
+
+        .top-bar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .top-nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 30px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .top-nav a:hover {
+            text-decoration: underline;
+        }
+
+        .top-actions a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        /* Header */
+        header {
+            padding: 30px 0;
+            background: white;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #d32f2f;
+            letter-spacing: 2px;
+        }
+
+        .search-box {
+            display: flex;
+            width: 500px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .search-box button {
+            padding: 12px 25px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-left: none;
+            cursor: pointer;
+        }
+
+        .phone-info {
+            text-align: right;
+        }
+
+        .phone-info p {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .phone-info a {
+            font-size: 18px;
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        nav a {
+            padding: 20px 25px;
+            text-decoration: none;
+            color: #666;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            color: #d32f2f;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            height: 500px;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f5b8b8 100%);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 80px;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 70px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 10px;
+            font-weight: 900;
+            letter-spacing: 3px;
+        }
+
+        .hero h2 {
+            font-size: 48px;
+            color: #d32f2f;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .shop-now-btn {
+            background: #d32f2f;
+            color: white;
+            padding: 18px 50px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .shop-now-btn:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+        }
+
+        .hero-image {
+            position: absolute;
+            right: 100px;
+            bottom: 0;
+            width: 600px;
+            transform: perspective(1000px) rotateY(-15deg);
+        }
+
+        .hero-image img {
+            width: 100%;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3));
+        }
+
+        .hero-arrows {
+            position: absolute;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        .arrow {
+            font-size: 40px;
+            color: rgba(0,0,0,0.3);
+            cursor: pointer;
+            pointer-events: all;
+            user-select: none;
+        }
+
+        /* Featured Products */
+        .featured {
+            padding: 60px 20px;
+            background: #fafafa;
+        }
+
+        .featured h2 {
+            text-align: center;
+            font-size: 36px;
+            color: #666;
+            margin-bottom: 50px;
+            font-weight: 600;
+        }
+
+        .products-grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            position: relative;
+        }
+
+        .product-card {
+            background: white;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid #eee;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .product-image img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .rating {
+            color: #ddd;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .price {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            margin-right: 10px;
+        }
+
+        .sale-price {
+            color: #d32f2f;
+        }
+
+        .add-to-cart {
+            background: white;
+            color: #d32f2f;
+            border: 2px solid #d32f2f;
+            padding: 12px 30px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .add-to-cart:hover {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .product-arrows {
+            position: absolute;
+            width: calc(100% + 80px);
+            top: 50%;
+            left: -40px;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .product-arrows .arrow {
+            pointer-events: all;
+        }
+
+        /* Mailing List */
+        .mailing-list {
+            background: #d32f2f;
+            padding: 40px 20px;
+        }
+
+        .mailing-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .mailing-list h3 {
+            color: white;
+            font-size: 24px;
+            min-width: 200px;
+        }
+
+        .email-form {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .email-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .email-form input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: none;
+            font-size: 14px;
+        }
+
+        .email-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-group label {
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        /* Footer */
+        footer {
+            padding: 50px 20px 30px;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px;
+            margin-bottom: 40px;
+        }
+
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            font-size: 15px;
+        }
+
+        .footer-links a:hover {
+            color: #d32f2f;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .social-links span {
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .social-icon {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #333;
+            transition: all 0.3s;
+        }
+
+        .social-icon:hover {
+            background: #d32f2f;
+            border-color: #d32f2f;
+            color: white;
+        }
+
+        .copyright {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .copyright a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+
+        /* Scroll to Top Button */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #d32f2f;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .scroll-top:hover {
+            background: #b71c1c;
+            transform: translateY(-3px);
+        }
+
+        .hexagon-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image:
+                    repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(0,0,0,0.05) 50px, rgba(0,0,0,0.05) 52px),
+                    repeating-linear-gradient(60deg, transparent, transparent 50px, rgba(0,0,0,0.05) 50px, rgba(0,0,0,0.05) 52px),
+                    repeating-linear-gradient(120deg, transparent, transparent 50px, rgba(0,0,0,0.05) 50px, rgba(0,0,0,0.05) 52px);
+        }
+    </style>
+</head>
+<body>
+<!-- Top Bar -->
+<div class="top-bar">
+    <div class="top-bar-content">
+        <div class="top-nav">
+            <a href="/">HOME</a>
+            <a href="/home">TRANG CHỦ</a>
+            <a href="/login">ĐĂNG NHẬP</a>
+            <a href="/register">ĐĂNG KÝ</a>
+            <a href="#contact">LIÊN HỆ</a>
+        </div>
+        <div class="top-actions">
+            <a href="/dashboard">👤 TÀI KHOẢN</a>
+            <a href="/login">👤 ĐĂNG NHẬP</a>
+            <a href="#cart">GIỎ HÀNG 🛒</a>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<header>
+    <div class="header-content">
+        <div class="logo"><a href="/" style="text-decoration: none; color: inherit;">TECHSAVE</a></div>
+        <div class="search-box">
+            <input type="text" placeholder="Search">
+            <button>🔍</button>
+        </div>
+        <div class="phone-info">
+            <p>QUESTIONS? CALL US</p>
+            <a href="tel:555.555.5555">📞 555.555.5555</a>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav>
+    <div class="nav-content">
+        <a href="#all">TẤT CẢ</a>
+        <th:block th:each="category : ${categories}">
+            <a th:href="@{'/category/' + ${category.categoryId}}" th:text="${category.name}">CATEGORY</a>
+        </th:block>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hexagon-bg"></div>
+    <div class="hero-content">
+        <h1>NEW LAPTOP SALE</h1>
+        <h2>GET YOURS TODAY</h2>
+        <a href="/home" class="shop-now-btn">SHOP NOW</a>
+    </div>
+    <div class="hero-image">
+        <svg width="600" height="400" viewBox="0 0 600 400">
+            <defs>
+                <linearGradient id="laptopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4a4a4a;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#2a2a2a;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <!-- Laptop Base -->
+            <path d="M 50 250 L 550 250 L 570 350 L 30 350 Z" fill="#888" />
+            <!-- Laptop Screen -->
+            <rect x="100" y="50" width="400" height="200" fill="url(#laptopGrad)" rx="10" />
+            <rect x="120" y="70" width="360" height="160" fill="#111" />
+            <!-- Keyboard -->
+            <rect x="150" y="260" width="300" height="80" fill="#666" rx="5" />
+            <!-- Keys representation -->
+            <g opacity="0.5">
+                <rect x="160" y="270" width="280" height="10" fill="#444" rx="2" />
+                <rect x="160" y="285" width="280" height="10" fill="#444" rx="2" />
+                <rect x="160" y="300" width="280" height="10" fill="#444" rx="2" />
+                <rect x="160" y="315" width="280" height="10" fill="#444" rx="2" />
+            </g>
+        </svg>
+    </div>
+    <div class="hero-arrows">
+        <span class="arrow">‹</span>
+        <span class="arrow">›</span>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="featured">
+    <h2>SẢN PHẨM NỔI BẬT</h2>
+    <div class="products-grid">
+        <th:block th:if="${featuredProducts != null and !featuredProducts.isEmpty()}">
+            <th:block th:each="product : ${featuredProducts}">
+                <div class="product-card">
+                    <div class="product-image">
+                        <!-- Placeholder image - có thể thay bằng hình ảnh thực tế sau -->
+                        <svg width="150" height="150" viewBox="0 0 150 150">
+                            <rect x="10" y="20" width="130" height="110" fill="#555" rx="5" />
+                            <rect x="20" y="30" width="110" height="70" fill="#88c" />
+                            <text x="75" y="70" fill="white" font-size="12" text-anchor="middle" th:text="${product.category.name}">CATEGORY</text>
+                            <text x="75" y="85" fill="white" font-size="10" text-anchor="middle">PRODUCT</text>
+                            <rect x="25" y="105" width="15" height="15" fill="#333" />
+                            <circle cx="120" cy="112" r="8" fill="#666" />
+                        </svg>
+                    </div>
+                    <div class="rating">★★★★★</div>
+                    <div class="product-name" th:text="${product.name}">PRODUCT NAME</div>
+                    <div class="price" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$0.00</div>
+                    <div class="product-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                        <div th:text="'Danh mục: ' + ${product.category.name}">Category</div>
+                        <div th:text="'Nhà cung cấp: ' + ${product.vendor.name}">Vendor</div>
+                        <div th:text="'Tồn kho: ' + ${product.quantity} + ' sản phẩm'">Stock</div>
+                    </div>
+                    <button class="add-to-cart" th:onclick="'addToCart(' + ${product.productId} + ')'">THÊM VÀO GIỎ</button>
+                </div>
+            </th:block>
+        </th:block>
+        
+        <!-- Fallback nếu không có sản phẩm -->
+        <th:block th:if="${featuredProducts == null or featuredProducts.isEmpty()}">
+            <div class="product-card" style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                <h3 style="color: #666; margin-bottom: 20px;">Chưa có sản phẩm nào</h3>
+                <p style="color: #999;">Vui lòng thêm sản phẩm vào database để hiển thị tại đây.</p>
+            </div>
+        </th:block>
+
+        <div class="product-arrows">
+            <span class="arrow">‹</span>
+            <span class="arrow">›</span>
+        </div>
+    </div>
+</section>
+
+<!-- Mailing List -->
+<section class="mailing-list">
+    <div class="mailing-content">
+        <h3>MAILING LIST</h3>
+        <form class="email-form">
+            <div class="email-input-wrapper">
+                <input type="email" placeholder="EMAIL ADDRESS">
+                <span class="email-icon">✉</span>
+            </div>
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="action" value="subscribe" checked>
+                    Subscribe
+                </label>
+                <label>
+                    <input type="radio" name="action" value="unsubscribe">
+                    Unsubscribe
+                </label>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-links">
+            <div>
+                <a href="#blog">Blog</a><br><br>
+                <a href="#product-index">Product Index</a>
+            </div>
+            <div>
+                <a href="#terms">Terms and Conditions</a><br><br>
+                <a href="#category">Category Index</a>
+            </div>
+            <div>
+                <a href="#affiliate">Become an Affiliate</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="copyright">
+                Copyright 2025 Sample Store. All Rights Reserved. <a href="#">by Shift4Shop Online Business Builder</a>.
+            </div>
+            <div class="social-links">
+                <span>STAY CONNECTED</span>
+                <div class="social-icon">f</div>
+                <div class="social-icon">𝕏</div>
+                <div class="social-icon">▶</div>
+                <div class="social-icon">📷</div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scroll to Top -->
+<div class="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    ↑
+</div>
+
+<script>
+    // Function để thêm sản phẩm vào giỏ hàng
+    function addToCart(productId) {
+        // TODO: Implement cart functionality
+        alert('Sản phẩm ID: ' + productId + ' đã được thêm vào giỏ hàng!');
+        console.log('Adding product to cart:', productId);
+    }
+
+    // Function để tìm kiếm sản phẩm
+    function searchProducts() {
+        const searchTerm = document.querySelector('.search-box input').value;
+        if (searchTerm.trim()) {
+            // TODO: Implement search functionality
+            alert('Tìm kiếm: ' + searchTerm);
+            console.log('Searching for:', searchTerm);
+        }
+    }
+
+    // Event listener cho nút tìm kiếm
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchButton = document.querySelector('.search-box button');
+        if (searchButton) {
+            searchButton.addEventListener('click', searchProducts);
+        }
+
+        // Event listener cho Enter trong ô tìm kiếm
+        const searchInput = document.querySelector('.search-box input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchProducts();
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

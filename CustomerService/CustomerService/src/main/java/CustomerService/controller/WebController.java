@@ -5,6 +5,8 @@ import CustomerService.dto.StaffResponse;
 import CustomerService.service.CustomerService;
 import CustomerService.service.StaffService;
 import CustomerService.service.TicketService;
+import CustomerService.service.ProductService;
+import CustomerService.service.CategoryService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +24,43 @@ public class WebController {
     private final CustomerService customerService;
     private final StaffService staffService;
     private final TicketService ticketService;
+    private final ProductService productService;
+    private final CategoryService categoryService;
 
     /**
-     * Trang chủ - redirect đến login
+     * Trang chủ - hiển thị sản phẩm từ database
      */
     @GetMapping("/")
-    public String home() {
-        return "redirect:/login";
+    public String home(Model model) {
+        return homePage(model);
+    }
+
+    /**
+     * Trang chủ với endpoint /home
+     */
+    @GetMapping("/home")
+    public String homePage(Model model) {
+        try {
+            log.info("Loading home page with products from database");
+            
+            // Lấy sản phẩm nổi bật từ database
+            var featuredProducts = productService.getFeaturedProducts(8);
+            model.addAttribute("featuredProducts", featuredProducts);
+            
+            // Lấy categories để hiển thị trong navigation
+            var categories = categoryService.getAllActiveCategories();
+            model.addAttribute("categories", categories);
+            
+            log.info("Home page loaded successfully with {} featured products and {} categories", 
+                    featuredProducts.size(), categories.size());
+            
+            return "home";
+            
+        } catch (Exception e) {
+            log.error("Error loading home page: ", e);
+            // Fallback về trang login nếu có lỗi
+            return "redirect:/login";
+        }
     }
 
     /**

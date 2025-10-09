@@ -28,10 +28,10 @@ public class Ticket {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @Column(name = "subject", nullable = false, length = 255)
+    @Column(name = "subject", nullable = false, columnDefinition = "nvarchar(255)")
     private String subject;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "nvarchar(MAX)")
     private String description;
 
     @Enumerated(EnumType.STRING)

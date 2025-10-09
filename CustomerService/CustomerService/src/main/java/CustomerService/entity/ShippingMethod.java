@@ -18,13 +18,13 @@ public class ShippingMethod {
     @Column(name = "shipping_method_id")
     private Long shippingMethodId;
 
-    @Column(name = "name", nullable = false, length = 100)
+    @Column(name = "name", nullable = false, columnDefinition = "nvarchar(100)")
     private String name;
 
     @Column(name = "cost_estimate", nullable = false, precision = 10, scale = 2)
     private BigDecimal costEstimate;
 
-    @Column(name = "estimated_time", length = 100)
+    @Column(name = "estimated_time", columnDefinition = "nvarchar(100)")
     private String estimatedTime;
 
     // Constructor để tạo shipping method mới

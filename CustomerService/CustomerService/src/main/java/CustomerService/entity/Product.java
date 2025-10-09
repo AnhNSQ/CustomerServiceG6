@@ -23,10 +23,14 @@ public class Product {
     @JoinColumn(name = "vendor_id", nullable = false)
     private Vendor vendor;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @Column(name = "name", nullable = false, columnDefinition = "nvarchar(255)")
     private String name;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "nvarchar(MAX)")
     private String description;
 
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
@@ -49,6 +53,17 @@ public class Product {
     }
 
     // Constructor để tạo product mới
+    public Product(Vendor vendor, Category category, String name, String description, BigDecimal price, Integer quantity) {
+        this.vendor = vendor;
+        this.category = category;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.quantity = quantity;
+        this.status = ProductStatus.ACTIVE;
+    }
+
+    // Constructor không có category (để backward compatibility)
     public Product(Vendor vendor, String name, String description, BigDecimal price, Integer quantity) {
         this.vendor = vendor;
         this.name = name;
