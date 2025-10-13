@@ -32,9 +32,14 @@ public class Order {
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "shipping_method_id", nullable = false)
-    private ShippingMethod shippingMethod;
+    @Column(name = "shipping_method", nullable = false, columnDefinition = "nvarchar(100)")
+    private String shippingMethod;
+
+    @Column(name = "cost_estimate", nullable = false, precision = 10, scale = 2)
+    private BigDecimal costEstimate;
+
+    @Column(name = "estimated_time", columnDefinition = "nvarchar(100)")
+    private String estimatedTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "shipping_status", nullable = false)
@@ -70,9 +75,11 @@ public class Order {
     }
 
     // Constructor để tạo order mới
-    public Order(Customer customer, ShippingMethod shippingMethod, String shippingAddress) {
+    public Order(Customer customer, String shippingMethod, BigDecimal costEstimate, String estimatedTime, String shippingAddress) {
         this.customer = customer;
         this.shippingMethod = shippingMethod;
+        this.costEstimate = costEstimate;
+        this.estimatedTime = estimatedTime;
         this.shippingAddress = shippingAddress;
         this.totalAmount = BigDecimal.ZERO;
         this.shippingStatus = ShippingStatus.PENDING;

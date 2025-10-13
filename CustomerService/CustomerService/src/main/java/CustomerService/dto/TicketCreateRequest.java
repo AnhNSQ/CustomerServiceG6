@@ -1,6 +1,7 @@
 package CustomerService.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,4 +19,7 @@ public class TicketCreateRequest {
     @NotBlank(message = "Mô tả không được để trống")
     @Size(max = 2000, message = "Mô tả không được vượt quá 2000 ký tự")
     private String description;
+    
+    @NotNull(message = "Phòng ban không được để trống")
+    private Long staffDepartmentId;
 }

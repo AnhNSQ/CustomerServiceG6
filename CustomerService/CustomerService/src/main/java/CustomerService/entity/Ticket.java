@@ -28,6 +28,10 @@ public class Ticket {
     @JoinColumn(name = "order_id")
     private Order order;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "staff_department_id", nullable = false)
+    private StaffDepartment staffDepartment;
+
     @Column(name = "subject", nullable = false, columnDefinition = "nvarchar(255)")
     private String subject;
 
@@ -68,8 +72,9 @@ public class Ticket {
     }
 
     // Constructor để tạo ticket mới
-    public Ticket(Customer customer, String subject, String description, Priority priority) {
+    public Ticket(Customer customer, StaffDepartment staffDepartment, String subject, String description, Priority priority) {
         this.customer = customer;
+        this.staffDepartment = staffDepartment;
         this.subject = subject;
         this.description = description;
         this.priority = priority;
@@ -77,9 +82,10 @@ public class Ticket {
     }
 
     // Constructor để tạo ticket mới với order
-    public Ticket(Customer customer, Order order, String subject, String description, Priority priority) {
+    public Ticket(Customer customer, Order order, StaffDepartment staffDepartment, String subject, String description, Priority priority) {
         this.customer = customer;
         this.order = order;
+        this.staffDepartment = staffDepartment;
         this.subject = subject;
         this.description = description;
         this.priority = priority;

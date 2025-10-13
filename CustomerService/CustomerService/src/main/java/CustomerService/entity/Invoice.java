@@ -42,26 +42,26 @@ public class Invoice {
     @JoinColumn(name = "issued_by", nullable = false)
     private Staff issuedBy;
 
+    @Column(name = "payment_method", columnDefinition = "nvarchar(50)")
+    private String paymentMethod;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private InvoiceStatus status = InvoiceStatus.PENDING;
 
-    // Quan hệ với Payment
-    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Payment> payments;
-
     // Enum cho InvoiceStatus
     public enum InvoiceStatus {
-        PENDING, PAID
+        PENDING, PAID, REFUNDED
     }
 
     // Constructor để tạo invoice mới
-    public Invoice(Order order, BigDecimal totalAmount, BigDecimal taxAmount, String invoiceNumber, Staff issuedBy) {
+    public Invoice(Order order, BigDecimal totalAmount, BigDecimal taxAmount, String invoiceNumber, Staff issuedBy, String paymentMethod) {
         this.order = order;
         this.totalAmount = totalAmount;
         this.taxAmount = taxAmount;
         this.invoiceNumber = invoiceNumber;
         this.issuedBy = issuedBy;
+        this.paymentMethod = paymentMethod;
         this.status = InvoiceStatus.PENDING;
     }
 }

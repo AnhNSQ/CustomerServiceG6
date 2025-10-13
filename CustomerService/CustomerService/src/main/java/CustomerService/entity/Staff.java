@@ -46,6 +46,10 @@ public class Staff {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "staff_department_id", nullable = false)
+    private StaffDepartment staffDepartment;
+
     // Quan hệ với TicketAssign - staff được assign
     @OneToMany(mappedBy = "assignedTo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TicketAssign> assignedTickets;
@@ -63,7 +67,7 @@ public class Staff {
     private List<Invoice> issuedInvoices;
 
     // Constructor để tạo staff mới
-    public Staff(String name, String email, String username, String password, String phone, Role role) {
+    public Staff(String name, String email, String username, String password, String phone, Role role, StaffDepartment staffDepartment) {
         this.name = name;
         this.email = email;
         this.username = username;
@@ -71,5 +75,6 @@ public class Staff {
         this.phone = phone;
         this.isActive = true;
         this.role = role;
+        this.staffDepartment = staffDepartment;
     }
 }
