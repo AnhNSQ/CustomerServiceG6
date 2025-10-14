@@ -11,25 +11,76 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <style>
+        :root {
+            --primary-color: #d32f2f;
+            --secondary-color: #b71c1c;
+            --accent-color: #ff5722;
+            --text-color: #2d3748;
+            --light-bg: #f7fafc;
+            --success-color: #48bb78;
+            --error-color: #f56565;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+        }
+
         .profile-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
             padding: 2rem 0;
             margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="0.5" fill="rgba(255,255,255,0.08)"/><circle cx="40" cy="80" r="0.8" fill="rgba(255,255,255,0.06)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            50% { transform: translate(-50%, -50%) rotate(180deg); }
+        }
+
+        .profile-header-content {
+            position: relative;
+            z-index: 1;
         }
         
         .profile-card {
             background: white;
-            border-radius: 15px;
+            border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--secondary-color));
+            border-radius: 20px 20px 0 0;
         }
         
         .profile-avatar {
             width: 120px;
             height: 120px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -37,11 +88,43 @@
             margin: 0 auto 1rem;
             color: white;
             font-size: 3rem;
+            animation: pulse 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .profile-avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .info-item {
             padding: 1rem 0;
             border-bottom: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            background: rgba(211, 47, 47, 0.05);
+            border-radius: 8px;
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
         
         .info-item:last-child {
@@ -50,28 +133,212 @@
         
         .info-label {
             font-weight: 600;
-            color: #495057;
+            color: var(--text-color);
             margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label i {
+            color: var(--primary-color);
+            margin-right: 0.5rem;
+            width: 20px;
         }
         
         .info-value {
             color: #6c757d;
+            font-size: 1.1rem;
         }
-        
-        .btn-back {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+
+        .edit-field {
+            display: none;
+            margin-top: 0.5rem;
+        }
+
+        .edit-field input, .edit-field textarea {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .edit-field input:focus, .edit-field textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
+            outline: none;
+        }
+
+        .edit-buttons {
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             border: none;
             color: white;
-            padding: 0.75rem 1.5rem;
+            padding: 0.5rem 1rem;
             border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(211, 47, 47, 0.4);
+            color: white;
+        }
+
+        .btn-save {
+            background: var(--success-color);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+
+        .btn-save:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-back:hover::before {
+            left: 100%;
         }
         
         .btn-back:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px rgba(211, 47, 47, 0.4);
             color: white;
+        }
+
+        .btn-logout {
+            background: white;
+            border: 2px solid var(--error-color);
+            color: var(--error-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: var(--error-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 101, 101, 0.4);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background: rgba(72, 187, 120, 0.1);
+            color: var(--success-color);
+        }
+
+        .alert-danger {
+            background: rgba(245, 101, 101, 0.1);
+            color: var(--error-color);
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading.active {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+        }
+
+        .badge.bg-primary {
+            background: var(--primary-color) !important;
+        }
+
+        .badge.bg-success {
+            background: var(--success-color) !important;
+        }
+
+        .badge.bg-danger {
+            background: var(--error-color) !important;
+        }
+
+        @media (max-width: 768px) {
+            .profile-card {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .profile-header {
+                padding: 1.5rem 0;
+            }
         }
     </style>
 </head>
@@ -79,7 +346,7 @@
     <!-- Profile Header -->
     <div class="profile-header">
         <div class="container">
-            <div class="row align-items-center">
+            <div class="row align-items-center profile-header-content">
                 <div class="col-md-8">
                     <h1><i class="fas fa-user-circle me-3"></i>Thông tin cá nhân</h1>
                     <p class="mb-0">Xem và quản lý thông tin tài khoản của bạn</p>
@@ -96,6 +363,9 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
+                <!-- Alert Messages -->
+                <div id="alertContainer"></div>
+
                 <div class="profile-card">
                     <!-- Avatar -->
                     <div class="profile-avatar">
@@ -104,56 +374,112 @@
                     
                     <!-- Profile Info -->
                     <div class="text-center mb-4">
-                        <h3 th:text="${customer.name}">Nguyễn Văn A</h3>
-                        <p class="text-muted" th:text="${customer.email}">nguyenvana@example.com</p>
+                        <h3 id="displayName" th:text="${customer.name}">Nguyễn Văn A</h3>
+                        <p class="text-muted" id="displayEmail" th:text="${customer.email}">nguyenvana@example.com</p>
                     </div>
                     
                     <!-- Detailed Info -->
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-id-card me-2"></i>ID Khách hàng
+                            <i class="fas fa-id-card"></i>ID Khách hàng
                         </div>
                         <div class="info-value" th:text="${customer.customerId}">12345</div>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-user me-2"></i>Họ và tên
+                            <i class="fas fa-user"></i>Họ và tên
                         </div>
-                        <div class="info-value" th:text="${customer.name}">Nguyễn Văn A</div>
+                        <div class="info-value" id="nameValue" th:text="${customer.name}">Nguyễn Văn A</div>
+                        <div class="edit-field">
+                            <input type="text" id="nameInput" th:value="${customer.name}" placeholder="Nhập họ và tên">
+                        </div>
+                        <div class="edit-buttons">
+                            <button class="btn-save" onclick="saveField('name')">
+                                <i class="fas fa-check me-1"></i>Lưu
+                            </button>
+                            <button class="btn-cancel" onclick="cancelEdit('name')">
+                                <i class="fas fa-times me-1"></i>Hủy
+                            </button>
+                        </div>
+                        <button class="btn-edit" onclick="editField('name')">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                        </button>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-envelope me-2"></i>Email
+                            <i class="fas fa-envelope"></i>Email
                         </div>
-                        <div class="info-value" th:text="${customer.email}">nguyenvana@example.com</div>
+                        <div class="info-value" id="emailValue" th:text="${customer.email}">nguyenvana@example.com</div>
+                        <div class="edit-field">
+                            <input type="email" id="emailInput" th:value="${customer.email}" placeholder="Nhập email">
+                        </div>
+                        <div class="edit-buttons">
+                            <button class="btn-save" onclick="saveField('email')">
+                                <i class="fas fa-check me-1"></i>Lưu
+                            </button>
+                            <button class="btn-cancel" onclick="cancelEdit('email')">
+                                <i class="fas fa-times me-1"></i>Hủy
+                            </button>
+                        </div>
+                        <button class="btn-edit" onclick="editField('email')">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                        </button>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-at me-2"></i>Username
+                            <i class="fas fa-at"></i>Username
                         </div>
-                        <div class="info-value" th:text="${customer.username}">anguyen</div>
+                        <div class="info-value" id="usernameValue" th:text="${customer.username}">anguyen</div>
+                        <div class="edit-field">
+                            <input type="text" id="usernameInput" th:value="${customer.username}" placeholder="Nhập username">
+                        </div>
+                        <div class="edit-buttons">
+                            <button class="btn-save" onclick="saveField('username')">
+                                <i class="fas fa-check me-1"></i>Lưu
+                            </button>
+                            <button class="btn-cancel" onclick="cancelEdit('username')">
+                                <i class="fas fa-times me-1"></i>Hủy
+                            </button>
+                        </div>
+                        <button class="btn-edit" onclick="editField('username')">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                        </button>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-phone me-2"></i>Số điện thoại
+                            <i class="fas fa-phone"></i>Số điện thoại
                         </div>
-                        <div class="info-value" th:text="${customer.phone ?: 'Chưa cập nhật'}">0123456789</div>
+                        <div class="info-value" id="phoneValue" th:text="${customer.phone ?: 'Chưa cập nhật'}">0123456789</div>
+                        <div class="edit-field">
+                            <input type="tel" id="phoneInput" th:value="${customer.phone ?: ''}" placeholder="Nhập số điện thoại">
+                        </div>
+                        <div class="edit-buttons">
+                            <button class="btn-save" onclick="saveField('phone')">
+                                <i class="fas fa-check me-1"></i>Lưu
+                            </button>
+                            <button class="btn-cancel" onclick="cancelEdit('phone')">
+                                <i class="fas fa-times me-1"></i>Hủy
+                            </button>
+                        </div>
+                        <button class="btn-edit" onclick="editField('phone')">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
+                        </button>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-calendar me-2"></i>Ngày tham gia
+                            <i class="fas fa-calendar"></i>Ngày tham gia
                         </div>
                         <div class="info-value" th:text="${#temporals.format(customer.registerDate, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</div>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-shield-alt me-2"></i>Vai trò
+                            <i class="fas fa-shield-alt"></i>Vai trò
                         </div>
                         <div class="info-value">
                             <span th:each="role : ${customer.roles}" th:text="${role}" class="badge bg-primary me-1">CUSTOMER</span>
@@ -162,7 +488,7 @@
                     
                     <div class="info-item">
                         <div class="info-label">
-                            <i class="fas fa-toggle-on me-2"></i>Trạng thái tài khoản
+                            <i class="fas fa-toggle-on"></i>Trạng thái tài khoản
                         </div>
                         <div class="info-value">
                             <span th:if="${customer.isActive}" class="badge bg-success">Hoạt động</span>
@@ -176,7 +502,7 @@
                     <button onclick="goBack()" class="btn-back me-3">
                         <i class="fas fa-arrow-left me-2"></i>Quay lại Dashboard
                     </button>
-                    <button onclick="logout()" class="btn btn-outline-danger">
+                    <button onclick="logout()" class="btn-logout">
                         <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
                     </button>
                 </div>
@@ -188,6 +514,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        let originalValues = {};
+
         function goBack() {
             window.location.href = '/dashboard';
         }
@@ -205,16 +533,176 @@
                     if (data.success) {
                         window.location.href = '/login';
                     } else {
-                        alert('Có lỗi xảy ra khi đăng xuất!');
+                        showAlert('danger', 'Có lỗi xảy ra khi đăng xuất!');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    // Vẫn redirect về login nếu có lỗi
                     window.location.href = '/login';
                 });
             }
         }
+
+        function editField(fieldName) {
+            // Store original value
+            originalValues[fieldName] = document.getElementById(fieldName + 'Value').textContent.trim();
+            
+            // Hide value and edit button
+            document.getElementById(fieldName + 'Value').style.display = 'none';
+            document.querySelector(`#${fieldName}Value`).parentElement.querySelector('.btn-edit').style.display = 'none';
+            
+            // Show edit field and buttons
+            document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'block';
+            document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.style.display = 'block';
+            
+            // Focus on input
+            document.getElementById(fieldName + 'Input').focus();
+        }
+
+        function cancelEdit(fieldName) {
+            // Restore original value
+            document.getElementById(fieldName + 'Value').textContent = originalValues[fieldName];
+            
+            // Hide edit field and buttons
+            document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
+            document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.style.display = 'none';
+            
+            // Show value and edit button
+            document.getElementById(fieldName + 'Value').style.display = 'block';
+            document.querySelector(`#${fieldName}Value`).parentElement.querySelector('.btn-edit').style.display = 'inline-block';
+        }
+
+        function saveField(fieldName) {
+            const input = document.getElementById(fieldName + 'Input');
+            const newValue = input.value.trim();
+            
+            // Validation
+            if (!validateField(fieldName, newValue)) {
+                return;
+            }
+            
+            // Show loading state
+            const saveBtn = document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.querySelector('.btn-save');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<div class="loading active"></div>';
+            saveBtn.disabled = true;
+            
+            // Prepare update data
+            const updateData = {
+                [fieldName]: newValue
+            };
+            
+            // Call API to update profile
+            fetch('/api/customers/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update display value
+                    document.getElementById(fieldName + 'Value').textContent = newValue;
+                    
+                    // Update header display for name and email
+                    if (fieldName === 'name') {
+                        document.getElementById('displayName').textContent = newValue;
+                    } else if (fieldName === 'email') {
+                        document.getElementById('displayEmail').textContent = newValue;
+                    }
+                    
+                    // Hide edit field and buttons
+                    document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
+                    document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.style.display = 'none';
+                    
+                    // Show value and edit button
+                    document.getElementById(fieldName + 'Value').style.display = 'block';
+                    document.querySelector(`#${fieldName}Value`).parentElement.querySelector('.btn-edit').style.display = 'inline-block';
+                    
+                    showAlert('success', 'Cập nhật thông tin thành công!');
+                } else {
+                    showAlert('danger', data.message || 'Có lỗi xảy ra khi cập nhật!');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Có lỗi xảy ra khi cập nhật!');
+            })
+            .finally(() => {
+                // Restore button state
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
+        }
+
+        function validateField(fieldName, value) {
+            switch (fieldName) {
+                case 'name':
+                    if (!value || value.length < 2) {
+                        showAlert('danger', 'Họ và tên phải có ít nhất 2 ký tự!');
+                        return false;
+                    }
+                    break;
+                case 'email':
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!value || !emailRegex.test(value)) {
+                        showAlert('danger', 'Email không hợp lệ!');
+                        return false;
+                    }
+                    break;
+                case 'username':
+                    if (!value || value.length < 3) {
+                        showAlert('danger', 'Username phải có ít nhất 3 ký tự!');
+                        return false;
+                    }
+                    break;
+                case 'phone':
+                    if (value && value.length > 0) {
+                        const phoneRegex = /^[\+]?[0-9\s\-\(\)]{10,}$/;
+                        if (!phoneRegex.test(value)) {
+                            showAlert('danger', 'Số điện thoại không hợp lệ!');
+                            return false;
+                        }
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        function showAlert(type, message) {
+            // Remove existing alerts
+            const existingAlert = document.getElementById('alertContainer');
+            if (existingAlert) {
+                existingAlert.innerHTML = '';
+            }
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.getElementById('alertContainer').appendChild(alert);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (alert && alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // Initialize phone field display
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneValue = document.getElementById('phoneValue').textContent.trim();
+            if (phoneValue === 'Chưa cập nhật') {
+                document.getElementById('phoneValue').textContent = 'Chưa cập nhật';
+            }
+        });
     </script>
 </body>
 </html>
