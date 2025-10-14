@@ -76,7 +76,7 @@ public class WebController {
      */
     @GetMapping("/register")
     public String registerPage(Model model, HttpSession session) {
-        return "customer/register";
+        return "register";
     }
 
     /**

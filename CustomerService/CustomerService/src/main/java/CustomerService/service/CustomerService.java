@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -121,6 +122,62 @@ public class CustomerService extends BaseUserService {
     @Transactional(readOnly = true)
     public boolean existsByUsername(String username) {
         return customerRepository.existsByUsername(username);
+    }
+
+    /**
+     * Cập nhật thông tin customer
+     */
+    public CustomerResponse updateProfile(Long customerId, Map<String, Object> updateData) {
+        log.info("Bắt đầu cập nhật profile cho customer ID: {}", customerId);
+
+        // Tìm customer hiện tại
+        Customer customer = customerRepository.findByIdWithRole(customerId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy customer với ID: " + customerId));
+
+        // Cập nhật các trường được phép
+        if (updateData.containsKey("name")) {
+            String name = (String) updateData.get("name");
+            if (name != null && !name.trim().isEmpty()) {
+                customer.setName(name.trim());
+                log.info("Cập nhật name: {}", name);
+            }
+        }
+
+        if (updateData.containsKey("email")) {
+            String email = (String) updateData.get("email");
+            if (email != null && !email.trim().isEmpty()) {
+                // Kiểm tra email đã tồn tại chưa (trừ email hiện tại)
+                if (!email.equals(customer.getEmail()) && customerRepository.existsByEmail(email)) {
+                    throw new RuntimeException("Email đã được sử dụng");
+                }
+                customer.setEmail(email.trim());
+                log.info("Cập nhật email: {}", email);
+            }
+        }
+
+        if (updateData.containsKey("username")) {
+            String username = (String) updateData.get("username");
+            if (username != null && !username.trim().isEmpty()) {
+                // Kiểm tra username đã tồn tại chưa (trừ username hiện tại)
+                if (!username.equals(customer.getUsername()) && customerRepository.existsByUsername(username)) {
+                    throw new RuntimeException("Username đã được sử dụng");
+                }
+                customer.setUsername(username.trim());
+                log.info("Cập nhật username: {}", username);
+            }
+        }
+
+        if (updateData.containsKey("phone")) {
+            String phone = (String) updateData.get("phone");
+            customer.setPhone(phone != null && !phone.trim().isEmpty() ? phone.trim() : null);
+            log.info("Cập nhật phone: {}", phone);
+        }
+
+        // Lưu customer đã cập nhật
+        Customer updatedCustomer = customerRepository.save(customer);
+        log.info("Cập nhật profile thành công cho customer ID: {}", customerId);
+
+        return convertToCustomerResponse(updatedCustomer);
     }
 
 }

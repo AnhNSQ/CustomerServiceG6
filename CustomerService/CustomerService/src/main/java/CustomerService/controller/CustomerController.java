@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
@@ -166,6 +168,40 @@ public class CustomerController {
             log.error("Lỗi kiểm tra username: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra khi kiểm tra username"));
+        }
+    }
+
+    /**
+     * Cập nhật thông tin customer
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<ApiResponse<CustomerResponse>> updateProfile(
+            @RequestBody Map<String, Object> updateData,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Chưa đăng nhập"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("Nhận yêu cầu cập nhật profile cho customer ID: {}", customerId);
+            
+            CustomerResponse updatedCustomer = customerService.updateProfile(customerId, updateData);
+            
+            log.info("Cập nhật profile thành công cho customer ID: {}", customerId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success("Cập nhật thông tin thành công", updatedCustomer));
+                
+        } catch (UserNotFoundException e) {
+            log.error("Lỗi cập nhật profile: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi cập nhật profile: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
     }
 }
