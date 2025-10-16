@@ -542,7 +542,7 @@
 <!-- Navigation -->
 <nav>
     <div class="nav-content">
-        <a href="#all">TẤT CẢ</a>
+        <a href="/catalog">TẤT CẢ</a>
         <th:block th:each="category : ${categories}">
             <a th:href="@{'/category/' + ${category.categoryId}}" th:text="${category.name}">CATEGORY</a>
         </th:block>
@@ -606,14 +606,17 @@
                         </svg>
                     </div>
                     <div class="rating">★★★★★</div>
-                    <div class="product-name" th:text="${product.name}">PRODUCT NAME</div>
+                    <div class="product-name">
+                        <a th:href="@{'/product/' + ${product.productId}}" style="text-decoration: none; color: inherit;" th:text="${product.name}">PRODUCT NAME</a>
+                    </div>
                     <div class="price" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$0.00</div>
                     <div class="product-info" style="font-size: 12px; color: #666; margin-bottom: 10px;">
                         <div th:text="'Danh mục: ' + ${product.category.name}">Category</div>
                         <div th:text="'Nhà cung cấp: ' + ${product.vendor.name}">Vendor</div>
                         <div th:text="'Tồn kho: ' + ${product.quantity} + ' sản phẩm'">Stock</div>
                     </div>
-                    <button class="add-to-cart" th:onclick="'addToCart(' + ${product.productId} + ')'">THÊM VÀO GIỎ</button>
+                    <a th:href="@{'/product/' + ${product.productId}}" class="add-to-cart" style="text-decoration: none; display: inline-block;">XEM CHI TIẾT</a>
+                    <button class="add-to-cart" th:onclick="'addToCart(' + ${product.productId} + ')'" style="margin-top: 10px;">THÊM VÀO GIỎ</button>
                 </div>
             </th:block>
         </th:block>
