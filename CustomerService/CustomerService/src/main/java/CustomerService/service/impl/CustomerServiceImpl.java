@@ -52,12 +52,15 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             throw new RuntimeException("Username đã được sử dụng");
         }
 
+        // Mã hóa mật khẩu trước khi lưu
+        String encodedPassword = passwordValidator.encodePassword(request.getPassword());
+        
         // Tạo customer mới
         Customer customer = new Customer(
             request.getName(),
             request.getEmail(),
             request.getUsername(),
-            request.getPassword(), // Không encode password theo yêu cầu
+            encodedPassword, // Sử dụng mật khẩu đã được mã hóa
             request.getPhone(),
             null // Role sẽ được set sau
         );
