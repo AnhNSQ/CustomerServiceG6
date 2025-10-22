@@ -42,7 +42,7 @@ public class CustomerController {
             CustomerResponse customer = customerService.register(request);
             
             return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Đăng ký thành công", customer));
+                .body(ApiResponse.success(customer, "Đăng ký thành công"));
                 
         } catch (RuntimeException e) {
             log.error("Lỗi đăng ký: {}", e.getMessage());
@@ -80,7 +80,7 @@ public class CustomerController {
             log.info("Đăng nhập thành công cho customer ID: {}", customer.getCustomerId());
             
             return ResponseEntity.ok()
-                .body(ApiResponse.success("Đăng nhập thành công", customer));
+                .body(ApiResponse.success(customer, "Đăng nhập thành công"));
                 
         } catch (AuthenticationException e) {
             log.error("Lỗi xác thực: {}", e.getMessage());
@@ -107,7 +107,7 @@ public class CustomerController {
             sessionManager.invalidateSession(session);
 
             return ResponseEntity.ok()
-                .body(ApiResponse.success("Đăng xuất thành công", null));
+                .body(ApiResponse.success(null, "Đăng xuất thành công"));
                 
         } catch (Exception e) {
             log.error("Lỗi khi đăng xuất: ", e);
@@ -192,7 +192,7 @@ public class CustomerController {
             log.info("Cập nhật profile thành công cho customer ID: {}", customerId);
             
             return ResponseEntity.ok()
-                .body(ApiResponse.success("Cập nhật thông tin thành công", updatedCustomer));
+                .body(ApiResponse.success(updatedCustomer, "Cập nhật thông tin thành công"));
                 
         } catch (UserNotFoundException e) {
             log.error("Lỗi cập nhật profile: {}", e.getMessage());

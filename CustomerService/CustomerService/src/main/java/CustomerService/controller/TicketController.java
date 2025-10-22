@@ -45,7 +45,7 @@ public class TicketController {
             TicketResponse ticket = ticketService.createTicket(customerId, request);
             
             return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Tạo ticket thành công", ticket));
+                .body(ApiResponse.success(ticket, "Tạo ticket thành công"));
                 
         } catch (RuntimeException e) {
             log.error("Lỗi tạo ticket: {}", e.getMessage());

@@ -790,7 +790,7 @@
                         <div class="related-rating">★★★★★</div>
                         <div class="related-name" th:text="${relatedProduct.name}">Product Name</div>
                         <div class="related-price" th:text="'$' + ${#numbers.formatDecimal(relatedProduct.price, 1, 2)}">$290.00</div>
-                        <button class="related-btn" th:onclick="'addToCart(' + ${relatedProduct.productId} + ')'">ADD TO CART</button>
+                        <button class="related-btn" th:onclick="'addToCartRelated(' + ${relatedProduct.productId} + ')'">ADD TO CART</button>
                     </div>
                 </th:block>
             </th:block>
@@ -828,13 +828,86 @@
     }
 
     // Add to cart functionality
-    function addToCart() {
-        const quantity = document.getElementById('quantity').value;
+    async function addToCart() {
+        const quantity = parseInt(document.getElementById('quantity').value);
         const productId = /*[[${product.productId}]]*/ 0;
         
-        // TODO: Implement actual cart functionality
-        alert('Đã thêm ' + quantity + ' sản phẩm vào giỏ hàng!');
-        console.log('Adding to cart:', { productId, quantity });
+        if (quantity < 1) {
+            alert('Số lượng phải lớn hơn 0');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    quantity: quantity
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Đã thêm ' + quantity + ' sản phẩm vào giỏ hàng!');
+                // Update cart count if displayed
+                updateCartCount();
+            } else {
+                alert('Lỗi: ' + (result.message || 'Không thể thêm sản phẩm vào giỏ hàng'));
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            alert('Lỗi khi thêm sản phẩm vào giỏ hàng');
+        }
+    }
+    
+    // Add to cart functionality for related products
+    async function addToCartRelated(productId) {
+        try {
+            const response = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    quantity: 1
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Đã thêm sản phẩm vào giỏ hàng!');
+                updateCartCount();
+            } else {
+                alert('Lỗi: ' + (result.message || 'Không thể thêm sản phẩm vào giỏ hàng'));
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            alert('Lỗi khi thêm sản phẩm vào giỏ hàng');
+        }
+    }
+    
+    // Update cart count display
+    async function updateCartCount() {
+        try {
+            const response = await fetch('/api/cart/count');
+            const result = await response.json();
+            
+            if (result.success) {
+                // Update cart count in navigation if it exists
+                const cartCountElement = document.getElementById('cartCount');
+                if (cartCountElement) {
+                    cartCountElement.textContent = result.data;
+                }
+            }
+        } catch (error) {
+            console.error('Error updating cart count:', error);
+        }
     }
 
     // Add to wishlist functionality

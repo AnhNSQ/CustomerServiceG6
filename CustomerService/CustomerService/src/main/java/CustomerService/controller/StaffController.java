@@ -52,7 +52,7 @@ public class StaffController {
             log.info("Đăng nhập thành công cho staff ID: {}", staff.getStaffId());
             
             return ResponseEntity.ok()
-                .body(ApiResponse.success("Đăng nhập thành công", staff));
+                .body(ApiResponse.success(staff, "Đăng nhập thành công"));
                 
         } catch (AuthenticationException e) {
             log.error("Lỗi xác thực staff: {}", e.getMessage());
@@ -79,7 +79,7 @@ public class StaffController {
             sessionManager.invalidateSession(session);
 
             return ResponseEntity.ok()
-                .body(ApiResponse.success("Đăng xuất thành công", null));
+                .body(ApiResponse.success(null, "Đăng xuất thành công"));
                 
         } catch (Exception e) {
             log.error("Lỗi khi đăng xuất staff: ", e);

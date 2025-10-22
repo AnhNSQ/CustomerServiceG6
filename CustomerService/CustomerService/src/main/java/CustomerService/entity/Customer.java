@@ -58,6 +58,10 @@ public class Customer {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
 
+    // Quan hệ với CartItem
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CartItem> cartItems;
+
     // Constructor để tạo customer mới
     public Customer(String name, String email, String username, String password, String phone, Role role) {
         this.name = name;

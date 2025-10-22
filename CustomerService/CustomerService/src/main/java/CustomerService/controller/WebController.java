@@ -9,6 +9,7 @@ import CustomerService.service.StaffService;
 import CustomerService.service.TicketService;
 import CustomerService.service.ProductService;
 import CustomerService.service.CategoryService;
+import CustomerService.service.CartService;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class WebController {
     private final TicketService ticketService;
     private final ProductService productService;
     private final CategoryService categoryService;
+    private final CartService cartService;
 
     /**
      * Trang chủ - hiển thị sản phẩm từ database
@@ -435,5 +437,35 @@ public class WebController {
                     return 0;
             }
         }).toList();
+    }
+
+    /**
+     * Trang giỏ hàng
+     */
+    @GetMapping("/cart")
+    public String cartPage(Model model, HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+            
+            if (customerId == null) {
+                log.warn("Unauthorized access to cart - redirecting to login");
+                return "redirect:/login";
+            }
+            
+            log.info("Loading cart page for customer ID: {}", customerId);
+            
+            // Lấy thông tin customer
+            CustomerResponse customer = customerService.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+            
+            model.addAttribute("customer", customer);
+            model.addAttribute("customerName", customer.getName());
+            
+            return "cart";
+            
+        } catch (Exception e) {
+            log.error("Error loading cart page: ", e);
+            return "redirect:/login";
+        }
     }
 }

@@ -66,7 +66,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         );
 
         // Gán role CUSTOMER mặc định
-        Role customerRole = roleRepository.findByRoleName("CUSTOMER")
+        Role customerRole = roleRepository.findByRoleName(Role.RoleName.CUSTOMER)
             .orElseThrow(() -> new RuntimeException("Role CUSTOMER không tồn tại"));
         customer.setRole(customerRole);
 

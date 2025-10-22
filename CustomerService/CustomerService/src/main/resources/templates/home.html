@@ -50,6 +50,19 @@
             font-size: 14px;
         }
 
+        .top-actions a[href="/cart"] {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .top-actions a[href="/cart"]:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
         /* Header */
         header {
             padding: 30px 0;
@@ -510,7 +523,6 @@
 <div class="top-bar">
     <div class="top-bar-content">
         <div class="top-nav">
-            <a href="/">HOME</a>
             <a href="/home">TRANG CHỦ</a>
             <a href="/login">ĐĂNG NHẬP</a>
             <a href="/register">ĐĂNG KÝ</a>
@@ -518,8 +530,7 @@
         </div>
         <div class="top-actions">
             <a href="/dashboard">👤 TÀI KHOẢN</a>
-            <a href="/login">👤 ĐĂNG NHẬP</a>
-            <a href="#cart">GIỎ HÀNG 🛒</a>
+            <a href="/cart">GIỎ HÀNG 🛒 <span id="cartCount" style="background: #ff4444; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px; font-weight: bold;">0</span></a>
         </div>
     </div>
 </div>
@@ -698,10 +709,49 @@
 
 <script>
     // Function để thêm sản phẩm vào giỏ hàng
-    function addToCart(productId) {
-        // TODO: Implement cart functionality
-        alert('Sản phẩm ID: ' + productId + ' đã được thêm vào giỏ hàng!');
-        console.log('Adding product to cart:', productId);
+    async function addToCart(productId) {
+        try {
+            const response = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    quantity: 1
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Đã thêm sản phẩm vào giỏ hàng!');
+                updateCartCount();
+            } else {
+                alert('Lỗi: ' + (result.message || 'Không thể thêm sản phẩm vào giỏ hàng'));
+            }
+        } catch (error) {
+            console.error('Error adding to cart:', error);
+            alert('Lỗi khi thêm sản phẩm vào giỏ hàng');
+        }
+    }
+    
+    // Update cart count display
+    async function updateCartCount() {
+        try {
+            const response = await fetch('/api/cart/count');
+            const result = await response.json();
+            
+            if (result.success) {
+                // Update cart count in navigation if it exists
+                const cartCountElement = document.getElementById('cartCount');
+                if (cartCountElement) {
+                    cartCountElement.textContent = result.data;
+                }
+            }
+        } catch (error) {
+            console.error('Error updating cart count:', error);
+        }
     }
 
     // Function để tìm kiếm sản phẩm
@@ -730,6 +780,9 @@
                 }
             });
         }
+        
+        // Load cart count on page load
+        updateCartCount();
     });
 </script>
 </body>

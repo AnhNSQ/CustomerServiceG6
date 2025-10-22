@@ -61,6 +61,10 @@ public class Ticket {
     @OneToOne(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Evaluation evaluation;
 
+    // Quan hệ với TicketReply
+    @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TicketReply> ticketReplies;
+
     // Enum cho Priority
     public enum Priority {
         LOW, MEDIUM, HIGH
@@ -68,7 +72,7 @@ public class Ticket {
 
     // Enum cho Status
     public enum Status {
-        OPEN, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED
+        PENDING, OPEN, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED
     }
 
     // Constructor để tạo ticket mới

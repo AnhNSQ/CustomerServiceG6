@@ -10,12 +10,12 @@ import java.util.Optional;
 public interface RoleRepository extends JpaRepository<Role, Long> {
     
     /**
-     * Tìm role theo tên role
+     * Tìm role theo tên role (enum)
      */
-    Optional<Role> findByRoleName(String roleName);
+    Optional<Role> findByRoleName(Role.RoleName roleName);
     
     /**
-     * Kiểm tra role có tồn tại không
+     * Kiểm tra role có tồn tại không (enum)
      */
-    boolean existsByRoleName(String roleName);
+    boolean existsByRoleName(Role.RoleName roleName);
 }
