@@ -861,15 +861,15 @@
             <div class="summary-content">
                 <div class="summary-row">
                     <span>Tạm tính:</span>
-                    <span id="subtotalAmount">$0.00</span>
+                    <span id="subtotalAmount">0 ₫</span>
                 </div>
                 <div class="summary-row">
                     <span>Phí vận chuyển:</span>
-                    <span id="shippingFee">$10.00</span>
+                    <span id="shippingFee">38.000 ₫</span>
                 </div>
                 <div class="summary-row total-row">
                     <span>Tổng cộng:</span>
-                    <span id="totalAmount">$10.00</span>
+                    <span id="totalAmount">38.000 ₫</span>
                 </div>
             </div>
 
@@ -904,11 +904,26 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
+        // Vietnamese price formatting function
+        function formatVietnamesePrice(price) {
+            if (typeof price !== 'number') {
+                price = parseFloat(price) || 0;
+            }
+            
+            // Use price directly from database (already in VND)
+            const vndPrice = Math.round(price);
+            
+            // Format with periods as thousands separators
+            const formatted = vndPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            
+            return formatted + ' ₫';
+        }
+
         // Cart Page JavaScript
         class CartManager {
             constructor() {
                 this.cartItems = [];
-                this.shippingFee = 10.00;
+                this.shippingFee = 38000; // 38,000 VND
                 this.selectedItems = new Set();
                 
                 this.init();
@@ -1010,7 +1025,7 @@
                                 <div class="product-info">
                                     <div class="product-name">${this.escapeHtml(item.productName)}</div>
                                     <div class="product-description">${this.escapeHtml(item.productDescription || '')}</div>
-                                    <div class="product-price">$${item.unitPrice.toFixed(2)}</div>
+                                    <div class="product-price">${formatVietnamesePrice(item.unitPrice)}</div>
                                 </div>
                             </div>
                         </div>
@@ -1030,7 +1045,7 @@
                                 </button>
                             </div>
                             <div class="subtotal">
-                                Tạm tính: $<span class="item-subtotal" data-item-id="${item.cartItemId}">${item.subTotal.toFixed(2)}</span>
+                                Tạm tính: <span class="item-subtotal" data-item-id="${item.cartItemId}">${formatVietnamesePrice(item.subTotal)}</span>
                             </div>
                             <button type="button" class="remove-btn" data-item-id="${item.cartItemId}" title="Xóa sản phẩm">
                                 <i class="fas fa-trash"></i>
@@ -1217,7 +1232,7 @@
                 const quantityInput = document.querySelector(`.quantity-input[data-item-id="${itemId}"]`);
                 
                 if (subtotalElement) {
-                    subtotalElement.textContent = item.subTotal.toFixed(2);
+                    subtotalElement.textContent = formatVietnamesePrice(item.subTotal);
                 }
                 
                 if (quantityInput) {
@@ -1314,9 +1329,9 @@
                 const subtotal = selectedItems.reduce((sum, item) => sum + item.subTotal, 0);
                 const total = subtotal + this.shippingFee;
 
-                document.getElementById('subtotalAmount').textContent = `$${subtotal.toFixed(2)}`;
-                document.getElementById('shippingFee').textContent = `$${this.shippingFee.toFixed(2)}`;
-                document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+                document.getElementById('subtotalAmount').textContent = formatVietnamesePrice(subtotal);
+                document.getElementById('shippingFee').textContent = formatVietnamesePrice(this.shippingFee);
+                document.getElementById('totalAmount').textContent = formatVietnamesePrice(total);
             }
 
             proceedToCheckout() {
@@ -1352,8 +1367,8 @@
                 `;
                 
                 // Reset order summary
-                document.getElementById('subtotalAmount').textContent = '$0.00';
-                document.getElementById('totalAmount').textContent = `$${this.shippingFee.toFixed(2)}`;
+                document.getElementById('subtotalAmount').textContent = '0 ₫';
+                document.getElementById('totalAmount').textContent = formatVietnamesePrice(this.shippingFee);
                 
                 // Hide selected info and disable checkout
                 document.getElementById('selectedInfo').style.display = 'none';

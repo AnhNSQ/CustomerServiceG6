@@ -673,7 +673,7 @@
             </div>
 
             <div class="product-price">
-                <div class="price-current" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$290.00</div>
+                <div class="price-current" th:text="${#numbers.formatDecimal(product.price, 1, 0).replaceAll(',', '.')} + ' ₫'">290.000 ₫</div>
             </div>
 
             <div class="product-meta">
@@ -759,7 +759,7 @@
                 <li><strong>Product ID:</strong> <span th:text="${product.productId}">123</span></li>
                 <li><strong>Category:</strong> <span th:text="${product.category.name}">Laptops</span></li>
                 <li><strong>Vendor:</strong> <span th:text="${product.vendor.name}">TechCorp</span></li>
-                <li><strong>Price:</strong> <span th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$290.00</span></li>
+                <li><strong>Price:</strong> <span th:text="${#numbers.formatDecimal(product.price, 1, 0).replaceAll(',', '.')} + ' ₫'">290.000 ₫</span></li>
                 <li><strong>Stock Quantity:</strong> <span th:text="${product.quantity}">10</span> items</li>
                 <li><strong>Status:</strong> <span th:text="${product.status}">ACTIVE</span></li>
             </ul>
@@ -789,7 +789,7 @@
                         </div>
                         <div class="related-rating">★★★★★</div>
                         <div class="related-name" th:text="${relatedProduct.name}">Product Name</div>
-                        <div class="related-price" th:text="'$' + ${#numbers.formatDecimal(relatedProduct.price, 1, 2)}">$290.00</div>
+                        <div class="related-price" th:text="${#numbers.formatDecimal(relatedProduct.price, 1, 0).replaceAll(',', '.')} + ' ₫'">290.000 ₫</div>
                         <button class="related-btn" th:onclick="'addToCartRelated(' + ${relatedProduct.productId} + ')'">ADD TO CART</button>
                     </div>
                 </th:block>

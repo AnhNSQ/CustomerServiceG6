@@ -645,12 +645,12 @@ public class WebController {
         return products.stream().filter(product -> {
             double price = product.getPrice().doubleValue();
             switch (priceRange) {
-                case "0-24":
-                    return price >= 0 && price <= 24.99;
-                case "25-49":
-                    return price >= 25 && price <= 49.99;
-                case "50+":
-                    return price >= 50;
+                case "under-500k":
+                    return price < 500000;
+                case "500k-1m":
+                    return price >= 500000 && price <= 1000000;
+                case "over-1m":
+                    return price > 1000000;
                 default:
                     return true;
             }
