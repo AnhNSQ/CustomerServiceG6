@@ -9,7 +9,7 @@ import CustomerService.dto.TicketResponse;
 import CustomerService.exception.AuthenticationException;
 import CustomerService.exception.UserNotFoundException;
 import CustomerService.service.AuthenticationService;
-import CustomerService.service.ICustomerService;
+import CustomerService.service.CustomerService;
 import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -31,7 +31,7 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class CustomerController {
 
-    private final ICustomerService customerService;
+    private final CustomerService customerService;
     private final AuthenticationService authenticationService;
     private final SessionManager sessionManager;
 

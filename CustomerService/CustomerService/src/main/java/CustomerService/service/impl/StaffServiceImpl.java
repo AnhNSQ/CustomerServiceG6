@@ -9,7 +9,7 @@ import CustomerService.entity.TicketAssign;
 import CustomerService.repository.StaffRepository;
 import CustomerService.repository.TicketRepository;
 import CustomerService.repository.TicketAssignRepository;
-import CustomerService.service.IStaffService;
+import CustomerService.service.StaffService;
 import CustomerService.service.PasswordValidator;
 import CustomerService.service.UserConverter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @Transactional
-public class StaffServiceImpl implements IStaffService {
+public class StaffServiceImpl implements StaffService {
     
     private final StaffRepository staffRepository;
     private final TicketRepository ticketRepository;

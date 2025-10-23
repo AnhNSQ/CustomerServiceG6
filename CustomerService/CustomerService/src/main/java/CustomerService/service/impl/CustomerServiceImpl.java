@@ -13,7 +13,7 @@ import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.RoleRepository;
 import CustomerService.repository.StaffDepartmentRepository;
 import CustomerService.repository.TicketRepository;
-import CustomerService.service.ICustomerService;
+import CustomerService.service.CustomerService;
 import CustomerService.service.OrderValidationService;
 import CustomerService.service.PasswordValidator;
 import CustomerService.service.UserConverter;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @Transactional
-public class CustomerServiceImpl implements ICustomerService {
+public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final RoleRepository roleRepository;

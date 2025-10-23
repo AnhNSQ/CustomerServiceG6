@@ -3,7 +3,7 @@ package CustomerService.controller;
 import CustomerService.dto.*;
 import CustomerService.exception.AuthenticationException;
 import CustomerService.service.AuthenticationService;
-import CustomerService.service.IStaffService;
+import CustomerService.service.StaffService;
 import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -22,7 +22,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class StaffController {
 
-    private final IStaffService staffService;
+    private final StaffService staffService;
     private final SessionManager sessionManager;
     private final AuthenticationService authenticationService;
 

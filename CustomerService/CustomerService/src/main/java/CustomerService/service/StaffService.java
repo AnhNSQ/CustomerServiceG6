@@ -7,7 +7,7 @@ import CustomerService.dto.TicketResponse;
 import java.util.List;
 import java.util.Optional;
 
-public interface IStaffService {
+public interface StaffService {
     
     /**
      * Đăng nhập staff

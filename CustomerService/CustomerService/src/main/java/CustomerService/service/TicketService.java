@@ -8,7 +8,7 @@ import CustomerService.entity.StaffDepartment;
 import java.util.List;
 import java.util.Optional;
 
-public interface ITicketService {
+public interface TicketService {
     
     /**
      * Lấy tất cả ticket (dành cho staff/admin)

@@ -6,8 +6,8 @@ import CustomerService.dto.CartResponse;
 import CustomerService.dto.ApiResponse;
 import CustomerService.entity.Product;
 import CustomerService.entity.Category;
-import CustomerService.service.ICustomerService;
-import CustomerService.service.IStaffService;
+import CustomerService.service.CustomerService;
+import CustomerService.service.StaffService;
 import CustomerService.service.ProductService;
 import CustomerService.service.CategoryService;
 import CustomerService.service.CartService;
@@ -32,8 +32,8 @@ import java.util.List;
 @Slf4j
 public class WebController {
 
-    private final ICustomerService customerService;
-    private final IStaffService staffService;
+    private final CustomerService customerService;
+    private final StaffService staffService;
     private final ProductService productService;
     private final CategoryService categoryService;
     private final CartService cartService;

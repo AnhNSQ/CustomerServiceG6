@@ -9,7 +9,7 @@ import CustomerService.dto.TicketResponse;
 import java.util.Map;
 import java.util.Optional;
 
-public interface ICustomerService {
+public interface CustomerService {
     
     /**
      * Đăng ký tài khoản customer mới
