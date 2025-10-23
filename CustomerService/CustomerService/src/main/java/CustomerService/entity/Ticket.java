@@ -68,7 +68,7 @@ public class Ticket {
 
     // Enum cho Status
     public enum Status {
-        OPEN, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED
+        PENDING, OPEN, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED
     }
 
     // Constructor để tạo ticket mới

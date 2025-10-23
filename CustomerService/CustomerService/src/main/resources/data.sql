@@ -14,6 +14,9 @@ INSERT INTO roles (role_name, description) VALUES (N'FINANCIAL_STAFF', N'Nhân v
 IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'TECHNICAL_SUPPORT')
 INSERT INTO roles (role_name, description) VALUES (N'TECHNICAL_SUPPORT', N'Nhân viên hỗ trợ kỹ thuật');
 
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'LEADER')
+INSERT INTO roles (role_name, description) VALUES (N'LEADER', N'Trưởng phòng');
+
 -- Insert Staff Departments (if not exists)
 IF NOT EXISTS (SELECT 1 FROM staff_departments WHERE name = N'finance')
 INSERT INTO staff_departments (name) VALUES (N'finance');
@@ -112,6 +115,19 @@ INSERT INTO staff (name, email, username, password, phone, is_active, register_d
 SELECT N'Nhân viên Kỹ thuật B', N'tech2@company.com', N'tech2', N'tech123', N'0123456784', 1, GETDATE(), r.role_id, sd.staff_department_id
 FROM roles r, staff_departments sd
 WHERE r.role_name = N'TECHNICAL_SUPPORT' AND sd.name = N'tech';
+
+-- Insert Leaders (if not exists)
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'finance-leader@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
+SELECT N'Trưởng phòng Tài chính', N'finance-leader@company.com', N'finance-leader', N'leader123', N'0123456785', 1, GETDATE(), r.role_id, sd.staff_department_id
+FROM roles r, staff_departments sd
+WHERE r.role_name = N'LEADER' AND sd.name = N'finance';
+
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'tech-leader@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
+SELECT N'Trưởng phòng Kỹ thuật', N'tech-leader@company.com', N'tech-leader', N'leader123', N'0123456786', 1, GETDATE(), r.role_id, sd.staff_department_id
+FROM roles r, staff_departments sd
+WHERE r.role_name = N'LEADER' AND sd.name = N'tech';
 
 -- Insert Products (if not exists)
 IF NOT EXISTS (SELECT 1 FROM products WHERE name = N'Laptop Dell Inspiron 15')

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Ticket Mới - Customer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #dc3545;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(220, 53, 69, 0.2);
+            margin: 2rem auto;
+            max-width: 800px;
+            padding: 2rem;
+            border: 2px solid rgba(220, 53, 69, 0.1);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), #c82333);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(45deg, #c82333, #b02a37);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, var(--secondary-color), #545b62);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #545b62, #495057);
+            color: white;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #dc3545;
+            margin-bottom: 8px;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(220, 53, 69, 0.2);
+        }
+
+        .header-section h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-section p {
+            color: var(--secondary-color);
+            margin-bottom: 0;
+        }
+
+        .form-section {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.05), rgba(200, 35, 51, 0.05));
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(220, 53, 69, 0.1);
+        }
+
+        .form-section h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-section h5 i {
+            margin-right: 10px;
+        }
+
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1), rgba(40, 167, 69, 0.05));
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .form-control {
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            border-radius: 8px;
+        }
+
+        .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .form-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header-section">
+                <h1><i class="fas fa-ticket-alt me-2"></i>Tạo Ticket Mới</h1>
+                <p>Mô tả vấn đề của bạn để chúng tôi có thể hỗ trợ tốt nhất</p>
+            </div>
+
+            <!-- Alert Container -->
+            <div id="alertContainer"></div>
+
+            <!-- Form -->
+            <form id="createTicketForm">
+                <div class="form-section">
+                    <h5><i class="fas fa-edit"></i>Thông tin Ticket</h5>
+                    
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">
+                            <i class="fas fa-heading me-1"></i>Tiêu đề *
+                        </label>
+                        <input type="text" class="form-control" id="subject" name="subject" 
+                               placeholder="Nhập tiêu đề ngắn gọn về vấn đề của bạn" 
+                               maxlength="255" required>
+                        <div class="form-text">Tối đa 255 ký tự</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Mô tả chi tiết *
+                        </label>
+                        <textarea class="form-control" id="description" name="description" 
+                                  rows="6" placeholder="Mô tả chi tiết vấn đề bạn gặp phải, bao gồm các bước để tái tạo lỗi (nếu có)..." 
+                                  maxlength="2000" required></textarea>
+                        <div class="form-text">Tối đa 2000 ký tự</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="department" class="form-label">
+                            <i class="fas fa-building me-1"></i>Phòng ban hỗ trợ *
+                        </label>
+                        <select class="form-control" id="department" name="department" required>
+                            <option value="">-- Chọn phòng ban hỗ trợ --</option>
+                            <option value="1">Phòng ban Kỹ thuật</option>
+                            <option value="2">Phòng ban Tài chính</option>
+                            <option value="3">Phòng ban Admin</option>
+                        </select>
+                        <div class="form-text">Chọn phòng ban phù hợp với vấn đề của bạn</div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-3 justify-content-center">
+                    <button type="button" class="btn btn-secondary" onclick="goBack()">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-paper-plane me-2"></i>Tạo Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form submission
+        document.getElementById('createTicketForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerHTML;
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang tạo...';
+            
+            const formData = {
+                subject: document.getElementById('subject').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                departmentId: parseInt(document.getElementById('department').value)
+            };
+            
+            // Validate
+            if (!formData.subject || !formData.description || !formData.departmentId) {
+                showAlert('Vui lòng điền đầy đủ thông tin và chọn phòng ban', 'danger');
+                resetSubmitBtn(submitBtn, originalText);
+                return;
+            }
+            
+            // Submit
+            fetch('/api/customers/tickets', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify(formData)
+            })
+            .then(async response => {
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showAlert('Tạo ticket thành công!', 'success');
+                    
+                    // Clear form
+                    document.getElementById('createTicketForm').reset();
+                    
+                    // Redirect after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    showAlert(data.message || 'Có lỗi xảy ra khi tạo ticket', 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Có lỗi xảy ra, vui lòng thử lại', 'danger');
+            })
+            .finally(() => {
+                resetSubmitBtn(submitBtn, originalText);
+            });
+        });
+        
+        function resetSubmitBtn(btn, originalText) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHtml;
+        }
+        
+        function goBack() {
+            window.location.href = '/dashboard';
+        }
+        
+        // Character counter
+        document.getElementById('subject').addEventListener('input', function() {
+            const maxLength = 255;
+            const currentLength = this.value.length;
+            const remaining = maxLength - currentLength;
+            
+            if (remaining < 50) {
+                this.style.borderColor = remaining < 10 ? '#dc3545' : '#ffc107';
+            } else {
+                this.style.borderColor = '';
+            }
+        });
+        
+        document.getElementById('description').addEventListener('input', function() {
+            const maxLength = 2000;
+            const currentLength = this.value.length;
+            const remaining = maxLength - currentLength;
+            
+            if (remaining < 200) {
+                this.style.borderColor = remaining < 50 ? '#dc3545' : '#ffc107';
+            } else {
+                this.style.borderColor = '';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -55,12 +55,27 @@ public class SecurityConfig {
                                 "/api/customers/register",
                                 "/api/customers/login",
                                 "/api/customers/check-email",
-                                "/api/customers/check-username"
+                                "/api/customers/check-username",
+                                "/api/customers/tickets/**",
+                                "/api/customers/profile",
+                                "/api/staff/leader/**",
+                                "/api/staff/tickets/assigned/**",
+                                "/api/staff/tickets/assigned/stats"
                         ).permitAll()
 
                         .requestMatchers(
                                 "/api/customers/profile",
                                 "/api/customers/logout"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                "/api/staff/profile",
+                                "/api/staff/logout",
+                                "/api/staff/tickets/all"
+                        ).authenticated()
+
+                        .requestMatchers(
+                                "/leader/**"
                         ).authenticated()
 
                         .anyRequest().permitAll()

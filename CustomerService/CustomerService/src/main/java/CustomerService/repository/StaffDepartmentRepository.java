@@ -12,18 +12,7 @@ import java.util.Optional;
 public interface StaffDepartmentRepository extends JpaRepository<StaffDepartment, Long> {
     
     /**
-     * Tìm department theo tên
+     * Tìm staff department theo tên
      */
     Optional<StaffDepartment> findByName(String name);
-    
-    /**
-     * Kiểm tra department có tồn tại theo tên
-     */
-    boolean existsByName(String name);
-    
-    /**
-     * Tìm department theo ID với staff
-     */
-    @Query("SELECT sd FROM StaffDepartment sd LEFT JOIN FETCH sd.staff WHERE sd.staffDepartmentId = :id")
-    Optional<StaffDepartment> findByIdWithStaff(@Param("id") Long id);
 }
