@@ -1,6 +1,22 @@
 -- Sample data for Customer Service System
 -- Using MSSQL syntax with nvarchar for all text fields
 
+-- Add notes column to orders table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'orders' AND COLUMN_NAME = 'notes')
+ALTER TABLE orders ADD notes nvarchar(MAX);
+
+-- Add recipient_name column to orders table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'orders' AND COLUMN_NAME = 'recipient_name')
+ALTER TABLE orders ADD recipient_name nvarchar(100);
+
+-- Add recipient_phone column to orders table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'orders' AND COLUMN_NAME = 'recipient_phone')
+ALTER TABLE orders ADD recipient_phone nvarchar(20);
+
+-- Add payment_method column to orders table if it doesn't exist
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'orders' AND COLUMN_NAME = 'payment_method')
+ALTER TABLE orders ADD payment_method nvarchar(50);
+
 -- Insert Roles (if not exists) - Updated according to ERD
 IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'CUSTOMER')
 INSERT INTO roles (role_name, description) VALUES (N'CUSTOMER', N'Khách hàng');

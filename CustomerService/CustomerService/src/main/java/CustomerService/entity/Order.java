@@ -52,6 +52,18 @@ public class Order {
     @Column(name = "shipping_address", columnDefinition = "nvarchar(MAX)")
     private String shippingAddress;
 
+    @Column(name = "recipient_name", columnDefinition = "nvarchar(100)")
+    private String recipientName;
+
+    @Column(name = "recipient_phone", columnDefinition = "nvarchar(20)")
+    private String recipientPhone;
+
+    @Column(name = "payment_method", columnDefinition = "nvarchar(50)")
+    private String paymentMethod;
+
+    @Column(name = "notes", columnDefinition = "nvarchar(MAX)")
+    private String notes;
+
     // Quan hệ với OrderDetail
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderDetail> orderDetails;
@@ -75,12 +87,16 @@ public class Order {
     }
 
     // Constructor để tạo order mới
-    public Order(Customer customer, String shippingMethod, BigDecimal costEstimate, String estimatedTime, String shippingAddress) {
+    public Order(Customer customer, String shippingMethod, BigDecimal costEstimate, String estimatedTime, 
+                 String shippingAddress, String recipientName, String recipientPhone, String paymentMethod) {
         this.customer = customer;
         this.shippingMethod = shippingMethod;
         this.costEstimate = costEstimate;
         this.estimatedTime = estimatedTime;
         this.shippingAddress = shippingAddress;
+        this.recipientName = recipientName;
+        this.recipientPhone = recipientPhone;
+        this.paymentMethod = paymentMethod;
         this.totalAmount = BigDecimal.ZERO;
         this.shippingStatus = ShippingStatus.PENDING;
         this.orderStatus = OrderStatus.PENDING;
