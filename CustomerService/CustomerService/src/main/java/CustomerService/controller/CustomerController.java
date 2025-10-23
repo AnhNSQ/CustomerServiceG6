@@ -177,38 +177,6 @@ public class CustomerController {
     }
 
     /**
-     * Lấy thông tin customer hiện tại
-     */
-    @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<CustomerResponse>> getProfile(HttpSession session) {
-        try {
-            if (!sessionManager.isCustomerLoggedIn(session)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Authentication required"));
-            }
-            
-            Long customerId = sessionManager.getCustomerId(session);
-            
-            log.info("Lấy thông tin profile của customer {}", customerId);
-            
-            CustomerResponse customer = customerService.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
-            
-            return ResponseEntity.ok()
-                .body(ApiResponse.success(customer));
-                
-        } catch (RuntimeException e) {
-            log.error("Lỗi lấy profile: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("Lỗi không mong muốn khi lấy profile: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
-        }
-    }
-
-    /**
      * Tạo ticket mới
      */
     @PostMapping("/tickets")
