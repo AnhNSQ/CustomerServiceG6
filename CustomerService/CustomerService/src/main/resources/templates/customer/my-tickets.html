@@ -325,9 +325,9 @@
                             displayTickets(data.data);
                             updateTotalTickets(data.data.length);
                         } else {
-                            // Khi không search, data.data là object có tickets và totalTickets
+                            // Khi không search, data.data là object có tickets và total
                             displayTickets(data.data.tickets);
-                            updateTotalTickets(data.data.totalTickets);
+                            updateTotalTickets(data.data.total);
                             updatePagination(data.data);
                         }
                     } else {
@@ -448,7 +448,11 @@
 
         function updatePagination(paginationData) {
             const pagination = document.getElementById('pagination');
-            const { currentPage, totalPages, totalTickets } = paginationData;
+            const { page, total } = paginationData;
+            
+            // Calculate total pages
+            const totalPages = Math.ceil(total / pageSize);
+            const currentPage = page;
             
             if (totalPages <= 1) {
                 pagination.innerHTML = '';

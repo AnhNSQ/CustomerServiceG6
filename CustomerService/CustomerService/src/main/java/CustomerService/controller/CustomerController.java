@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.Optional;
 
 @RestController
@@ -176,6 +177,38 @@ public class CustomerController {
     }
 
     /**
+     * Lấy thông tin customer hiện tại
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<ApiResponse<CustomerResponse>> getProfile(HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Lấy thông tin profile của customer {}", customerId);
+            
+            CustomerResponse customer = customerService.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(customer));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy profile: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy profile: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
      * Tạo ticket mới
      */
     @PostMapping("/tickets")
@@ -239,6 +272,40 @@ public class CustomerController {
                 
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy danh sách ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Tìm kiếm ticket của customer theo tiêu đề
+     */
+    @GetMapping("/tickets/search")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> searchTickets(
+            @RequestParam String query,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Tìm kiếm ticket của customer {} với query: {}", customerId, query);
+            
+            List<TicketResponse> tickets = customerService.getTicketsByCustomerId(customerId);
+            
+            // Filter tickets by subject containing query (case insensitive)
+            List<TicketResponse> filteredTickets = tickets.stream()
+                .filter(ticket -> ticket.getSubject().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(filteredTickets));
+                
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi tìm kiếm ticket: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

@@ -106,7 +106,8 @@ public class WebController {
             CustomerResponse customer = customerService.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
             
-            log.info("Customer found: {}", customer.getEmail());
+            log.info("Customer found: email={}, name={}, username={}", 
+                customer.getEmail(), customer.getName(), customer.getUsername());
             
             // Thêm thông tin vào model
             model.addAttribute("customer", customer);

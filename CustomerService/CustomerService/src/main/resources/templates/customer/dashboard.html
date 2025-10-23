@@ -296,14 +296,14 @@
                         </div>
                         <div>
                             <h1 class="header-title">Dashboard Khách hàng</h1>
-                            <p class="header-subtitle">Chào mừng, <span th:text="${customer.name}">Nguyễn Văn A</span>!</p>
+                            <p class="header-subtitle">Chào mừng, <span th:text="${customer.name ?: customer.username}">Nguyễn Văn A</span>!</p>
                         </div>
                     </div>
                 </div>
                 <div class="header-right">
                     <div class="user-info">
-                        <div class="user-avatar" th:text="${#strings.substring(customer.name, 0, 1)}">N</div>
-                        <span class="user-name" th:text="${customer.name}">Nguyễn Văn A</span>
+                        <div class="user-avatar" th:text="${#strings.substring(customer.name ?: customer.username, 0, 1)}">N</div>
+                        <span class="user-name" th:text="${customer.name ?: customer.username}">Nguyễn Văn A</span>
                     </div>
                     <button onclick="logout()" class="logout-btn">
                         <i class="fas fa-sign-out-alt"></i>
@@ -380,7 +380,7 @@
                     
                     <div class="account-info-item">
                         <div class="info-label">Họ và tên</div>
-                        <div class="info-value" th:text="${customer.name}">Nguyễn Văn A</div>
+                        <div class="info-value" th:text="${customer.name ?: customer.username}">Nguyễn Văn A</div>
                     </div>
                     
                     <div class="account-info-item">
