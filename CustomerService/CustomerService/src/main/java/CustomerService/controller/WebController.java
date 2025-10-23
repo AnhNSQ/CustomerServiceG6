@@ -2,6 +2,7 @@ package CustomerService.controller;
 
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
+import CustomerService.dto.CartResponse;
 import CustomerService.entity.Product;
 import CustomerService.entity.Category;
 import CustomerService.service.CustomerService;
@@ -458,8 +459,17 @@ public class WebController {
             CustomerResponse customer = customerService.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
             
+            // Lấy thông tin giỏ hàng
+            CartResponse cart = cartService.getCart(customerId);
+            
             model.addAttribute("customer", customer);
             model.addAttribute("customerName", customer.getName());
+            model.addAttribute("cart", cart);
+            model.addAttribute("cartItems", cart.getCartItems());
+            model.addAttribute("totalItems", cart.getTotalItems());
+            model.addAttribute("totalAmount", cart.getTotalAmount());
+            model.addAttribute("shippingCost", cart.getShippingCost());
+            model.addAttribute("grandTotal", cart.getGrandTotal());
             
             return "cart";
             
