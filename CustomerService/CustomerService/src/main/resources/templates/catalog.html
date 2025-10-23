@@ -618,9 +618,9 @@
             <h4>Giá</h4>
             <ul class="filter-options">
                 <li><a href="?" th:class="${currentPriceRange == '' or currentPriceRange == null} ? 'active' : ''">Tất cả</a></li>
-                <li><a href="?priceRange=0-24" th:class="${currentPriceRange == '0-24'} ? 'active' : ''">$0 - $24.99</a></li>
-                <li><a href="?priceRange=25-49" th:class="${currentPriceRange == '25-49'} ? 'active' : ''">$25 - $49.99</a></li>
-                <li><a href="?priceRange=50+" th:class="${currentPriceRange == '50+'} ? 'active' : ''">$50+</a></li>
+                <li><a href="?priceRange=under-500k" th:class="${currentPriceRange == 'under-500k'} ? 'active' : ''">Dưới 500.000 ₫</a></li>
+                <li><a href="?priceRange=500k-1m" th:class="${currentPriceRange == '500k-1m'} ? 'active' : ''">500.000 ₫ - 1.000.000 ₫</a></li>
+                <li><a href="?priceRange=over-1m" th:class="${currentPriceRange == 'over-1m'} ? 'active' : ''">Trên 1.000.000 ₫</a></li>
             </ul>
         </div>
 
@@ -639,7 +639,7 @@
                         </div>
                         <div class="new-release-info">
                             <h5 th:text="${newProduct.name}">Product Name</h5>
-                            <div class="price" th:text="'$' + ${#numbers.formatDecimal(newProduct.price, 1, 2)}">$290.00</div>
+                            <div class="price" th:text="${#numbers.formatDecimal(newProduct.price, 1, 0).replaceAll(',', '.')} + ' ₫'">290.000 ₫</div>
                         </div>
                     </div>
                 </th:block>
@@ -715,7 +715,7 @@
                         </div>
                         <div class="product-info">
                             <div class="product-name" th:text="${product.name}">Product Name</div>
-                            <div class="product-price" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$290.00</div>
+                            <div class="product-price" th:text="${#numbers.formatDecimal(product.price, 1, 0).replaceAll(',', '.')} + ' ₫'">290.000 ₫</div>
                             <div class="product-meta">
                                 <div th:text="'Danh mục: ' + ${product.category.name}">Category</div>
                                 <div th:text="'Nhà cung cấp: ' + ${product.vendor.name}">Vendor</div>

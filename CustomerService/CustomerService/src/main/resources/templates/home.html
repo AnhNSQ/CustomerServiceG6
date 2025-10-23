@@ -960,7 +960,7 @@
                                     <a th:href="@{'/product/' + ${product.productId}}" th:text="${product.name}">PRODUCT NAME</a>
                                 </div>
                                 <div class="product-description" th:text="${product.description}">Product description</div>
-                                <div class="product-price" th:text="${#numbers.formatDecimal(product.price, 1, 2)} + '₫'">0₫</div>
+                                <div class="product-price" th:text="${#numbers.formatDecimal(product.price, 1, 0).replaceAll(',', '.')} + ' ₫'">0₫</div>
                                 <div class="product-actions">
                                     <a th:href="@{'/product/' + ${product.productId}}" class="btn-view">XEM CHI TIẾT</a>
                                     <button class="btn-add-cart" th:onclick="'addToCart(' + ${product.productId} + ')'">THÊM VÀO GIỎ</button>
