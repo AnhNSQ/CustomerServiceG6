@@ -876,7 +876,7 @@
             <div class="summary-actions">
                 <button type="button" class="btn btn-primary" id="checkoutBtn" disabled>
                     <i class="fas fa-credit-card"></i>
-                    Thanh toán
+                    Xác nhận mua hàng
                 </button>
                 <a href="/catalog" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i>
@@ -1325,11 +1325,10 @@
                     return;
                 }
 
-                // For now, just show a message. In a real application, this would redirect to checkout
-                const selectedItems = this.cartItems.filter(item => this.selectedItems.has(item.cartItemId));
-                const total = selectedItems.reduce((sum, item) => sum + item.subTotal, 0) + this.shippingFee;
-                
-                this.showSuccess(`Tiến hành thanh toán ${this.selectedItems.size} sản phẩm. Tổng cộng: $${total.toFixed(2)}`);
+                // Redirect to checkout page with selected items
+                const selectedItems = Array.from(this.selectedItems);
+                const checkoutUrl = `/checkout?items=${selectedItems.join(',')}`;
+                window.location.href = checkoutUrl;
             }
 
             showEmptyCart() {
