@@ -1,18 +1,18 @@
 -- Sample data for Customer Service System
 -- Using MSSQL syntax with nvarchar for all text fields
 
--- Insert Roles (if not exists)
+-- Insert Roles (if not exists) - Updated according to ERD
 IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'CUSTOMER')
 INSERT INTO roles (role_name, description) VALUES (N'CUSTOMER', N'Khách hàng');
 
 IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'ADMIN')
 INSERT INTO roles (role_name, description) VALUES (N'ADMIN', N'Quản trị viên');
 
-IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'FINANCIAL_STAFF')
-INSERT INTO roles (role_name, description) VALUES (N'FINANCIAL_STAFF', N'Nhân viên tài chính');
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'LEAD')
+INSERT INTO roles (role_name, description) VALUES (N'LEAD', N'Trưởng nhóm');
 
-IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'TECHNICAL_SUPPORT')
-INSERT INTO roles (role_name, description) VALUES (N'TECHNICAL_SUPPORT', N'Nhân viên hỗ trợ kỹ thuật');
+IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'STAFF')
+INSERT INTO roles (role_name, description) VALUES (N'STAFF', N'Nhân viên');
 
 IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'LEADER')
 INSERT INTO roles (role_name, description) VALUES (N'LEADER', N'Trưởng phòng');
@@ -67,54 +67,66 @@ INSERT INTO shifts (name, start_time, end_time) VALUES (N'Ca đêm', '00:00:00',
 -- Insert Customers (if not exists)
 IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'an.nguyen@email.com')
 INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
-SELECT N'Nguyễn Văn An', N'an.nguyen@email.com', N'nguyenvanan', N'password123', N'0123456789', 1, GETDATE(), role_id
+SELECT N'Nguyễn Văn An', N'an.nguyen@email.com', N'nguyenvanan', N'$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', N'0123456789', 1, GETDATE(), role_id
 FROM roles WHERE role_name = N'CUSTOMER';
 
 IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'binh.tran@email.com')
 INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
-SELECT N'Trần Thị Bình', N'binh.tran@email.com', N'tranthibinh', N'password123', N'0987654321', 1, GETDATE(), role_id
+SELECT N'Trần Thị Bình', N'binh.tran@email.com', N'tranthibinh', N'$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', N'0987654321', 1, GETDATE(), role_id
 FROM roles WHERE role_name = N'CUSTOMER';
 
 IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'cuong.le@email.com')
 INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
-SELECT N'Lê Văn Cường', N'cuong.le@email.com', N'levancuong', N'password123', N'0369258147', 1, GETDATE(), role_id
+SELECT N'Lê Văn Cường', N'cuong.le@email.com', N'levancuong', N'$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', N'0369258147', 1, GETDATE(), role_id
 FROM roles WHERE role_name = N'CUSTOMER';
 
 IF NOT EXISTS (SELECT 1 FROM customers WHERE email = N'dung.pham@email.com')
 INSERT INTO customers (name, email, username, password, phone, is_active, register_date, role_id)
-SELECT N'Phạm Thị Dung', N'dung.pham@email.com', N'phamthidung', N'password123', N'0147258369', 1, GETDATE(), role_id
+SELECT N'Phạm Thị Dung', N'dung.pham@email.com', N'phamthidung', N'$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', N'0147258369', 1, GETDATE(), role_id
 FROM roles WHERE role_name = N'CUSTOMER';
 
--- Insert Staff (if not exists)
+-- Insert Staff (if not exists) - Updated according to ERD
 IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'admin@company.com')
 INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
-SELECT N'Admin Nguyễn', N'admin@company.com', N'admin', N'admin123', N'0123456780', 1, GETDATE(), r.role_id, sd.staff_department_id
+SELECT N'Admin Nguyễn', N'admin@company.com', N'admin', N'$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'0123456780', 1, GETDATE(), r.role_id, sd.staff_department_id
 FROM roles r, staff_departments sd
 WHERE r.role_name = N'ADMIN' AND sd.name = N'finance';
 
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'lead1@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
+SELECT N'Lead Tài chính', N'lead1@company.com', N'lead1', N'$2a$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', N'0123456781', 1, GETDATE(), r.role_id, sd.staff_department_id
+FROM roles r, staff_departments sd
+WHERE r.role_name = N'LEAD' AND sd.name = N'finance';
+
+IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'lead2@company.com')
+INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
+SELECT N'Lead Kỹ thuật', N'lead2@company.com', N'lead2', N'$2a$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', N'0123456782', 1, GETDATE(), r.role_id, sd.staff_department_id
+FROM roles r, staff_departments sd
+WHERE r.role_name = N'LEAD' AND sd.name = N'tech';
+
 IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'finance1@company.com')
 INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
-SELECT N'Nhân viên Tài chính A', N'finance1@company.com', N'finance1', N'finance123', N'0123456781', 1, GETDATE(), r.role_id, sd.staff_department_id
+SELECT N'Nhân viên Tài chính A', N'finance1@company.com', N'finance1', N'$2a$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', N'0123456783', 1, GETDATE(), r.role_id, sd.staff_department_id
 FROM roles r, staff_departments sd
-WHERE r.role_name = N'FINANCIAL_STAFF' AND sd.name = N'finance';
+WHERE r.role_name = N'STAFF' AND sd.name = N'finance';
 
 IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'finance2@company.com')
 INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
-SELECT N'Nhân viên Tài chính B', N'finance2@company.com', N'finance2', N'finance123', N'0123456782', 1, GETDATE(), r.role_id, sd.staff_department_id
+SELECT N'Nhân viên Tài chính B', N'finance2@company.com', N'finance2', N'$2a$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', N'0123456784', 1, GETDATE(), r.role_id, sd.staff_department_id
 FROM roles r, staff_departments sd
-WHERE r.role_name = N'FINANCIAL_STAFF' AND sd.name = N'finance';
+WHERE r.role_name = N'STAFF' AND sd.name = N'finance';
 
 IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'tech1@company.com')
 INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
-SELECT N'Nhân viên Kỹ thuật A', N'tech1@company.com', N'tech1', N'tech123', N'0123456783', 1, GETDATE(), r.role_id, sd.staff_department_id
+SELECT N'Nhân viên Kỹ thuật A', N'tech1@company.com', N'tech1', N'$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'0123456785', 1, GETDATE(), r.role_id, sd.staff_department_id
 FROM roles r, staff_departments sd
-WHERE r.role_name = N'TECHNICAL_SUPPORT' AND sd.name = N'tech';
+WHERE r.role_name = N'STAFF' AND sd.name = N'tech';
 
 IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'tech2@company.com')
 INSERT INTO staff (name, email, username, password, phone, is_active, register_date, role_id, staff_department_id)
-SELECT N'Nhân viên Kỹ thuật B', N'tech2@company.com', N'tech2', N'tech123', N'0123456784', 1, GETDATE(), r.role_id, sd.staff_department_id
+SELECT N'Nhân viên Kỹ thuật B', N'tech2@company.com', N'tech2', N'$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', N'0123456786', 1, GETDATE(), r.role_id, sd.staff_department_id
 FROM roles r, staff_departments sd
-WHERE r.role_name = N'TECHNICAL_SUPPORT' AND sd.name = N'tech';
+WHERE r.role_name = N'STAFF' AND sd.name = N'tech';
 
 -- Insert Leaders (if not exists)
 IF NOT EXISTS (SELECT 1 FROM staff WHERE email = N'finance-leader@company.com')
@@ -255,7 +267,7 @@ SELECT c.customer_id, o.order_id, sd.staff_department_id, N'Lỗi sản phẩm',
 FROM customers c, orders o, staff_departments sd
 WHERE c.email = N'cuong.le@email.com' AND o.customer_id = c.customer_id AND sd.name = N'tech';
 
--- Insert Ticket Assignments (if not exists)
+-- Insert Ticket Assignments (if not exists) - Updated according to ERD
 IF NOT EXISTS (SELECT 1 FROM ticket_assign WHERE ticket_id = (SELECT ticket_id FROM tickets WHERE customer_id = (SELECT customer_id FROM customers WHERE email = N'an.nguyen@email.com')))
 INSERT INTO ticket_assign (ticket_id, assigned_to, assigned_by, assigned_at, role_needed)
 SELECT t.ticket_id, s1.staff_id, s2.staff_id, GETDATE(), N'TECHNICAL_SUPPORT'
@@ -281,7 +293,13 @@ SELECT t.ticket_id, c.customer_id, 5, N'Dịch vụ hỗ trợ rất tốt, nhâ
 FROM tickets t, customers c
 WHERE c.email = N'cuong.le@email.com' AND t.customer_id = c.customer_id;
 
--- Insert Staff Shift Assignments (if not exists)
+-- Insert Staff Shift Assignments (if not exists) - Updated according to ERD
+IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'lead1@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca sáng') AND date = CAST(GETDATE() AS DATE))
+INSERT INTO staff_shift_assign (staff_id, shift_id, date)
+SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
+FROM staff s, shifts sh
+WHERE s.email = N'lead1@company.com' AND sh.name = N'Ca sáng';
+
 IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'finance1@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca sáng') AND date = CAST(GETDATE() AS DATE))
 INSERT INTO staff_shift_assign (staff_id, shift_id, date)
 SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
@@ -293,6 +311,12 @@ INSERT INTO staff_shift_assign (staff_id, shift_id, date)
 SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
 FROM staff s, shifts sh
 WHERE s.email = N'finance2@company.com' AND sh.name = N'Ca sáng';
+
+IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'lead2@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca chiều') AND date = CAST(GETDATE() AS DATE))
+INSERT INTO staff_shift_assign (staff_id, shift_id, date)
+SELECT s.staff_id, sh.shift_id, CAST(GETDATE() AS DATE)
+FROM staff s, shifts sh
+WHERE s.email = N'lead2@company.com' AND sh.name = N'Ca chiều';
 
 IF NOT EXISTS (SELECT 1 FROM staff_shift_assign WHERE staff_id = (SELECT staff_id FROM staff WHERE email = N'tech1@company.com') AND shift_id = (SELECT shift_id FROM shifts WHERE name = N'Ca chiều') AND date = CAST(GETDATE() AS DATE))
 INSERT INTO staff_shift_assign (staff_id, shift_id, date)

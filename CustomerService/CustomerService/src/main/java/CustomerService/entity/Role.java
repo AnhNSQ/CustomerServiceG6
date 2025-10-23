@@ -18,8 +18,9 @@ public class Role {
     @Column(name = "role_id")
     private Long roleId;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role_name", nullable = false, unique = true, columnDefinition = "nvarchar(50)")
-    private String roleName;
+    private RoleName roleName;
 
     @Column(name = "description", columnDefinition = "nvarchar(255)")
     private String description;
@@ -32,7 +33,12 @@ public class Role {
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Staff> staff;
 
-    public Role(String roleName, String description) {
+    // Enum cho RoleName theo ERD
+    public enum RoleName {
+        CUSTOMER, ADMIN, LEAD, STAFF
+    }
+
+    public Role(RoleName roleName, String description) {
         this.roleName = roleName;
         this.description = description;
     }

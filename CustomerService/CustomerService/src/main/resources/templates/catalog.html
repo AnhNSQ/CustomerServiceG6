@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog - TechSave</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: #fafafa;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #d32f2f;
+            padding: 10px 0;
+        }
+
+        .top-bar-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .top-nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 30px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .top-nav a:hover {
+            text-decoration: underline;
+        }
+
+        .top-actions a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 14px;
+        }
+
+        /* Header */
+        header {
+            padding: 30px 0;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #d32f2f;
+            letter-spacing: 2px;
+        }
+
+        .search-box {
+            display: flex;
+            width: 500px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .search-box button {
+            padding: 12px 25px;
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-left: none;
+            cursor: pointer;
+        }
+
+        .phone-info {
+            text-align: right;
+        }
+
+        .phone-info p {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .phone-info a {
+            font-size: 18px;
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Navigation */
+        nav {
+            background: white;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        nav a {
+            padding: 20px 25px;
+            text-decoration: none;
+            color: #666;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        nav a:hover {
+            color: #d32f2f;
+        }
+
+        /* Breadcrumb */
+        .breadcrumb {
+            background: white;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .breadcrumb-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .breadcrumb a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: #d32f2f;
+        }
+
+        .breadcrumb span {
+            color: #999;
+            margin: 0 10px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 40px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .sidebar h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d32f2f;
+        }
+
+        .filter-section {
+            margin-bottom: 30px;
+        }
+
+        .filter-section h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .filter-options {
+            list-style: none;
+        }
+
+        .filter-options li {
+            margin-bottom: 8px;
+        }
+
+        .filter-options a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        .filter-options a:hover {
+            color: #d32f2f;
+        }
+
+        .filter-options a.active {
+            color: #d32f2f;
+            font-weight: 600;
+        }
+
+        .price-range {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .price-range input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .price-range button {
+            padding: 8px 15px;
+            background: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .price-range button:hover {
+            background: #b71c1c;
+        }
+
+        /* New Releases */
+        .new-release-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .new-release-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .new-release-image {
+            width: 60px;
+            height: 60px;
+            background: #f8f8f8;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .new-release-info h5 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            line-height: 1.3;
+        }
+
+        .new-release-info .price {
+            font-size: 14px;
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        /* Catalog Content */
+        .catalog-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Catalog Header */
+        .catalog-header {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .catalog-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .catalog-controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .sort-controls label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .sort-controls select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .view-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .view-btn {
+            width: 35px;
+            height: 35px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .view-btn.active {
+            background: #d32f2f;
+            color: white;
+            border-color: #d32f2f;
+        }
+
+        .view-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .view-btn.active:hover {
+            background: #b71c1c;
+        }
+
+        /* Products Grid */
+        .products-grid {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .product-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .product-image {
+            height: 200px;
+            background: #f8f8f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .product-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .product-image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .product-info {
+            padding: 20px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .product-price {
+            font-size: 18px;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .product-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .product-meta div {
+            margin-bottom: 5px;
+        }
+
+        .add-to-cart {
+            width: 100%;
+            background: white;
+            color: #d32f2f;
+            border: 2px solid #d32f2f;
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .add-to-cart:hover {
+            background: #d32f2f;
+            color: white;
+        }
+
+        /* Pagination */
+        .pagination {
+            padding: 30px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pagination a {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            color: #666;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .pagination a:hover {
+            background: #d32f2f;
+            color: white;
+            border-color: #d32f2f;
+        }
+
+        .pagination a.active {
+            background: #d32f2f;
+            color: white;
+            border-color: #d32f2f;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .catalog-header {
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
+            
+            .catalog-controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Top Bar -->
+<div class="top-bar">
+    <div class="top-bar-content">
+        <div class="top-nav">
+            <a href="/">HOME</a>
+            <a href="/home">TRANG CHỦ</a>
+            <a href="/login">ĐĂNG NHẬP</a>
+            <a href="/register">ĐĂNG KÝ</a>
+            <a href="#contact">LIÊN HỆ</a>
+        </div>
+        <div class="top-actions">
+            <a href="/dashboard">👤 TÀI KHOẢN</a>
+            <a href="/login">👤 ĐĂNG NHẬP</a>
+            <a href="#cart">GIỎ HÀNG 🛒</a>
+        </div>
+    </div>
+</div>
+
+<!-- Header -->
+<header>
+    <div class="header-content">
+        <div class="logo"><a href="/" style="text-decoration: none; color: inherit;">TECHSAVE</a></div>
+        <div class="search-box">
+            <input type="text" placeholder="Search">
+            <button>🔍</button>
+        </div>
+        <div class="phone-info">
+            <p>QUESTIONS? CALL US</p>
+            <a href="tel:555.555.5555">📞 555.555.5555</a>
+        </div>
+    </div>
+</header>
+
+<!-- Navigation -->
+<nav>
+    <div class="nav-content">
+        <a href="/catalog">TẤT CẢ</a>
+        <th:block th:each="category : ${categories}">
+            <a th:href="@{'/category/' + ${category.categoryId}}" th:text="${category.name}">CATEGORY</a>
+        </th:block>
+    </div>
+</nav>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <div class="breadcrumb-content">
+        <a href="/">Trang chủ</a>
+        <span>></span>
+        <th:block th:if="${currentCategory != null}">
+            <a th:href="@{'/category/' + ${currentCategory.categoryId}}" th:text="${currentCategory.name}">Category</a>
+            <span>></span>
+        </th:block>
+        <span>Danh mục sản phẩm</span>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h3>BỘ LỌC</h3>
+        
+        <!-- Categories Filter -->
+        <div class="filter-section">
+            <h4>Danh mục</h4>
+            <ul class="filter-options">
+                <li><a href="/catalog" th:class="${currentCategory == null} ? 'active' : ''">Tất cả</a></li>
+                <th:block th:each="category : ${categories}">
+                    <li>
+                        <a th:href="@{'/category/' + ${category.categoryId}}" 
+                           th:text="${category.name}"
+                           th:class="${currentCategory != null and currentCategory.categoryId == category.categoryId} ? 'active' : ''">Category</a>
+                    </li>
+                </th:block>
+            </ul>
+        </div>
+
+        <!-- Price Filter -->
+        <div class="filter-section">
+            <h4>Giá</h4>
+            <ul class="filter-options">
+                <li><a href="?" th:class="${currentPriceRange == '' or currentPriceRange == null} ? 'active' : ''">Tất cả</a></li>
+                <li><a href="?priceRange=0-24" th:class="${currentPriceRange == '0-24'} ? 'active' : ''">$0 - $24.99</a></li>
+                <li><a href="?priceRange=25-49" th:class="${currentPriceRange == '25-49'} ? 'active' : ''">$25 - $49.99</a></li>
+                <li><a href="?priceRange=50+" th:class="${currentPriceRange == '50+'} ? 'active' : ''">$50+</a></li>
+            </ul>
+        </div>
+
+        <!-- New Releases -->
+        <div class="filter-section">
+            <h3>SẢN PHẨM MỚI</h3>
+            <th:block th:if="${newReleases != null and !newReleases.isEmpty()}">
+                <th:block th:each="newProduct : ${newReleases}">
+                    <div class="new-release-item">
+                        <div class="new-release-image">
+                            <svg width="40" height="40" viewBox="0 0 40 40">
+                                <rect x="5" y="8" width="30" height="24" fill="#555" rx="3" />
+                                <rect x="8" y="12" width="24" height="16" fill="#88c" />
+                                <text x="20" y="22" fill="white" font-size="8" text-anchor="middle">NEW</text>
+                            </svg>
+                        </div>
+                        <div class="new-release-info">
+                            <h5 th:text="${newProduct.name}">Product Name</h5>
+                            <div class="price" th:text="'$' + ${#numbers.formatDecimal(newProduct.price, 1, 2)}">$290.00</div>
+                        </div>
+                    </div>
+                </th:block>
+            </th:block>
+            
+            <th:block th:if="${newReleases == null or newReleases.isEmpty()}">
+                <p style="color: #999; font-size: 14px;">Chưa có sản phẩm mới</p>
+            </th:block>
+        </div>
+    </aside>
+
+    <!-- Catalog Content -->
+    <main class="catalog-content">
+        <!-- Catalog Header -->
+        <div class="catalog-header">
+            <div class="catalog-title">
+                <th:block th:if="${currentCategory != null}">
+                    <span th:text="${currentCategory.name}">Category</span>
+                </th:block>
+                <th:block th:if="${currentCategory == null}">
+                    Tất cả sản phẩm
+                </th:block>
+                <span style="color: #666; font-weight: normal; margin-left: 10px;">
+                    (<span th:text="${totalProducts}">0</span> sản phẩm)
+                </span>
+            </div>
+            
+            <div class="catalog-controls">
+                <div class="sort-controls">
+                    <label for="sort">Sắp xếp:</label>
+                    <select id="sort" onchange="applySorting()">
+                        <option value="default" th:selected="${currentSort == 'default'}">Mặc định</option>
+                        <option value="price-low" th:selected="${currentSort == 'price-low'}">Giá thấp đến cao</option>
+                        <option value="price-high" th:selected="${currentSort == 'price-high'}">Giá cao đến thấp</option>
+                        <option value="name" th:selected="${currentSort == 'name'}">Tên A-Z</option>
+                        <option value="newest" th:selected="${currentSort == 'newest'}">Mới nhất</option>
+                    </select>
+                </div>
+                
+                <div class="view-controls">
+                    <button class="view-btn active" onclick="setView('grid')" title="Grid View">
+                        ⊞
+                    </button>
+                    <button class="view-btn" onclick="setView('list')" title="List View">
+                        ☰
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="productsGrid">
+            <th:block th:if="${products != null and !products.isEmpty()}">
+                <th:block th:each="product : ${products}">
+                    <div class="product-card" th:onclick="'viewProduct(' + ${product.productId} + ')'">
+                        <div class="product-image">
+                            <div class="product-image-placeholder">
+                                <svg width="120" height="120" viewBox="0 0 120 120">
+                                    <defs>
+                                        <linearGradient id="productGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#4a4a4a;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#2a2a2a;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    <rect x="20" y="20" width="80" height="60" fill="url(#productGrad)" rx="5" />
+                                    <rect x="30" y="30" width="60" height="40" fill="#111" />
+                                    <text x="60" y="50" fill="white" font-size="8" text-anchor="middle" th:text="${product.category.name}">CATEGORY</text>
+                                    <text x="60" y="60" fill="white" font-size="6" text-anchor="middle">PRODUCT</text>
+                                    <rect x="35" y="70" width="10" height="10" fill="#333" />
+                                    <circle cx="80" cy="75" r="5" fill="#666" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name" th:text="${product.name}">Product Name</div>
+                            <div class="product-price" th:text="'$' + ${#numbers.formatDecimal(product.price, 1, 2)}">$290.00</div>
+                            <div class="product-meta">
+                                <div th:text="'Danh mục: ' + ${product.category.name}">Category</div>
+                                <div th:text="'Nhà cung cấp: ' + ${product.vendor.name}">Vendor</div>
+                                <div th:text="'Tồn kho: ' + ${product.quantity} + ' sản phẩm'">Stock</div>
+                            </div>
+                            <button class="add-to-cart" th:onclick="'addToCart(' + ${product.productId} + '); event.stopPropagation();'">
+                                THÊM VÀO GIỎ
+                            </button>
+                        </div>
+                    </div>
+                </th:block>
+            </th:block>
+            
+            <!-- Fallback nếu không có sản phẩm -->
+            <th:block th:if="${products == null or products.isEmpty()}">
+                <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                    <h3 style="color: #666; margin-bottom: 20px;">Không có sản phẩm nào</h3>
+                    <p style="color: #999;">Không tìm thấy sản phẩm phù hợp với bộ lọc hiện tại.</p>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+            <a href="#" class="active">1</a>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#">4</a>
+            <a href="#">5</a>
+        </div>
+    </main>
+</div>
+
+<script>
+    // View product details
+    function viewProduct(productId) {
+        window.location.href = '/product/' + productId;
+    }
+
+    // Add to cart functionality
+    function addToCart(productId) {
+        // TODO: Implement actual cart functionality
+        alert('Sản phẩm ID: ' + productId + ' đã được thêm vào giỏ hàng!');
+        console.log('Adding to cart:', productId);
+    }
+
+    // Apply sorting
+    function applySorting() {
+        const sortValue = document.getElementById('sort').value;
+        const currentUrl = new URL(window.location);
+        
+        if (sortValue === 'default') {
+            currentUrl.searchParams.delete('sort');
+        } else {
+            currentUrl.searchParams.set('sort', sortValue);
+        }
+        
+        window.location.href = currentUrl.toString();
+    }
+
+    // Set view mode
+    function setView(viewMode) {
+        const viewButtons = document.querySelectorAll('.view-btn');
+        viewButtons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // TODO: Implement view mode switching
+        console.log('Switching to', viewMode, 'view');
+    }
+
+    // Search functionality
+    function searchProducts() {
+        const searchTerm = document.querySelector('.search-box input').value;
+        if (searchTerm.trim()) {
+            // TODO: Implement search functionality
+            alert('Tìm kiếm: ' + searchTerm);
+            console.log('Searching for:', searchTerm);
+        }
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchButton = document.querySelector('.search-box button');
+        if (searchButton) {
+            searchButton.addEventListener('click', searchProducts);
+        }
+
+        const searchInput = document.querySelector('.search-box input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchProducts();
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ package CustomerService.service.impl;
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
 import CustomerService.entity.Customer;
+import CustomerService.entity.Role;
 import CustomerService.entity.Staff;
 import CustomerService.service.UserConverter;
 import lombok.extern.slf4j.Slf4j;
@@ -49,18 +50,12 @@ public class UserConverterImpl implements UserConverter {
         );
     }
     
-    private Set<String> extractRoleNames(Object role) {
-        if (role != null) {
-            try {
-                // Sử dụng reflection để lấy roleName
-                String roleName = (String) role.getClass().getMethod("getRoleName").invoke(role);
-                return Set.of(roleName);
-            } catch (Exception e) {
-                log.warn("Error extracting role name: ", e);
-            }
+    private Set<String> extractRoleNames(Role role) {
+        if (role != null && role.getRoleName() != null) {
+            return Set.of(role.getRoleName().name());
         }
         
-        log.warn("Role is null or cannot extract role name");
+        log.warn("Role is null or roleName is null");
         return Set.of("UNKNOWN");
     }
 }
