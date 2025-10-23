@@ -2,10 +2,9 @@ package CustomerService.controller;
 
 import CustomerService.dto.ApiResponse;
 import CustomerService.dto.CustomerTicketCreateRequest;
-import CustomerService.dto.TicketCreateRequest;
 import CustomerService.dto.TicketResponse;
+import CustomerService.service.ITicketService;
 import CustomerService.service.SessionManager;
-import CustomerService.service.TicketService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class TicketController {
     
-    private final TicketService ticketService;
+    private final ITicketService ticketService;
     private final SessionManager sessionManager;
     
     /**

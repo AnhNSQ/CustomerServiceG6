@@ -1,6 +1,6 @@
 package CustomerService.service.impl;
 
-import CustomerService.dto.TicketCreateRequest;
+import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
 import CustomerService.entity.Customer;
@@ -9,8 +9,8 @@ import CustomerService.entity.Ticket;
 import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.StaffDepartmentRepository;
 import CustomerService.repository.TicketRepository;
+import CustomerService.service.ITicketService;
 import CustomerService.service.OrderValidationService;
-import CustomerService.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class TicketServiceImpl implements TicketService {
+public class TicketServiceImpl implements ITicketService {
     
     private final TicketRepository ticketRepository;
     private final CustomerRepository customerRepository;
@@ -77,14 +77,14 @@ public class TicketServiceImpl implements TicketService {
      * @return TicketResponse
      */
     @Override
-    public TicketResponse createTicket(Long customerId, TicketCreateRequest request) {
+    public TicketResponse createTicket(Long customerId, CustomerTicketCreateRequest request) {
         log.info("Bắt đầu tạo ticket cho customer {}", customerId);
 
         Customer customer = customerRepository.findByIdWithRole(customerId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy customer với ID: " + customerId));
 
-        StaffDepartment staffDepartment = staffDepartmentRepository.findById(request.getStaffDepartmentId())
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng ban với ID: " + request.getStaffDepartmentId()));
+        StaffDepartment staffDepartment = staffDepartmentRepository.findById(request.getDepartmentId())
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng ban với ID: " + request.getDepartmentId()));
 
         if (!orderValidationService.hasOrders(customerId)) {
             throw new RuntimeException("Customer phải có ít nhất một đơn hàng để tạo ticket hỗ trợ");

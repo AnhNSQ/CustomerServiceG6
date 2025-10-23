@@ -24,3 +24,4 @@ public interface TicketAssignRepository extends JpaRepository<TicketAssign, Long
     List<TicketAssign> findByTicketIdOrderByAssignedAtDesc(@Param("ticketId") Long ticketId);
 }
 
+

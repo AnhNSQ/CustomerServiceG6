@@ -4,7 +4,7 @@ import CustomerService.dto.ApiResponse;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketAssignRequest;
 import CustomerService.dto.TicketResponse;
-import CustomerService.service.StaffService;
+import CustomerService.service.IStaffService;
 import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -23,7 +23,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class StaffController {
 
-    private final StaffService staffService;
+    private final IStaffService staffService;
     private final SessionManager sessionManager;
 
     /**

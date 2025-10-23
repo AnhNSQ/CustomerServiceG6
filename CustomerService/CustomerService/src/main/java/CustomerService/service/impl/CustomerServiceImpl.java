@@ -3,36 +3,56 @@ package CustomerService.service.impl;
 import CustomerService.dto.CustomerLoginRequest;
 import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
+import CustomerService.dto.CustomerTicketCreateRequest;
+import CustomerService.dto.TicketResponse;
 import CustomerService.entity.Customer;
 import CustomerService.entity.Role;
+import CustomerService.entity.StaffDepartment;
+import CustomerService.entity.Ticket;
 import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.RoleRepository;
-import CustomerService.repository.StaffRepository;
-import CustomerService.service.BaseUserService;
-import CustomerService.service.CustomerService;
+import CustomerService.repository.StaffDepartmentRepository;
+import CustomerService.repository.TicketRepository;
+import CustomerService.service.ICustomerService;
+import CustomerService.service.OrderValidationService;
 import CustomerService.service.PasswordValidator;
 import CustomerService.service.UserConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @Transactional
-public class CustomerServiceImpl extends BaseUserService implements CustomerService {
+public class CustomerServiceImpl implements ICustomerService {
 
+    private final CustomerRepository customerRepository;
     private final RoleRepository roleRepository;
+    private final StaffDepartmentRepository staffDepartmentRepository;
+    private final TicketRepository ticketRepository;
+    private final PasswordValidator passwordValidator;
+    private final UserConverter userConverter;
+    private final OrderValidationService orderValidationService;
     
     public CustomerServiceImpl(CustomerRepository customerRepository, 
-                          StaffRepository staffRepository,
+                          RoleRepository roleRepository,
                           PasswordValidator passwordValidator,
                           UserConverter userConverter,
-                          RoleRepository roleRepository) {
-        super(customerRepository, staffRepository, passwordValidator, userConverter);
+                          StaffDepartmentRepository staffDepartmentRepository,
+                          TicketRepository ticketRepository,
+                          OrderValidationService orderValidationService) {
+        this.customerRepository = customerRepository;
         this.roleRepository = roleRepository;
+        this.passwordValidator = passwordValidator;
+        this.userConverter = userConverter;
+        this.staffDepartmentRepository = staffDepartmentRepository;
+        this.ticketRepository = ticketRepository;
+        this.orderValidationService = orderValidationService;
     }
 
     /**
@@ -52,18 +72,16 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             throw new RuntimeException("Username đã được sử dụng");
         }
 
-        // Mã hóa mật khẩu trước khi lưu
-        String encodedPassword = passwordValidator.encodePassword(request.getPassword());
-        
+        // Validate password
+        passwordValidator.validatePassword(request.getPassword(), request.getPassword());
+
         // Tạo customer mới
-        Customer customer = new Customer(
-            request.getName(),
-            request.getEmail(),
-            request.getUsername(),
-            encodedPassword, // Sử dụng mật khẩu đã được mã hóa
-            request.getPhone(),
-            null // Role sẽ được set sau
-        );
+        Customer customer = new Customer();
+        customer.setEmail(request.getEmail());
+        customer.setUsername(request.getUsername());
+        customer.setPassword(request.getPassword());
+        customer.setPhone(request.getPhone());
+        customer.setIsActive(true);
 
         // Gán role CUSTOMER mặc định
         Role customerRole = roleRepository.findByRoleName(Role.RoleName.CUSTOMER)
@@ -74,7 +92,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Đăng ký thành công customer với ID: {}", savedCustomer.getCustomerId());
 
-        return convertToCustomerResponse(savedCustomer);
+        return userConverter.convertToCustomerResponse(savedCustomer);
     }
 
     /**
@@ -87,14 +105,14 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         log.info("Bắt đầu đăng nhập với email/username: {}", request.getEmailOrUsername());
 
         // Tìm customer theo email hoặc username
-        Customer customer = findCustomerByEmailOrUsername(request.getEmailOrUsername())
+        Customer customer = customerRepository.findActiveByEmailOrUsername(request.getEmailOrUsername())
             .orElseThrow(() -> new RuntimeException("Email/Username hoặc mật khẩu không đúng"));
 
         // Xác thực mật khẩu
-        validateCustomerPassword(request.getPassword(), customer);
+        passwordValidator.validatePassword(request.getPassword(), customer.getPassword());
 
         log.info("Đăng nhập thành công customer với ID: {}", customer.getCustomerId());
-        return convertToCustomerResponse(customer);
+        return userConverter.convertToCustomerResponse(customer);
     }
 
     /**
@@ -104,7 +122,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
     @Transactional(readOnly = true)
     public Optional<CustomerResponse> findById(Long customerId) {
         return customerRepository.findByIdWithRole(customerId)
-            .map(this::convertToCustomerResponse);
+            .map(userConverter::convertToCustomerResponse);
     }
 
     /**
@@ -114,7 +132,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
     @Transactional(readOnly = true)
     public Optional<CustomerResponse> findByEmailOrUsername(String emailOrUsername) {
         return customerRepository.findActiveByEmailOrUsername(emailOrUsername)
-            .map(this::convertToCustomerResponse);
+            .map(userConverter::convertToCustomerResponse);
     }
 
     /**
@@ -147,48 +165,182 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             .orElseThrow(() -> new RuntimeException("Không tìm thấy customer với ID: " + customerId));
 
         // Cập nhật các trường được phép
-        if (updateData.containsKey("name")) {
-            String name = (String) updateData.get("name");
-            if (name != null && !name.trim().isEmpty()) {
-                customer.setName(name.trim());
-                log.info("Cập nhật name: {}", name);
+        updateData.forEach((key, value) -> {
+            switch (key) {
+                case "name":
+                    customer.setName((String) value);
+                    break;
+                case "phone":
+                    customer.setPhone((String) value);
+                    break;
+                default:
+                    log.warn("Trường {} không được phép cập nhật", key);
             }
-        }
-
-        if (updateData.containsKey("email")) {
-            String email = (String) updateData.get("email");
-            if (email != null && !email.trim().isEmpty()) {
-                // Kiểm tra email đã tồn tại chưa (trừ email hiện tại)
-                if (!email.equals(customer.getEmail()) && customerRepository.existsByEmail(email)) {
-                    throw new RuntimeException("Email đã được sử dụng");
-                }
-                customer.setEmail(email.trim());
-                log.info("Cập nhật email: {}", email);
-            }
-        }
-
-        if (updateData.containsKey("username")) {
-            String username = (String) updateData.get("username");
-            if (username != null && !username.trim().isEmpty()) {
-                // Kiểm tra username đã tồn tại chưa (trừ username hiện tại)
-                if (!username.equals(customer.getUsername()) && customerRepository.existsByUsername(username)) {
-                    throw new RuntimeException("Username đã được sử dụng");
-                }
-                customer.setUsername(username.trim());
-                log.info("Cập nhật username: {}", username);
-            }
-        }
-
-        if (updateData.containsKey("phone")) {
-            String phone = (String) updateData.get("phone");
-            customer.setPhone(phone != null && !phone.trim().isEmpty() ? phone.trim() : null);
-            log.info("Cập nhật phone: {}", phone);
-        }
+        });
 
         // Lưu customer đã cập nhật
         Customer updatedCustomer = customerRepository.save(customer);
         log.info("Cập nhật profile thành công cho customer ID: {}", customerId);
 
-        return convertToCustomerResponse(updatedCustomer);
+        return userConverter.convertToCustomerResponse(updatedCustomer);
+    }
+
+    /**
+     * Tạo ticket mới cho customer
+     */
+    @Override
+    public TicketResponse createTicket(Long customerId, CustomerTicketCreateRequest request) {
+        log.info("Bắt đầu tạo ticket cho customer {}", customerId);
+
+        Customer customer = customerRepository.findByIdWithRole(customerId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy customer với ID: " + customerId));
+
+        StaffDepartment staffDepartment = staffDepartmentRepository.findById(request.getDepartmentId())
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy phòng ban với ID: " + request.getDepartmentId()));
+
+        if (!orderValidationService.hasOrders(customerId)) {
+            throw new RuntimeException("Customer phải có ít nhất một đơn hàng để tạo ticket hỗ trợ");
+        }
+
+        Ticket ticket = new Ticket(
+            customer,
+            staffDepartment,
+            request.getSubject(),
+            request.getDescription(),
+            Ticket.Priority.MEDIUM
+        );
+
+        Ticket savedTicket = ticketRepository.save(ticket);
+        log.info("Tạo ticket thành công với ID: {}", savedTicket.getTicketId());
+        
+        return convertToTicketResponse(savedTicket);
+    }
+
+    /**
+     * Lấy danh sách ticket của customer với phân trang
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getTicketsByCustomerIdWithPaginationAndTotal(Long customerId, int page, int size) {
+        log.info("Lấy danh sách ticket của customer {} với phân trang", customerId);
+        
+        List<Ticket> tickets = ticketRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        
+        int total = tickets.size();
+        int start = page * size;
+        int end = Math.min(start + size, total);
+        
+        List<TicketResponse> ticketResponses = tickets.subList(start, end)
+            .stream()
+            .map(this::convertToTicketResponse)
+            .collect(Collectors.toList());
+        
+        return Map.of(
+            "tickets", ticketResponses,
+            "total", total,
+            "page", page,
+            "size", size
+        );
+    }
+
+    /**
+     * Lấy ticket gần đây của customer
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getRecentTicketsByCustomerId(Long customerId, int limit) {
+        log.info("Lấy {} ticket gần đây của customer {}", limit, customerId);
+        
+        List<Ticket> tickets = ticketRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        
+        return tickets.stream()
+            .limit(limit)
+            .map(this::convertToTicketResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy tất cả ticket của customer
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getTicketsByCustomerId(Long customerId) {
+        log.info("Lấy danh sách ticket của customer {}", customerId);
+        
+        List<Ticket> tickets = ticketRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        
+        return tickets.stream()
+            .map(this::convertToTicketResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Lấy ticket theo ID
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<TicketResponse> getTicketById(Long ticketId) {
+        log.info("Lấy ticket với ID {}", ticketId);
+        
+        return ticketRepository.findByIdWithCustomer(ticketId)
+            .map(this::convertToTicketResponse);
+    }
+
+    /**
+     * Xóa ticket
+     */
+    @Override
+    @Transactional
+    public boolean deleteTicket(Long ticketId, Long customerId) {
+        log.info("Xóa ticket {} của customer {}", ticketId, customerId);
+        
+        Ticket ticket = ticketRepository.findByIdWithCustomer(ticketId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy ticket với ID: " + ticketId));
+        
+        if (!ticket.getCustomer().getCustomerId().equals(customerId)) {
+            throw new RuntimeException("Bạn không có quyền xóa ticket này");
+        }
+        
+        ticketRepository.delete(ticket);
+        log.info("Xóa ticket {} thành công", ticketId);
+        return true;
+    }
+
+    /**
+     * Convert Ticket entity to TicketResponse DTO
+     */
+    private TicketResponse convertToTicketResponse(Ticket ticket) {
+        Long customerId = null;
+        Long staffDepartmentId = null;
+        String staffDepartmentName = null;
+        
+        try {
+            if (ticket.getCustomer() != null) {
+                customerId = ticket.getCustomer().getCustomerId();
+            }
+        } catch (Exception e) {
+            log.warn("Ticket {} has no associated customer or failed to load customer: {}", ticket.getTicketId(), e.getMessage());
+        }
+        
+        try {
+            if (ticket.getStaffDepartment() != null) {
+                staffDepartmentId = ticket.getStaffDepartment().getStaffDepartmentId();
+                staffDepartmentName = ticket.getStaffDepartment().getName();
+            }
+        } catch (Exception e) {
+            log.warn("Ticket {} has no associated department or failed to load department: {}", ticket.getTicketId(), e.getMessage());
+        }
+        
+        return new TicketResponse(
+            ticket.getTicketId(),
+            ticket.getSubject(),
+            ticket.getDescription(),
+            ticket.getPriority() != null ? ticket.getPriority().name() : null,
+            ticket.getStatus() != null ? ticket.getStatus().name() : null,
+            ticket.getCreatedAt(),
+            customerId,
+            staffDepartmentId,
+            staffDepartmentName
+        );
     }
 }
