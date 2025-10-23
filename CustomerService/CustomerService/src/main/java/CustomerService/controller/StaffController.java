@@ -1,9 +1,8 @@
 package CustomerService.controller;
 
-import CustomerService.dto.ApiResponse;
-import CustomerService.dto.StaffResponse;
-import CustomerService.dto.TicketAssignRequest;
-import CustomerService.dto.TicketResponse;
+import CustomerService.dto.*;
+import CustomerService.exception.AuthenticationException;
+import CustomerService.service.AuthenticationService;
 import CustomerService.service.IStaffService;
 import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
@@ -25,6 +24,68 @@ public class StaffController {
 
     private final IStaffService staffService;
     private final SessionManager sessionManager;
+    private final AuthenticationService authenticationService;
+
+    /**
+     * Đăng nhập staff
+     */
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<StaffResponse>> login(
+            @Valid @RequestBody StaffLoginRequest request,
+            HttpSession session) {
+        try {
+            log.info("Nhận yêu cầu đăng nhập staff từ: {}", request.getEmailOrUsername());
+
+            // Sử dụng AuthenticationService để xác thực
+            StaffResponse staff = authenticationService.authenticateStaff(request);
+
+            // Lưu thông tin staff vào session
+            sessionManager.setStaffSession(
+                    session,
+                    staff.getStaffId(),
+                    staff.getName(),
+                    staff.getEmail(),
+                    staff.getRoles()
+            );
+
+            log.info("Đăng nhập thành công cho staff ID: {}", staff.getStaffId());
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.success(staff, "Đăng nhập thành công"));
+
+        } catch (AuthenticationException e) {
+            log.error("Lỗi xác thực staff: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi đăng nhập staff: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Đăng xuất staff
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(HttpSession session) {
+        try {
+            Long staffId = sessionManager.getStaffId(session);
+            if (staffId != null) {
+                log.info("Staff ID {} đăng xuất", staffId);
+            }
+
+            sessionManager.invalidateSession(session);
+
+            return ResponseEntity.ok()
+                    .body(ApiResponse.success(null, "Đăng xuất thành công"));
+
+        } catch (Exception e) {
+            log.error("Lỗi khi đăng xuất staff: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Có lỗi xảy ra khi đăng xuất"));
+        }
+    }
 
     /**
      * Lấy thông tin staff hiện tại
