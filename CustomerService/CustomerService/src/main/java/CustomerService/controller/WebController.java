@@ -3,6 +3,7 @@ package CustomerService.controller;
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.CartResponse;
+import CustomerService.dto.ApiResponse;
 import CustomerService.entity.Product;
 import CustomerService.entity.Category;
 import CustomerService.service.ICustomerService;
@@ -14,12 +15,14 @@ import CustomerService.service.CartService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
@@ -485,6 +488,96 @@ public class WebController {
 
         } catch (Exception e) {
             log.error("Error loading catalog page: ", e);
+            return "redirect:/home";
+        }
+    }
+
+    /**
+     * API endpoint để lấy gợi ý tìm kiếm
+     */
+    @GetMapping("/api/search/suggestions")
+    @ResponseBody
+    public ResponseEntity<ApiResponse<List<String>>> getSearchSuggestions(@RequestParam String q) {
+        try {
+            if (q == null || q.trim().isEmpty()) {
+                return ResponseEntity.ok(ApiResponse.success(List.of(), "No suggestions"));
+            }
+            
+            String keyword = q.trim();
+            List<Product> products = productService.searchProducts(keyword);
+            
+            // Lấy tên sản phẩm làm gợi ý
+            List<String> suggestions = products.stream()
+                .map(Product::getName)
+                .distinct()
+                .limit(5)
+                .toList();
+            
+            return ResponseEntity.ok(ApiResponse.success(suggestions, "Search suggestions"));
+            
+        } catch (Exception e) {
+            log.error("Error getting search suggestions: ", e);
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error("Error getting search suggestions"));
+        }
+    }
+
+    /**
+     * Trang tìm kiếm sản phẩm
+     */
+    @GetMapping("/search")
+    public String searchProducts(@RequestParam(required = false) String q,
+                                @RequestParam(required = false) String sort,
+                                @RequestParam(required = false) String view,
+                                @RequestParam(required = false) String priceRange,
+                                Model model) {
+        try {
+            log.info("Loading search page with query: {}, sort: {}, view: {}, priceRange: {}", 
+                    q, sort, view, priceRange);
+            
+            List<Product> searchResults = List.of();
+            String searchQuery = "";
+            
+            // Thực hiện tìm kiếm nếu có từ khóa
+            if (q != null && !q.trim().isEmpty()) {
+                searchQuery = q.trim();
+                searchResults = productService.searchProducts(searchQuery);
+                
+                // Áp dụng bộ lọc giá nếu có
+                if (priceRange != null && !priceRange.isEmpty()) {
+                    searchResults = filterProductsByPriceRange(searchResults, priceRange);
+                }
+                
+                // Áp dụng sắp xếp nếu có
+                if (sort != null && !sort.isEmpty()) {
+                    searchResults = sortProducts(searchResults, sort);
+                }
+            }
+            
+            // Lấy sản phẩm mới nhất cho sidebar
+            var newReleases = productService.getLatestProducts(3);
+            
+            // Lấy categories để hiển thị trong navigation
+            var categories = categoryService.getAllActiveCategories();
+            
+            // Thêm thông tin vào model
+            model.addAttribute("products", searchResults);
+            model.addAttribute("newReleases", newReleases);
+            model.addAttribute("categories", categories);
+            model.addAttribute("searchQuery", searchQuery);
+            model.addAttribute("currentSort", sort != null ? sort : "default");
+            model.addAttribute("currentView", view != null ? view : "grid");
+            model.addAttribute("currentPriceRange", priceRange != null ? priceRange : "");
+            model.addAttribute("totalProducts", searchResults.size());
+            model.addAttribute("hasSearchQuery", !searchQuery.isEmpty());
+            
+            log.info("Search page loaded successfully with {} results for query: '{}'", 
+                    searchResults.size(), searchQuery);
+            
+            return "catalog";
+            
+        } catch (Exception e) {
+            log.error("Error loading search page: ", e);
             return "redirect:/home";
         }
     }
