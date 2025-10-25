@@ -14,7 +14,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.Set;
 
+/**
+ * Controller cho STAFF role - xử lý nghiệp vụ của STAFF
+ * Tuân thủ Single Responsibility Principle (SRP)
+ */
 @RestController
 @RequestMapping("/api/staff")
 @RequiredArgsConstructor
@@ -30,7 +38,7 @@ public class StaffController {
      * Đăng nhập staff
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<StaffResponse>> login(
+    public ResponseEntity<ApiResponse<Map<String, Object>>> login(
             @Valid @RequestBody StaffLoginRequest request,
             HttpSession session) {
         try {
@@ -48,19 +56,41 @@ public class StaffController {
                     staff.getRoles()
             );
 
-            log.info("Đăng nhập thành công cho staff ID: {}", staff.getStaffId());
+            log.info("Đăng nhập thành công staff với ID: {}", staff.getStaffId());
+
+            // Xác định URL redirect dựa trên role
+            String redirectUrl = determineRedirectUrl(staff.getRoles());
+            log.info("Staff {} sẽ được redirect đến: {}", staff.getStaffId(), redirectUrl);
+
+            // Tạo response object bao gồm redirectUrl
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("staff", staff);
+            responseData.put("redirectUrl", redirectUrl);
 
             return ResponseEntity.ok()
-                    .body(ApiResponse.success(staff, "Đăng nhập thành công"));
+                .body(ApiResponse.success(responseData, "Đăng nhập thành công"));
 
         } catch (AuthenticationException e) {
-            log.error("Lỗi xác thực staff: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error(e.getMessage()));
+            log.warn("Đăng nhập thất bại cho staff: {}", request.getEmailOrUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("Email/Username hoặc mật khẩu không đúng"));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi đăng nhập staff: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Xác định URL redirect dựa trên role của staff
+     */
+    private String determineRedirectUrl(Set<String> roles) {
+        if (roles.contains("ADMIN")) {
+            return "/admin/dashboard";
+        } else if (roles.contains("LEAD")) {
+            return "/leader/dashboard";
+        } else {
+            return "/staff/dashboard"; // STAFF
         }
     }
 
@@ -70,25 +100,21 @@ public class StaffController {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(HttpSession session) {
         try {
-            Long staffId = sessionManager.getStaffId(session);
-            if (staffId != null) {
-                log.info("Staff ID {} đăng xuất", staffId);
-            }
-
-            sessionManager.invalidateSession(session);
-
+            session.invalidate();
+            log.info("Staff đăng xuất thành công");
+            
             return ResponseEntity.ok()
-                    .body(ApiResponse.success(null, "Đăng xuất thành công"));
-
+                .body(ApiResponse.success("Đăng xuất thành công"));
+                
         } catch (Exception e) {
             log.error("Lỗi khi đăng xuất staff: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Có lỗi xảy ra khi đăng xuất"));
+                .body(ApiResponse.error("Có lỗi xảy ra khi đăng xuất"));
         }
     }
 
     /**
-     * Lấy thông tin staff hiện tại
+     * Lấy thông tin profile của staff hiện tại
      */
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<StaffResponse>> getProfile(HttpSession session) {
@@ -117,129 +143,10 @@ public class StaffController {
     }
 
     /**
-     * LEADER: Lấy danh sách ticket của phòng ban
-     */
-    @GetMapping("/leader/tickets")
-    public ResponseEntity<ApiResponse<List<TicketResponse>>> getDepartmentTickets(HttpSession session) {
-        try {
-            if (!sessionManager.isStaffLoggedIn(session)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Authentication required"));
-            }
-            
-            Long staffId = sessionManager.getStaffId(session);
-            
-            // Kiểm tra quyền LEADER
-            if (!staffService.isLeader(staffId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.error("Chỉ LEADER mới có quyền truy cập"));
-            }
-            
-            log.info("LEADER {} lấy danh sách ticket của phòng ban", staffId);
-            
-            List<TicketResponse> tickets = staffService.getTicketsByLeaderDepartment(staffId);
-            
-            return ResponseEntity.ok()
-                .body(ApiResponse.success(tickets));
-                
-        } catch (RuntimeException e) {
-            log.error("Lỗi lấy ticket phòng ban: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("Lỗi không mong muốn khi lấy ticket phòng ban: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
-        }
-    }
-
-    /**
-     * LEADER: Lấy danh sách nhân viên trong phòng ban
-     */
-    @GetMapping("/leader/staff")
-    public ResponseEntity<ApiResponse<List<StaffResponse>>> getDepartmentStaff(HttpSession session) {
-        try {
-            if (!sessionManager.isStaffLoggedIn(session)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Authentication required"));
-            }
-            
-            Long staffId = sessionManager.getStaffId(session);
-            
-            // Kiểm tra quyền LEADER
-            if (!staffService.isLeader(staffId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.error("Chỉ LEADER mới có quyền truy cập"));
-            }
-            
-            log.info("LEADER {} lấy danh sách nhân viên trong phòng ban", staffId);
-            
-            List<StaffResponse> staff = staffService.getStaffByLeaderDepartment(staffId);
-            
-            return ResponseEntity.ok()
-                .body(ApiResponse.success(staff));
-                
-        } catch (RuntimeException e) {
-            log.error("Lỗi lấy nhân viên phòng ban: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("Lỗi không mong muốn khi lấy nhân viên phòng ban: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
-        }
-    }
-
-    /**
-     * LEADER: Phân công ticket cho nhân viên
-     */
-    @PostMapping("/leader/tickets/{ticketId}/assign")
-    public ResponseEntity<ApiResponse<String>> assignTicket(
-            @PathVariable Long ticketId,
-            @Valid @RequestBody TicketAssignRequest request,
-            HttpSession session) {
-        try {
-            if (!sessionManager.isStaffLoggedIn(session)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Authentication required"));
-            }
-            
-            Long leaderId = sessionManager.getStaffId(session);
-            
-            // Kiểm tra quyền LEADER
-            if (!staffService.isLeader(leaderId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(ApiResponse.error("Chỉ LEADER mới có quyền phân công"));
-            }
-            
-            log.info("LEADER {} phân công ticket {} cho staff {}", leaderId, ticketId, request.getStaffId());
-            
-            boolean assigned = staffService.assignTicketToStaff(ticketId, request.getStaffId(), leaderId, request.getNote());
-            
-            if (assigned) {
-                return ResponseEntity.ok()
-                    .body(ApiResponse.success("Phân công ticket thành công"));
-            } else {
-                return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Không thể phân công ticket"));
-            }
-                
-        } catch (RuntimeException e) {
-            log.error("Lỗi phân công ticket: {}", e.getMessage());
-            return ResponseEntity.badRequest()
-                .body(ApiResponse.error(e.getMessage()));
-        } catch (Exception e) {
-            log.error("Lỗi không mong muốn khi phân công ticket: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
-        }
-    }
-
-    /**
      * STAFF: Lấy danh sách ticket được phân công
      */
-    @GetMapping("/my-tickets")
-    public ResponseEntity<ApiResponse<List<TicketResponse>>> getMyAssignedTickets(HttpSession session) {
+    @GetMapping("/tickets/assigned")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> getAssignedTickets(HttpSession session) {
         try {
             if (!sessionManager.isStaffLoggedIn(session)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -248,7 +155,7 @@ public class StaffController {
             
             Long staffId = sessionManager.getStaffId(session);
             
-            log.info("Staff {} lấy danh sách ticket được phân công", staffId);
+            log.info("STAFF {} lấy danh sách ticket được phân công", staffId);
             
             List<TicketResponse> tickets = staffService.getTicketsAssignedToStaff(staffId);
             
@@ -261,6 +168,81 @@ public class StaffController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy ticket được phân công: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * STAFF: Lấy thông tin ticket được phân công theo ID
+     */
+    @GetMapping("/tickets/{ticketId}")
+    public ResponseEntity<ApiResponse<TicketResponse>> getAssignedTicketById(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("STAFF {} lấy thông tin ticket {} được phân công", staffId, ticketId);
+            
+            // Lấy danh sách ticket được phân công
+            List<TicketResponse> assignedTickets = staffService.getTicketsAssignedToStaff(staffId);
+            
+            // Tìm ticket trong danh sách được phân công
+            Optional<TicketResponse> ticket = assignedTickets.stream()
+                .filter(t -> t.getTicketId().equals(ticketId))
+                .findFirst();
+            
+            if (ticket.isPresent()) {
+                return ResponseEntity.ok()
+                    .body(ApiResponse.success(ticket.get()));
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Bạn không có quyền xem ticket này hoặc ticket không tồn tại"));
+            }
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy ticket được phân công: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy ticket được phân công: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * STAFF: Lấy thống kê ticket được phân công
+     */
+    @GetMapping("/stats/assigned")
+    public ResponseEntity<ApiResponse<TicketDashboardStats>> getAssignedStats(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("STAFF {} lấy thống kê ticket được phân công", staffId);
+            
+            TicketDashboardStats stats = staffService.getAssignedTicketStats(staffId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(stats));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy thống kê ticket được phân công: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy thống kê ticket được phân công: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

@@ -8,6 +8,7 @@ import CustomerService.entity.Product;
 import CustomerService.entity.Category;
 import CustomerService.service.CustomerService;
 import CustomerService.service.StaffService;
+import CustomerService.service.LeaderService;
 import CustomerService.service.ProductService;
 import CustomerService.service.CategoryService;
 import CustomerService.service.CartService;
@@ -34,6 +35,7 @@ public class WebController {
 
     private final CustomerService customerService;
     private final StaffService staffService;
+    private final LeaderService leaderService;
     private final ProductService productService;
     private final CategoryService categoryService;
     private final CartService cartService;
@@ -296,6 +298,9 @@ public class WebController {
     public String leaderDashboard(Model model, HttpSession session) {
         try {
             Long staffId = (Long) session.getAttribute("staffId");
+            
+            log.info("Leader dashboard access attempt - staffId from session: {}", staffId);
+            log.info("Session attributes: {}", session.getAttributeNames());
 
             if (staffId == null) {
                 log.warn("Unauthorized access to leader dashboard - redirecting to staff login");
@@ -312,6 +317,7 @@ public class WebController {
             model.addAttribute("staffName", staff.getName());
             model.addAttribute("staffEmail", staff.getEmail());
 
+            log.info("Leader dashboard loaded successfully for staff {}", staffId);
             return "leader/dashboard";
 
         } catch (Exception e) {

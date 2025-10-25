@@ -12,11 +12,9 @@ import CustomerService.entity.Ticket;
 import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.RoleRepository;
 import CustomerService.repository.StaffDepartmentRepository;
+import CustomerService.repository.StaffRepository;
 import CustomerService.repository.TicketRepository;
-import CustomerService.service.CustomerService;
-import CustomerService.service.OrderValidationService;
-import CustomerService.service.PasswordValidator;
-import CustomerService.service.UserConverter;
+import CustomerService.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @Transactional
-public class CustomerServiceImpl implements CustomerService {
+public class CustomerServiceImpl extends BaseUserService implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final RoleRepository roleRepository;
@@ -40,12 +38,14 @@ public class CustomerServiceImpl implements CustomerService {
     private final OrderValidationService orderValidationService;
     
     public CustomerServiceImpl(CustomerRepository customerRepository, 
-                          RoleRepository roleRepository,
+                          StaffRepository staffRepository,
                           PasswordValidator passwordValidator,
                           UserConverter userConverter,
+                          RoleRepository roleRepository,
                           StaffDepartmentRepository staffDepartmentRepository,
                           TicketRepository ticketRepository,
                           OrderValidationService orderValidationService) {
+        super(customerRepository, staffRepository, passwordValidator, userConverter);
         this.customerRepository = customerRepository;
         this.roleRepository = roleRepository;
         this.passwordValidator = passwordValidator;
@@ -72,27 +72,29 @@ public class CustomerServiceImpl implements CustomerService {
             throw new RuntimeException("Username đã được sử dụng");
         }
 
-        // Validate password
-        passwordValidator.validatePassword(request.getPassword(), request.getPassword());
+        // Mã hóa mật khẩu trước khi lưu
+        String encodedPassword = passwordValidator.encodePassword(request.getPassword());
 
         // Tạo customer mới
-        Customer customer = new Customer();
-        customer.setEmail(request.getEmail());
-        customer.setUsername(request.getUsername());
-        customer.setPassword(request.getPassword());
-        customer.setPhone(request.getPhone());
-        customer.setIsActive(true);
+        Customer customer = new Customer(
+                request.getName(),
+                request.getEmail(),
+                request.getUsername(),
+                encodedPassword, // Sử dụng mật khẩu đã được mã hóa
+                request.getPhone(),
+                null // Role sẽ được set sau
+        );
 
         // Gán role CUSTOMER mặc định
         Role customerRole = roleRepository.findByRoleName(Role.RoleName.CUSTOMER)
-            .orElseThrow(() -> new RuntimeException("Role CUSTOMER không tồn tại"));
+                .orElseThrow(() -> new RuntimeException("Role CUSTOMER không tồn tại"));
         customer.setRole(customerRole);
 
         // Lưu customer
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Đăng ký thành công customer với ID: {}", savedCustomer.getCustomerId());
 
-        return userConverter.convertToCustomerResponse(savedCustomer);
+        return convertToCustomerResponse(savedCustomer);
     }
 
     /**
@@ -105,15 +107,16 @@ public class CustomerServiceImpl implements CustomerService {
         log.info("Bắt đầu đăng nhập với email/username: {}", request.getEmailOrUsername());
 
         // Tìm customer theo email hoặc username
-        Customer customer = customerRepository.findActiveByEmailOrUsername(request.getEmailOrUsername())
-            .orElseThrow(() -> new RuntimeException("Email/Username hoặc mật khẩu không đúng"));
+        Customer customer = findCustomerByEmailOrUsername(request.getEmailOrUsername())
+                .orElseThrow(() -> new RuntimeException("Email/Username hoặc mật khẩu không đúng"));
 
         // Xác thực mật khẩu
-        passwordValidator.validatePassword(request.getPassword(), customer.getPassword());
+        validateCustomerPassword(request.getPassword(), customer);
 
         log.info("Đăng nhập thành công customer với ID: {}", customer.getCustomerId());
-        return userConverter.convertToCustomerResponse(customer);
+        return convertToCustomerResponse(customer);
     }
+
 
     /**
      * Tìm customer theo ID

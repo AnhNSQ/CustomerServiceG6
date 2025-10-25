@@ -2,11 +2,16 @@ package CustomerService.service;
 
 import CustomerService.dto.StaffLoginRequest;
 import CustomerService.dto.StaffResponse;
+import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
 
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Interface cho StaffService - xử lý nghiệp vụ của STAFF role
+ * Tuân thủ Interface Segregation Principle (ISP)
+ */
 public interface StaffService {
     
     /**
@@ -27,27 +32,12 @@ public interface StaffService {
     Optional<StaffResponse> findByEmailOrUsername(String emailOrUsername);
     
     /**
-     * Kiểm tra staff có phải LEADER không
-     */
-    boolean isLeader(Long staffId);
-    
-    /**
-     * LEADER: Lấy danh sách ticket của phòng ban
-     */
-    List<TicketResponse> getTicketsByLeaderDepartment(Long leaderId);
-    
-    /**
-     * LEADER: Lấy danh sách nhân viên trong phòng ban
-     */
-    List<StaffResponse> getStaffByLeaderDepartment(Long leaderId);
-    
-    /**
-     * LEADER: Phân công ticket cho nhân viên
-     */
-    boolean assignTicketToStaff(Long ticketId, Long staffId, Long leaderId, String note);
-    
-    /**
      * STAFF: Lấy danh sách ticket được phân công
      */
     List<TicketResponse> getTicketsAssignedToStaff(Long staffId);
+    
+    /**
+     * STAFF: Lấy thống kê ticket được phân công
+     */
+    TicketDashboardStats getAssignedTicketStats(Long staffId);
 }

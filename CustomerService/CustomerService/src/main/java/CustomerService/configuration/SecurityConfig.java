@@ -77,8 +77,9 @@ public class SecurityConfig {
                         ).authenticated()
 
                         .requestMatchers(
+                                "/staff/**",
                                 "/leader/**"
-                        ).authenticated()
+                        ).permitAll()
 
                         .anyRequest().permitAll()
                 )

@@ -13,6 +13,12 @@ import java.util.Optional;
 public interface StaffRepository extends JpaRepository<Staff, Long> {
     
     /**
+     * Tìm staff theo email hoặc username (chỉ những tài khoản active) và load cả role
+     */
+    @Query("SELECT s FROM Staff s LEFT JOIN FETCH s.role WHERE s.isActive = true AND (s.email = :identifier OR s.username = :identifier)")
+    Optional<Staff> findActiveByEmailOrUsernameWithRole(@Param("identifier") String identifier);
+    
+    /**
      * Tìm staff theo email hoặc username (chỉ những tài khoản active)
      */
     @Query("SELECT s FROM Staff s WHERE s.isActive = true AND (s.email = :identifier OR s.username = :identifier)")
