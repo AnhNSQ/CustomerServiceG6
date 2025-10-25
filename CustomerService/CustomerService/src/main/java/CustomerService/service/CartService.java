@@ -4,9 +4,6 @@ import CustomerService.dto.AddToCartRequest;
 import CustomerService.dto.CartItemResponse;
 import CustomerService.dto.CartResponse;
 import CustomerService.dto.UpdateCartItemRequest;
-import CustomerService.entity.CartItem;
-
-import java.util.List;
 
 /**
  * Interface cho dịch vụ quản lý Shopping Cart

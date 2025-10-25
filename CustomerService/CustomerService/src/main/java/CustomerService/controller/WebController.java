@@ -8,7 +8,7 @@ import CustomerService.entity.Product;
 import CustomerService.entity.Category;
 import CustomerService.service.CustomerService;
 import CustomerService.service.StaffService;
-import CustomerService.service.TicketService;
+import CustomerService.service.LeaderService;
 import CustomerService.service.ProductService;
 import CustomerService.service.CategoryService;
 import CustomerService.service.CartService;
@@ -35,7 +35,7 @@ public class WebController {
 
     private final CustomerService customerService;
     private final StaffService staffService;
-    private final TicketService ticketService;
+    private final LeaderService leaderService;
     private final ProductService productService;
     private final CategoryService categoryService;
     private final CartService cartService;
@@ -111,7 +111,8 @@ public class WebController {
             CustomerResponse customer = customerService.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
             
-            log.info("Customer found: {}", customer.getEmail());
+            log.info("Customer found: email={}, name={}, username={}", 
+                customer.getEmail(), customer.getName(), customer.getUsername());
             
             // Thêm thông tin vào model
             model.addAttribute("customer", customer);
@@ -189,16 +190,6 @@ public class WebController {
             model.addAttribute("staffEmail", staff.getEmail());
             model.addAttribute("staffRoles", staff.getRoles());
 
-            // Thêm thống kê ticket vào model
-            var stats = ticketService.getDashboardStats();
-            model.addAttribute("totalTickets", stats.getTotalTickets());
-            model.addAttribute("pendingTickets", stats.getPendingTickets());
-            model.addAttribute("resolvedTickets", stats.getResolvedTickets());
-            model.addAttribute("urgentTickets", stats.getUrgentTickets());
-
-            // Ticket gần đây
-            model.addAttribute("tickets", ticketService.getRecentTickets(5));
-            
             log.info("Staff {} accessed dashboard successfully", staffId);
             
             return "staff/dashboard";
@@ -210,30 +201,189 @@ public class WebController {
     }
 
     /**
-     * Trang tất cả ticket cho staff
+     * Trang tạo ticket mới của customer
      */
-    @GetMapping("/staff/tickets")
-    public String staffTickets(Model model, HttpSession session) {
+    @GetMapping("/customer/tickets/create")
+    public String createTicket(Model model, HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+
+            if (customerId == null) {
+                log.warn("Unauthorized access to create ticket - redirecting to login");
+                return "redirect:/login";
+            }
+
+            log.info("Loading create ticket page for customer {}", customerId);
+
+            // Lấy thông tin customer từ database
+            CustomerResponse customer = customerService.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+
+            model.addAttribute("customer", customer);
+            model.addAttribute("customerName", customer.getName());
+            model.addAttribute("customerEmail", customer.getEmail());
+
+            return "customer/create-ticket";
+
+        } catch (Exception e) {
+            log.error("Error loading create ticket page: ", e);
+            return "redirect:/login";
+        }
+    }
+
+    /**
+     * Trang danh sách ticket của customer
+     */
+    @GetMapping("/customer/tickets")
+    public String customerTickets(Model model, HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+
+            if (customerId == null) {
+                log.warn("Unauthorized access to customer tickets - redirecting to login");
+                return "redirect:/login";
+            }
+
+            log.info("Loading tickets page for customer {}", customerId);
+
+            // Lấy thông tin customer từ database
+            CustomerResponse customer = customerService.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
+
+            model.addAttribute("customer", customer);
+            model.addAttribute("customerName", customer.getName());
+            model.addAttribute("customerEmail", customer.getEmail());
+
+            return "customer/my-tickets";
+
+        } catch (Exception e) {
+            log.error("Error loading customer tickets page: ", e);
+            return "redirect:/login";
+        }
+    }
+
+    /**
+     * Trang chi tiết ticket của customer
+     */
+    @GetMapping("/customer/tickets/{ticketId}")
+    public String viewTicket(@PathVariable Long ticketId, Model model, HttpSession session) {
+        try {
+            Long customerId = (Long) session.getAttribute("customerId");
+
+            if (customerId == null) {
+                log.warn("Unauthorized access to ticket view - redirecting to login");
+                return "redirect:/login";
+            }
+
+            log.info("Loading ticket {} for customer {}", ticketId, customerId);
+
+            // Lấy thông tin ticket từ API
+            model.addAttribute("ticketId", ticketId);
+            model.addAttribute("customerId", customerId);
+
+            return "customer/ticket-detail";
+
+        } catch (Exception e) {
+            log.error("Error loading ticket detail page: ", e);
+            return "redirect:/customer/tickets";
+        }
+    }
+
+    // ==================== LEADER PAGES ====================
+
+    /**
+     * Leader Dashboard
+     */
+    @GetMapping("/leader/dashboard")
+    public String leaderDashboard(Model model, HttpSession session) {
         try {
             Long staffId = (Long) session.getAttribute("staffId");
+            
+            log.info("Leader dashboard access attempt - staffId from session: {}", staffId);
+            log.info("Session attributes: {}", session.getAttributeNames());
+
             if (staffId == null) {
-                log.warn("Unauthorized access to staff tickets - redirecting to login");
+                log.warn("Unauthorized access to leader dashboard - redirecting to staff login");
                 return "redirect:/staff/login";
             }
 
-            // Optional: load staff info for header
+            log.info("Loading leader dashboard for staff {}", staffId);
+
+            // Lấy thông tin staff từ database
             StaffResponse staff = staffService.findById(staffId)
-                    .orElse(null);
-            if (staff != null) {
-                model.addAttribute("staff", staff);
-                model.addAttribute("staffName", staff.getName());
-                model.addAttribute("staffEmail", staff.getEmail());
-                model.addAttribute("staffRoles", staff.getRoles());
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+
+            log.info("Leader dashboard loaded successfully for staff {}", staffId);
+            return "leader/dashboard";
+
+        } catch (Exception e) {
+            log.error("Error loading leader dashboard: ", e);
+            return "redirect:/staff/login";
+        }
+    }
+
+    /**
+     * Leader Tickets Management
+     */
+    @GetMapping("/leader/tickets")
+    public String leaderTickets(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+
+            if (staffId == null) {
+                log.warn("Unauthorized access to leader tickets - redirecting to staff login");
+                return "redirect:/staff/login";
             }
 
-            return "staff/tickets";
+            log.info("Loading leader tickets page for staff {}", staffId);
+
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+
+            return "leader/tickets";
+
         } catch (Exception e) {
-            log.error("Error loading staff tickets page: ", e);
+            log.error("Error loading leader tickets page: ", e);
+            return "redirect:/staff/login";
+        }
+    }
+
+    /**
+     * Leader Staff Management
+     */
+    @GetMapping("/leader/staff")
+    public String leaderStaff(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+
+            if (staffId == null) {
+                log.warn("Unauthorized access to leader staff - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+
+            log.info("Loading leader staff page for staff {}", staffId);
+
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+
+            return "leader/staff";
+
+        } catch (Exception e) {
+            log.error("Error loading leader staff page: ", e);
             return "redirect:/staff/login";
         }
     }
@@ -245,23 +395,23 @@ public class WebController {
     public String productDetail(@PathVariable Long productId, Model model, HttpSession session) {
         try {
             log.info("Loading product detail page for product ID: {}", productId);
-            
+
             // Validate productId
             if (productId == null || productId <= 0) {
                 log.warn("Invalid product ID: {}", productId);
                 return "redirect:/home";
             }
-            
+
             // Lấy thông tin sản phẩm với vendor và category
             var product = productService.findByIdWithDetails(productId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + productId));
-            
+
             // Kiểm tra sản phẩm có đang hoạt động không
             if (product.getStatus() != Product.ProductStatus.ACTIVE) {
                 log.warn("Product {} is not active, redirecting to home", productId);
                 return "redirect:/home";
             }
-            
+
             // Lấy sản phẩm liên quan (cùng category) - với error handling
             List<Product> relatedProducts = List.of();
             try {
@@ -273,7 +423,7 @@ public class WebController {
             } catch (Exception e) {
                 log.warn("Error loading related products: ", e);
             }
-            
+
             // Lấy categories để hiển thị trong navigation - với error handling
             var categories = List.<Category>of();
             try {
@@ -281,18 +431,18 @@ public class WebController {
             } catch (Exception e) {
                 log.warn("Error loading categories: ", e);
             }
-            
+
             // Thêm thông tin vào model
             model.addAttribute("product", product);
             model.addAttribute("relatedProducts", relatedProducts);
             model.addAttribute("categories", categories);
             model.addAttribute("isInStock", product.getQuantity() > 0);
             model.addAttribute("stockStatus", product.getQuantity() > 0 ? "In Stock" : "Out of Stock");
-            
+
             log.info("Product detail page loaded successfully for: {}", product.getName());
-            
+
             return "product-detail";
-            
+
         } catch (Exception e) {
             log.error("Error loading product detail page for product ID {}: ", productId, e);
             return "redirect:/home";
@@ -303,32 +453,32 @@ public class WebController {
      * Trang catalog - hiển thị tất cả sản phẩm
      */
     @GetMapping("/catalog")
-    public String catalog(Model model, 
+    public String catalog(Model model,
                           @RequestParam(required = false) String sort,
                           @RequestParam(required = false) String view,
                           @RequestParam(required = false) String priceRange) {
         try {
             log.info("Loading catalog page with sort: {}, view: {}, priceRange: {}", sort, view, priceRange);
-            
+
             // Lấy tất cả sản phẩm đang hoạt động
             var allProducts = productService.getAllActiveProducts();
-            
+
             // Áp dụng bộ lọc giá nếu có
             if (priceRange != null && !priceRange.isEmpty()) {
                 allProducts = filterProductsByPriceRange(allProducts, priceRange);
             }
-            
+
             // Áp dụng sắp xếp nếu có
             if (sort != null && !sort.isEmpty()) {
                 allProducts = sortProducts(allProducts, sort);
             }
-            
+
             // Lấy sản phẩm mới nhất cho sidebar
             var newReleases = productService.getLatestProducts(3);
-            
+
             // Lấy categories để hiển thị trong navigation
             var categories = categoryService.getAllActiveCategories();
-            
+
             // Thêm thông tin vào model
             model.addAttribute("products", allProducts);
             model.addAttribute("newReleases", newReleases);
@@ -337,11 +487,11 @@ public class WebController {
             model.addAttribute("currentView", view != null ? view : "grid");
             model.addAttribute("currentPriceRange", priceRange != null ? priceRange : "");
             model.addAttribute("totalProducts", allProducts.size());
-            
+
             log.info("Catalog page loaded successfully with {} products", allProducts.size());
-            
+
             return "catalog";
-            
+
         } catch (Exception e) {
             log.error("Error loading catalog page: ", e);
             return "redirect:/home";
@@ -447,32 +597,32 @@ public class WebController {
                                     @RequestParam(required = false) String view,
                                     @RequestParam(required = false) String priceRange) {
         try {
-            log.info("Loading catalog page for category ID: {} with sort: {}, view: {}, priceRange: {}", 
+            log.info("Loading catalog page for category ID: {} with sort: {}, view: {}, priceRange: {}",
                     categoryId, sort, view, priceRange);
-            
+
             // Lấy thông tin category
             var category = categoryService.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy category với ID: " + categoryId));
-            
+
             // Lấy sản phẩm theo category
             var products = productService.findByCategory(categoryId);
-            
+
             // Áp dụng bộ lọc giá nếu có
             if (priceRange != null && !priceRange.isEmpty()) {
                 products = filterProductsByPriceRange(products, priceRange);
             }
-            
+
             // Áp dụng sắp xếp nếu có
             if (sort != null && !sort.isEmpty()) {
                 products = sortProducts(products, sort);
             }
-            
+
             // Lấy sản phẩm mới nhất cho sidebar
             var newReleases = productService.getLatestProducts(3);
-            
+
             // Lấy categories để hiển thị trong navigation
             var categories = categoryService.getAllActiveCategories();
-            
+
             // Thêm thông tin vào model
             model.addAttribute("products", products);
             model.addAttribute("newReleases", newReleases);
@@ -482,12 +632,12 @@ public class WebController {
             model.addAttribute("currentView", view != null ? view : "grid");
             model.addAttribute("currentPriceRange", priceRange != null ? priceRange : "");
             model.addAttribute("totalProducts", products.size());
-            
-            log.info("Category catalog page loaded successfully for {} with {} products", 
+
+            log.info("Category catalog page loaded successfully for {} with {} products",
                     category.getName(), products.size());
-            
+
             return "catalog";
-            
+
         } catch (Exception e) {
             log.error("Error loading category catalog page: ", e);
             return "redirect:/catalog";
@@ -540,21 +690,21 @@ public class WebController {
     public String cartPage(Model model, HttpSession session) {
         try {
             Long customerId = (Long) session.getAttribute("customerId");
-            
+
             if (customerId == null) {
                 log.warn("Unauthorized access to cart - redirecting to login");
                 return "redirect:/login";
             }
-            
+
             log.info("Loading cart page for customer ID: {}", customerId);
-            
+
             // Lấy thông tin customer
             CustomerResponse customer = customerService.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin customer"));
-            
+
             // Lấy thông tin giỏ hàng
             CartResponse cart = cartService.getCart(customerId);
-            
+
             model.addAttribute("customer", customer);
             model.addAttribute("customerName", customer.getName());
             model.addAttribute("cart", cart);
@@ -563,9 +713,9 @@ public class WebController {
             model.addAttribute("totalAmount", cart.getTotalAmount());
             model.addAttribute("shippingCost", cart.getShippingCost());
             model.addAttribute("grandTotal", cart.getGrandTotal());
-            
+
             return "cart";
-            
+
         } catch (Exception e) {
             log.error("Error loading cart page: ", e);
             return "redirect:/login";

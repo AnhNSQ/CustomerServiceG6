@@ -50,7 +50,8 @@ public class UserConverterImpl implements UserConverter {
         );
     }
     
-    private Set<String> extractRoleNames(Role role) {
+    @Override
+    public Set<String> extractRoleNames(Role role) {
         if (role != null && role.getRoleName() != null) {
             return Set.of(role.getRoleName().name());
         }

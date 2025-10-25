@@ -12,17 +12,18 @@
     
     <style>
         :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --success-color: #48bb78;
-            --danger-color: #f56565;
-            --warning-color: #ed8936;
-            --info-color: #4299e1;
+            --primary-color: #dc3545;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
         }
 
         body {
-            background-color: #f7fafc;
+            background: linear-gradient(135deg, #ffffff 0%, #ffe6e6 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
 
         .dashboard-header {
@@ -103,7 +104,7 @@
         }
 
         .quick-action-btn {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-color), #c82333);
             border: none;
             color: white;
             padding: 1rem 1.5rem;
@@ -118,12 +119,12 @@
 
         .quick-action-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
             color: white;
         }
 
         .ticket-item {
-            background: #f8f9fa;
+            background: #fff5f5;
             border-radius: 10px;
             padding: 1rem;
             margin-bottom: 1rem;
@@ -132,7 +133,7 @@
         }
 
         .ticket-item:hover {
-            background: #e9ecef;
+            background: #ffe6e6;
             transform: translateX(5px);
         }
 
@@ -143,7 +144,7 @@
             font-weight: 600;
         }
 
-        .status-open { background: #cce5ff; color: #004085; }
+        .status-open { background: #ffe6e6; color: #dc3545; }
         .status-in-progress { background: #fff3cd; color: #856404; }
         .status-resolved { background: #d4edda; color: #155724; }
         .status-closed { background: #e2e3e5; color: #495057; }
@@ -201,32 +202,25 @@
     <div class="container">
         <!-- Statistics Cards -->
         <div class="row mb-4">
-            <div class="col-md-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-sm-6 mb-3">
                 <div class="stat-card primary">
                     <i class="fas fa-ticket-alt"></i>
-                    <h3 th:text="${totalTickets ?: 0}">24</h3>
-                    <p>Tổng số Ticket</p>
+                    <h3 id="totalAssignedTickets">-</h3>
+                    <p>Tổng số ticket được giao</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-sm-6 mb-3">
                 <div class="stat-card warning">
                     <i class="fas fa-clock"></i>
-                    <h3 th:text="${pendingTickets ?: 0}">8</h3>
+                    <h3 id="inProgressTickets">-</h3>
                     <p>Đang xử lý</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 mb-3">
+            <div class="col-md-4 col-sm-6 mb-3">
                 <div class="stat-card success">
                     <i class="fas fa-check-circle"></i>
-                    <h3 th:text="${resolvedTickets ?: 0}">15</h3>
+                    <h3 id="completedTickets">-</h3>
                     <p>Đã giải quyết</p>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-3">
-                <div class="stat-card danger">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h3 th:text="${urgentTickets ?: 0}">3</h3>
-                    <p>Cần xử lý gấp</p>
                 </div>
             </div>
         </div>
@@ -271,39 +265,6 @@
                     <div id="allTicketsContent"></div>
                 </div>
 
-                <!-- Recent Tickets -->
-                <div class="dashboard-card">
-                    <h5 class="section-title">
-                        <i class="fas fa-history"></i>Ticket gần đây
-                    </h5>
-                    
-                    <div th:if="${tickets != null and !tickets.empty}" th:each="ticket : ${tickets}">
-                        <div class="ticket-item">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h6 class="mb-1" th:text="'#' + ${ticket.ticketId} + ' - ' + ${ticket.subject}">#1234 - Yêu cầu hỗ trợ</h6>
-                                    <p class="text-muted mb-2" th:text="${ticket.description}">Mô tả ticket...</p>
-                                    <small class="text-muted">
-                                        <i class="fas fa-user me-1"></i>
-                                        <span th:text="'Khách hàng #' + ${ticket.customerId}">Khách hàng</span>
-                                        <i class="fas fa-calendar ms-3 me-1"></i>
-                                        <span th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
-                                    </small>
-                                </div>
-                                <div class="text-end">
-                                    <span class="status-badge status-open" th:text="${ticket.status}">Mở</span>
-                                    <br>
-                                    <small class="text-muted mt-1 d-block" th:text="${ticket.priority}">Cao</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div th:if="${tickets == null or tickets.empty}" class="text-center py-4">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Chưa có ticket nào</p>
-                    </div>
-                </div>
             </div>
 
             <!-- Sidebar -->
@@ -466,7 +427,12 @@
         }
 
         function viewAssignedTickets() {
-            alert('Tính năng đang phát triển - Xem ticket được giao');
+            loadAssignedTicketsStats();
+        }
+
+        function viewTicketDetail(ticketId) {
+            // Redirect đến trang ticket detail giống customer
+            window.location.href = `/staff/tickets/${ticketId}`;
         }
 
         function manageCustomers() {
@@ -488,6 +454,46 @@
         function viewNotifications() {
             alert('Tính năng đang phát triển - Thông báo');
         }
+
+        // Load assigned tickets statistics for current staff
+        function loadAssignedTicketsStats() {
+            fetch('/api/staff/tickets/assigned/stats', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayAssignedTicketsStats(data.data || {});
+                } else {
+                    showAssignedTicketsStatsError(data.message || 'Không thể tải thống kê ticket');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading assigned tickets stats:', error);
+                showAssignedTicketsStatsError('Có lỗi xảy ra khi tải thống kê');
+            });
+        }
+
+        function displayAssignedTicketsStats(stats) {
+            document.getElementById('totalAssignedTickets').textContent = stats.totalAssigned || 0;
+            document.getElementById('inProgressTickets').textContent = stats.inProgress || 0;
+            document.getElementById('completedTickets').textContent = stats.completed || 0;
+        }
+
+        function showAssignedTicketsStatsError(message) {
+            document.getElementById('totalAssignedTickets').textContent = '-';
+            document.getElementById('inProgressTickets').textContent = '-';
+            document.getElementById('completedTickets').textContent = '-';
+            console.error('Error loading assigned tickets stats:', message);
+        }
+
+        // Auto-load assigned tickets statistics when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAssignedTicketsStats();
+        });
     </script>
 </body>
 </html>

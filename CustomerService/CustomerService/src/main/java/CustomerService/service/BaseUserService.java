@@ -18,36 +18,36 @@ import java.util.Optional;
  */
 @Slf4j
 public abstract class BaseUserService {
-    
+
     protected final CustomerRepository customerRepository;
     protected final StaffRepository staffRepository;
     protected final PasswordValidator passwordValidator;
     protected final UserConverter userConverter;
-    
-    protected BaseUserService(CustomerRepository customerRepository, 
-                             StaffRepository staffRepository,
-                             PasswordValidator passwordValidator,
-                             UserConverter userConverter) {
+
+    protected BaseUserService(CustomerRepository customerRepository,
+                              StaffRepository staffRepository,
+                              PasswordValidator passwordValidator,
+                              UserConverter userConverter) {
         this.customerRepository = customerRepository;
         this.staffRepository = staffRepository;
         this.passwordValidator = passwordValidator;
         this.userConverter = userConverter;
     }
-    
+
     /**
      * Tìm customer theo email hoặc username
      */
     protected Optional<Customer> findCustomerByEmailOrUsername(String emailOrUsername) {
         return customerRepository.findActiveByEmailOrUsername(emailOrUsername);
     }
-    
+
     /**
      * Tìm staff theo email hoặc username
      */
     protected Optional<Staff> findStaffByEmailOrUsername(String emailOrUsername) {
         return staffRepository.findActiveByEmailOrUsername(emailOrUsername);
     }
-    
+
     /**
      * Xác thực mật khẩu cho customer
      */
@@ -56,7 +56,7 @@ public abstract class BaseUserService {
             throw new InvalidCredentialsException();
         }
     }
-    
+
     /**
      * Xác thực mật khẩu cho staff
      */
@@ -65,34 +65,35 @@ public abstract class BaseUserService {
             throw new InvalidCredentialsException();
         }
     }
-    
+
     /**
      * Chuyển đổi Customer thành CustomerResponse
      */
     protected CustomerResponse convertToCustomerResponse(Customer customer) {
         return userConverter.convertToCustomerResponse(customer);
     }
-    
+
     /**
      * Chuyển đổi Staff thành StaffResponse
      */
     protected StaffResponse convertToStaffResponse(Staff staff) {
         return userConverter.convertToStaffResponse(staff);
     }
-    
+
     /**
      * Tìm customer theo ID và throw exception nếu không tìm thấy
      */
     protected Customer findCustomerByIdOrThrow(Long customerId) {
         return customerRepository.findByIdWithRole(customerId)
-            .orElseThrow(() -> new UserNotFoundException("Không tìm thấy thông tin customer"));
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy thông tin customer"));
     }
-    
+
     /**
      * Tìm staff theo ID và throw exception nếu không tìm thấy
      */
     protected Staff findStaffByIdOrThrow(Long staffId) {
         return staffRepository.findByIdWithRole(staffId)
-            .orElseThrow(() -> new UserNotFoundException("Không tìm thấy thông tin staff"));
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy thông tin staff"));
     }
 }
+

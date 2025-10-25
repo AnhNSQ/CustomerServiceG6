@@ -23,8 +23,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
      */
     @Query("SELECT t FROM Ticket t LEFT JOIN FETCH t.customer LEFT JOIN FETCH t.staffDepartment WHERE t.ticketId = :ticketId")
     Optional<Ticket> findByIdWithCustomer(@Param("ticketId") Long ticketId);
-    
-    
+
     /**
      * Tìm ticket theo status
      */
