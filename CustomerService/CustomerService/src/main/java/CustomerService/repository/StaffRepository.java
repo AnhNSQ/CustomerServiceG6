@@ -1,5 +1,6 @@
 package CustomerService.repository;
 
+import CustomerService.entity.Role.RoleName;
 import CustomerService.entity.Staff;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -55,6 +56,6 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
      */
     @Query("SELECT s FROM Staff s LEFT JOIN FETCH s.role LEFT JOIN FETCH s.staffDepartment " +
            "WHERE s.staffDepartment.staffDepartmentId = :departmentId AND s.role.roleName != :roleName AND s.isActive = true")
-    List<Staff> findByStaffDepartmentIdAndRoleNameNot(@Param("departmentId") Long departmentId, @Param("roleName") String roleName);
+    List<Staff> findByStaffDepartmentIdAndRoleNameNot(@Param("departmentId") Long departmentId, @Param("roleName") RoleName roleName);
 }
 

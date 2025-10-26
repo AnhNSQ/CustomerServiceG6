@@ -78,7 +78,7 @@ public class LeaderController {
     /**
      * LEADER: Lấy danh sách nhân viên trong phòng ban
      */
-    @GetMapping("/staff/department")
+    @GetMapping("/staffs/department")
     public ResponseEntity<ApiResponse<List<StaffResponse>>> getDepartmentStaff(HttpSession session) {
         try {
             log.info("API /leaders/staff/department called - checking authentication");

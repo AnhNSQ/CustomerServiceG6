@@ -1,6 +1,5 @@
 package CustomerService.service;
 
-import CustomerService.dto.StaffLoginRequest;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
@@ -13,13 +12,6 @@ import java.util.Optional;
  * Tuân thủ Interface Segregation Principle (ISP)
  */
 public interface StaffService {
-    
-    /**
-     * Đăng nhập staff
-     * @deprecated Sử dụng AuthenticationService thay thế
-     */
-    @Deprecated
-    StaffResponse login(StaffLoginRequest request);
     
     /**
      * Tìm staff theo ID

@@ -2,6 +2,7 @@ package CustomerService.controller;
 
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
+import CustomerService.dto.TicketResponse;
 import CustomerService.dto.CartResponse;
 import CustomerService.dto.ApiResponse;
 import CustomerService.entity.Product;
@@ -286,6 +287,41 @@ public class WebController {
         } catch (Exception e) {
             log.error("Error loading ticket detail page: ", e);
             return "redirect:/customer/tickets";
+        }
+    }
+
+    // ==================== ADMIN PAGES ====================
+
+    /**
+     * Admin Dashboard
+     */
+    @GetMapping("/admin/dashboard")
+    public String adminDashboard(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            
+            if (staffId == null) {
+                log.warn("Unauthorized access to admin dashboard - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+            
+            log.info("Loading admin dashboard for staff ID: {}", staffId);
+            
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+            
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+            model.addAttribute("staffRoles", staff.getRoles());
+
+            log.info("Admin dashboard loaded successfully for staff {}", staffId);
+            return "admin/dashboard";
+            
+        } catch (Exception e) {
+            log.error("Error loading admin dashboard: ", e);
+            return "redirect:/staff/login";
         }
     }
 
@@ -719,6 +755,81 @@ public class WebController {
         } catch (Exception e) {
             log.error("Error loading cart page: ", e);
             return "redirect:/login";
+        }
+    }
+
+    /**
+     * Leader Staff Detail
+     */
+    @GetMapping("/leader/staff/{staffId}")
+    public String leaderStaffDetail(@PathVariable Long staffId, Model model, HttpSession session) {
+        try {
+            Long currentStaffId = (Long) session.getAttribute("staffId");
+
+            if (currentStaffId == null) {
+                log.warn("Unauthorized access to staff detail - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+
+            log.info("Loading staff detail page for staff {} by leader {}", staffId, currentStaffId);
+
+            // Lấy thông tin leader từ database
+            StaffResponse leader = staffService.findById(currentStaffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin leader"));
+
+            // Lấy thông tin staff chi tiết từ leader service
+            StaffResponse staffDetail = leaderService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+
+            model.addAttribute("leader", leader);
+            model.addAttribute("staffDetail", staffDetail);
+            model.addAttribute("staffName", leader.getName());
+            model.addAttribute("staffEmail", leader.getEmail());
+
+            return "leader/staff-detail";
+
+        } catch (Exception e) {
+            log.error("Error loading staff detail page: ", e);
+            return "redirect:/leader/staff";
+        }
+    }
+
+    /**
+     * Leader Ticket Detail
+     */
+    @GetMapping("/leader/tickets/{ticketId}")
+    public String leaderTicketDetail(@PathVariable Long ticketId, Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+
+            if (staffId == null) {
+                log.warn("Unauthorized access to ticket detail - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+
+            log.info("Loading ticket detail page for ticket {} by leader {}", ticketId, staffId);
+
+            // Lấy thông tin leader từ database
+            StaffResponse leader = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin leader"));
+
+            // Lấy thông tin ticket chi tiết từ leader service
+            List<TicketResponse> departmentTickets = leaderService.getTicketsByLeaderDepartment(staffId);
+            TicketResponse ticketDetail = departmentTickets.stream()
+                .filter(t -> t.getTicketId().equals(ticketId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Ticket không thuộc phòng ban của bạn"));
+
+            model.addAttribute("leader", leader);
+            model.addAttribute("ticketDetail", ticketDetail);
+            model.addAttribute("staffName", leader.getName());
+            model.addAttribute("staffEmail", leader.getEmail());
+
+            return "leader/ticket-detail";
+
+        } catch (Exception e) {
+            log.error("Error loading ticket detail page: ", e);
+            return "redirect:/leader/tickets";
         }
     }
 }

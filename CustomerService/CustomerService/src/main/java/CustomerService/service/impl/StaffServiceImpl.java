@@ -1,10 +1,8 @@
 package CustomerService.service.impl;
 
-import CustomerService.dto.StaffLoginRequest;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
-import CustomerService.entity.Staff;
 import CustomerService.entity.Ticket;
 import CustomerService.entity.TicketAssign;
 import CustomerService.repository.CustomerRepository;
@@ -43,26 +41,6 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
         this.ticketAssignRepository = ticketAssignRepository;
         this.passwordValidator = passwordValidator;
         this.userConverter = userConverter;
-    }
-
-    /**
-     * Đăng nhập staff
-     * @deprecated Sử dụng AuthenticationService thay thế
-     */
-    @Override
-    @Deprecated
-    public StaffResponse login(StaffLoginRequest request) {
-        log.info("Bắt đầu đăng nhập staff với email/username: {}", request.getEmailOrUsername());
-
-        // Tìm staff theo email hoặc username
-        Staff staff = staffRepository.findActiveByEmailOrUsernameWithRole(request.getEmailOrUsername())
-            .orElseThrow(() -> new RuntimeException("Email/Username hoặc mật khẩu không đúng"));
-
-        // Xác thực mật khẩu
-        passwordValidator.validatePassword(request.getPassword(), staff.getPassword());
-
-        log.info("Đăng nhập thành công staff với ID: {}", staff.getStaffId());
-        return userConverter.convertToStaffResponse(staff);
     }
 
     /**

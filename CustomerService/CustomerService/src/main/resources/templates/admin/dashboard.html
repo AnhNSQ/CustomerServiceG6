@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leader Dashboard - Customer Service</title>
+    <title>Admin Dashboard - Customer Service</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
@@ -18,16 +18,17 @@
             --danger-color: #dc3545;
             --warning-color: #ffc107;
             --info-color: #17a2b8;
+            --dark-color: #343a40;
         }
 
         body {
-            background: linear-gradient(135deg, #ffffff 0%, #ffe6e6 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
         }
 
         .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
             color: white;
             padding: 2rem 0;
             margin-bottom: 2rem;
@@ -39,7 +40,7 @@
             margin-bottom: 0.5rem;
         }
 
-        .leader-badge {
+        .admin-badge {
             background: rgba(255, 255, 255, 0.2);
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -81,6 +82,10 @@
             border-left-color: var(--danger-color);
         }
 
+        .stat-card.dark {
+            border-left-color: var(--dark-color);
+        }
+
         .stat-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
@@ -120,7 +125,7 @@
             border: 1px solid #dee2e6;
             border-radius: 10px;
             text-decoration: none;
-            color: #333;
+            color: var(--dark-color);
             transition: all 0.3s ease;
             margin-bottom: 1rem;
         }
@@ -162,18 +167,10 @@
             border-radius: 10px;
             padding: 1rem;
             margin-bottom: 1rem;
-            border-left: 4px solid var(--warning-color);
+            border-left: 4px solid var(--primary-color);
         }
 
-        .staff-item {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--info-color);
-        }
-
-        .ticket-status, .staff-role {
+        .ticket-status {
             padding: 0.25rem 0.75rem;
             border-radius: 15px;
             font-size: 0.8rem;
@@ -195,16 +192,6 @@
             color: #004085;
         }
 
-        .role-lead {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .role-staff {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
         .priority-urgent {
             color: var(--danger-color);
             font-weight: 600;
@@ -218,21 +205,6 @@
         .priority-normal {
             color: var(--info-color);
         }
-
-        .assign-btn {
-            background: var(--warning-color);
-            color: #333;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-        }
-
-        .assign-btn:hover {
-            background: var(--gold-color);
-            transform: translateY(-1px);
-        }
     </style>
 </head>
 <body>
@@ -241,10 +213,10 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1><i class="fas fa-user-tie me-3"></i>Leader Dashboard</h1>
-                    <div class="leader-badge">
-                        <i class="fas fa-user-tie me-2"></i>
-                        Chào mừng, <span th:text="${staff.name}">Leader</span>!
+                    <h1><i class="fas fa-shield-alt me-3"></i>Admin Dashboard</h1>
+                    <div class="admin-badge">
+                        <i class="fas fa-crown me-2"></i>
+                        Chào mừng, <span th:text="${staff.name}">Admin</span>!
                     </div>
                 </div>
                 <div class="col-md-4 text-md-end">
@@ -259,7 +231,7 @@
     <div class="container">
         <!-- Loading State -->
         <div id="loadingState" class="loading-spinner">
-            <div class="spinner-border text-warning" role="status">
+            <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Đang tải...</span>
             </div>
             <p class="mt-3 text-muted">Đang tải thông tin dashboard...</p>
@@ -276,31 +248,70 @@
         <div id="dashboardContent" style="display: none;">
             <!-- Statistics Cards -->
             <div class="row mb-4">
-                <div class="col-md-4 col-sm-6 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3">
                     <div class="stat-card primary">
                         <div class="stat-icon text-primary">
                             <i class="fas fa-ticket-alt"></i>
                         </div>
-                        <div class="stat-number text-primary" id="totalDepartmentTickets">-</div>
-                        <div class="stat-label">Tổng ticket phòng ban</div>
+                        <div class="stat-number text-primary" id="totalTickets">-</div>
+                        <div class="stat-label">Tổng số Ticket</div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3">
                     <div class="stat-card warning">
                         <div class="stat-icon text-warning">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div class="stat-number text-warning" id="pendingDepartmentTickets">-</div>
+                        <div class="stat-number text-warning" id="pendingTickets">-</div>
                         <div class="stat-label">Đang chờ xử lý</div>
                     </div>
                 </div>
-                <div class="col-md-4 col-sm-6 mb-3">
+                <div class="col-md-3 col-sm-6 mb-3">
                     <div class="stat-card success">
                         <div class="stat-icon text-success">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="stat-number text-success" id="resolvedDepartmentTickets">-</div>
+                        <div class="stat-number text-success" id="resolvedTickets">-</div>
                         <div class="stat-label">Đã giải quyết</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card danger">
+                        <div class="stat-icon text-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-number text-danger" id="urgentTickets">-</div>
+                        <div class="stat-label">Khẩn cấp</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card info">
+                        <div class="stat-icon text-info">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number text-info" id="totalCustomers">-</div>
+                        <div class="stat-label">Tổng khách hàng</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card dark">
+                        <div class="stat-icon text-dark">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="stat-number text-dark" id="totalStaff">-</div>
+                        <div class="stat-label">Tổng nhân viên</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card primary">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-number text-primary" id="totalDepartments">-</div>
+                        <div class="stat-label">Tổng phòng ban</div>
                     </div>
                 </div>
             </div>
@@ -314,36 +325,46 @@
                         </h4>
                         <div class="row">
                             <div class="col-md-6">
-                                <a href="#" class="quick-action-btn" onclick="viewDepartmentTickets()">
-                                    <i class="fas fa-list me-2"></i>Ticket phòng ban
+                                <a href="#" class="quick-action-btn" onclick="viewAllTickets()">
+                                    <i class="fas fa-list me-2"></i>Xem tất cả Ticket
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <a href="#" class="quick-action-btn" onclick="viewDepartmentStaff()">
-                                    <i class="fas fa-users me-2"></i>Nhân viên phòng ban
+                                <a href="#" class="quick-action-btn" onclick="manageStaff()">
+                                    <i class="fas fa-user-tie me-2"></i>Quản lý nhân viên
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <a href="#" class="quick-action-btn" onclick="assignTickets()">
-                                    <i class="fas fa-user-check me-2"></i>Phân công ticket
+                                <a href="#" class="quick-action-btn" onclick="manageDepartments()">
+                                    <i class="fas fa-building me-2"></i>Quản lý phòng ban
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="manageCustomers()">
+                                    <i class="fas fa-users me-2"></i>Quản lý khách hàng
                                 </a>
                             </div>
                             <div class="col-md-6">
                                 <a href="#" class="quick-action-btn" onclick="viewReports()">
-                                    <i class="fas fa-chart-bar me-2"></i>Báo cáo phòng ban
+                                    <i class="fas fa-chart-bar me-2"></i>Báo cáo thống kê
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="systemSettings()">
+                                    <i class="fas fa-cog me-2"></i>Cài đặt hệ thống
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Department Tickets -->
+                <!-- Recent Tickets -->
                 <div class="col-md-6">
                     <div class="dashboard-card">
                         <h4 class="section-title">
-                            <i class="fas fa-clock"></i>Ticket phòng ban gần đây
+                            <i class="fas fa-clock"></i>Ticket gần đây
                         </h4>
-                        <div id="recentDepartmentTicketsContainer">
+                        <div id="recentTicketsContainer">
                             <div class="text-center text-muted">
                                 <i class="fas fa-spinner fa-spin"></i> Đang tải...
                             </div>
@@ -352,20 +373,12 @@
                 </div>
             </div>
 
-            <!-- Department Tickets Container -->
-            <div id="departmentTicketsContainer" class="dashboard-card" style="display: none;">
+            <!-- All Tickets Container -->
+            <div id="allTicketsContainer" class="dashboard-card" style="display: none;">
                 <h4 class="section-title">
-                    <i class="fas fa-list"></i>Ticket phòng ban
+                    <i class="fas fa-list"></i>Tất cả Ticket trong hệ thống
                 </h4>
-                <div id="departmentTicketsContent"></div>
-            </div>
-
-            <!-- Department Staff Container -->
-            <div id="departmentStaffContainer" class="dashboard-card" style="display: none;">
-                <h4 class="section-title">
-                    <i class="fas fa-users"></i>Nhân viên phòng ban
-                </h4>
-                <div id="departmentStaffContent"></div>
+                <div id="allTicketsContent"></div>
             </div>
         </div>
     </div>
@@ -375,9 +388,8 @@
 
     <script>
         // Global variables
-        let departmentStats = null;
-        let departmentTickets = [];
-        let departmentStaff = [];
+        let globalStats = null;
+        let allTickets = [];
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -389,14 +401,11 @@
             try {
                 showLoadingState();
                 
-                // Load department stats
-                await loadDepartmentStats();
+                // Load global stats
+                await loadGlobalStats();
                 
-                // Load recent department tickets
-                await loadDepartmentTickets();
-                
-                // Load department staff
-                await loadDepartmentStaff();
+                // Load recent tickets
+                await loadRecentTickets();
                 
                 showDashboardContent();
                 
@@ -406,98 +415,80 @@
             }
         }
 
-        // Load department statistics
-        async function loadDepartmentStats() {
+        // Load global statistics
+        async function loadGlobalStats() {
             try {
-                const response = await fetch('/api/leaders/stats/department', {
+                const response = await fetch('/api/admin/stats/global', {
                     credentials: 'include'
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to load department stats');
+                    throw new Error('Failed to load stats');
                 }
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    departmentStats = result.data;
+                    globalStats = result.data;
                     updateStatsDisplay();
                 } else {
                     throw new Error(result.message);
                 }
                 
             } catch (error) {
-                console.error('Error loading department stats:', error);
+                console.error('Error loading global stats:', error);
                 throw error;
             }
         }
 
         // Update stats display
         function updateStatsDisplay() {
-            if (departmentStats) {
-                document.getElementById('totalDepartmentTickets').textContent = departmentStats.total || 0;
-                document.getElementById('pendingDepartmentTickets').textContent = departmentStats.pending || 0;
-                document.getElementById('resolvedDepartmentTickets').textContent = departmentStats.resolved || 0;
+            if (globalStats) {
+                document.getElementById('totalTickets').textContent = globalStats.total || 0;
+                document.getElementById('pendingTickets').textContent = globalStats.pending || 0;
+                document.getElementById('resolvedTickets').textContent = globalStats.resolved || 0;
+                document.getElementById('urgentTickets').textContent = globalStats.urgent || 0;
+                
+                // Mock data for other stats (cần implement API riêng)
+                document.getElementById('totalCustomers').textContent = '150'; // Mock
+                document.getElementById('totalStaff').textContent = '25'; // Mock
+                document.getElementById('totalDepartments').textContent = '5'; // Mock
             }
         }
 
-        // Load department tickets
-        async function loadDepartmentTickets() {
+        // Load recent tickets
+        async function loadRecentTickets() {
             try {
-                const response = await fetch('/api/leaders/tickets/department', {
+                const response = await fetch('/api/admin/tickets', {
                     credentials: 'include'
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to load department tickets');
+                    throw new Error('Failed to load tickets');
                 }
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    departmentTickets = result.data;
-                    displayRecentDepartmentTickets(departmentTickets.slice(0, 5)); // Show only 5 recent
+                    allTickets = result.data;
+                    displayRecentTickets(allTickets.slice(0, 5)); // Show only 5 recent
                 } else {
                     throw new Error(result.message);
                 }
                 
             } catch (error) {
-                console.error('Error loading department tickets:', error);
-                document.getElementById('recentDepartmentTicketsContainer').innerHTML = 
-                    '<div class="text-center text-muted">Không thể tải ticket phòng ban</div>';
+                console.error('Error loading recent tickets:', error);
+                document.getElementById('recentTicketsContainer').innerHTML = 
+                    '<div class="text-center text-muted">Không thể tải ticket gần đây</div>';
             }
         }
 
-        // Load department staff
-        async function loadDepartmentStaff() {
-            try {
-                const response = await fetch('/api/leaders/staffs/department', {
-                    credentials: 'include'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to load department staff');
-                }
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    departmentStaff = result.data;
-                } else {
-                    throw new Error(result.message);
-                }
-                
-            } catch (error) {
-                console.error('Error loading department staff:', error);
-            }
-        }
-
-        // Display recent department tickets
-        function displayRecentDepartmentTickets(tickets) {
-            const container = document.getElementById('recentDepartmentTicketsContainer');
+        // Display recent tickets
+        function displayRecentTickets(tickets) {
+            const container = document.getElementById('recentTicketsContainer');
             
             if (tickets.length === 0) {
-                container.innerHTML = '<div class="text-center text-muted">Chưa có ticket nào trong phòng ban</div>';
+                container.innerHTML = '<div class="text-center text-muted">Chưa có ticket nào</div>';
                 return;
             }
             
@@ -529,21 +520,29 @@
             container.innerHTML = ticketsHtml;
         }
 
-        // View department tickets
-        function viewDepartmentTickets() {
-            window.location.href = '/leader/tickets';
+        // View all tickets
+        function viewAllTickets() {
+            const container = document.getElementById('allTicketsContainer');
+            const content = document.getElementById('allTicketsContent');
+            
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                displayAllTickets();
+            } else {
+                container.style.display = 'none';
+            }
         }
 
-        // Display department tickets
-        function displayDepartmentTickets() {
-            const content = document.getElementById('departmentTicketsContent');
+        // Display all tickets
+        function displayAllTickets() {
+            const content = document.getElementById('allTicketsContent');
             
-            if (departmentTickets.length === 0) {
-                content.innerHTML = '<div class="text-center text-muted">Chưa có ticket nào trong phòng ban</div>';
+            if (allTickets.length === 0) {
+                content.innerHTML = '<div class="text-center text-muted">Chưa có ticket nào</div>';
                 return;
             }
             
-            const ticketsHtml = departmentTickets.map(ticket => `
+            const ticketsHtml = allTickets.map(ticket => `
                 <div class="ticket-item">
                     <div class="row">
                         <div class="col-md-8">
@@ -566,11 +565,6 @@
                                     <i class="fas fa-flag me-1"></i>${ticket.priority}
                                 </span>
                             </div>
-                            <div class="mt-2">
-                                <button class="assign-btn" onclick="assignTicket(${ticket.ticketId})">
-                                    <i class="fas fa-user-check me-1"></i>Phân công
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -579,60 +573,25 @@
             content.innerHTML = ticketsHtml;
         }
 
-        // View department staff
-        function viewDepartmentStaff() {
-            window.location.href = '/leader/staff';
-        }
-
-        // Display department staff
-        function displayDepartmentStaff() {
-            const content = document.getElementById('departmentStaffContent');
-            
-            if (departmentStaff.length === 0) {
-                content.innerHTML = '<div class="text-center text-muted">Chưa có nhân viên nào trong phòng ban</div>';
-                return;
-            }
-            
-            const staffHtml = departmentStaff.map(staff => `
-                <div class="staff-item">
-                    <div class="row">
-                        <div class="col-md-8">
-                            <h6 class="mb-1">${staff.name}</h6>
-                            <p class="mb-1 text-muted">${staff.email}</p>
-                            <small class="text-muted">
-                                <i class="fas fa-phone me-1"></i>${staff.phone || 'N/A'}
-                                <span class="ms-3">
-                                    <i class="fas fa-calendar me-1"></i>${new Date(staff.registerDate).toLocaleDateString('vi-VN')}
-                                </span>
-                            </small>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <span class="staff-role role-${staff.roles[0].toLowerCase()}">${staff.roles[0]}</span>
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="fas fa-circle me-1 ${staff.isActive ? 'text-success' : 'text-danger'}"></i>
-                                    ${staff.isActive ? 'Hoạt động' : 'Không hoạt động'}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            content.innerHTML = staffHtml;
-        }
-
         // Quick action functions
-        function assignTickets() {
-            alert('Tính năng phân công ticket sẽ được phát triển');
+        function manageStaff() {
+            alert('Tính năng quản lý nhân viên sẽ được phát triển');
         }
 
-        function assignTicket(ticketId) {
-            alert(`Phân công ticket ${ticketId} - Tính năng sẽ được phát triển`);
+        function manageDepartments() {
+            alert('Tính năng quản lý phòng ban sẽ được phát triển');
+        }
+
+        function manageCustomers() {
+            alert('Tính năng quản lý khách hàng sẽ được phát triển');
         }
 
         function viewReports() {
-            alert('Tính năng báo cáo phòng ban sẽ được phát triển');
+            alert('Tính năng báo cáo thống kê sẽ được phát triển');
+        }
+
+        function systemSettings() {
+            alert('Tính năng cài đặt hệ thống sẽ được phát triển');
         }
 
         // Logout function
@@ -678,3 +637,4 @@
     </script>
 </body>
 </html>
+

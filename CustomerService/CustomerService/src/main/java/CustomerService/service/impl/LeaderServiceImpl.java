@@ -3,6 +3,8 @@ package CustomerService.service.impl;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
+import CustomerService.entity.Role;
+import CustomerService.entity.Role.RoleName;
 import CustomerService.entity.Staff;
 import CustomerService.entity.Ticket;
 import CustomerService.entity.TicketAssign;
@@ -79,7 +81,7 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
         Staff leader = staffRepository.findByIdWithRole(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
-        if (!"LEAD".equals(leader.getRole().getRoleName().name())) {
+        if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
         
@@ -105,14 +107,14 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
         Staff leader = staffRepository.findByIdWithRole(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
-        if (!"LEAD".equals(leader.getRole().getRoleName().name())) {
+        if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
         
         // Lấy nhân viên trong cùng phòng ban (trừ LEADER)
         List<Staff> staffList = staffRepository.findByStaffDepartmentIdAndRoleNameNot(
             leader.getStaffDepartment().getStaffDepartmentId(),
-            "LEAD"
+            RoleName.LEAD
         );
         
         return staffList.stream()
@@ -132,7 +134,7 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
         Staff leader = staffRepository.findByIdWithRole(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
-        if (!"LEAD".equals(leader.getRole().getRoleName().name())) {
+        if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
         
@@ -196,7 +198,7 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
         Staff leader = staffRepository.findByIdWithRole(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
-        if (!"LEAD".equals(leader.getRole().getRoleName().name())) {
+        if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
         
