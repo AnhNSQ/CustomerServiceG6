@@ -458,8 +458,12 @@
                         localStorage.removeItem('staffEmailOrUsername');
                     }
                     
+                    // Sử dụng redirectUrl từ backend
+                    const redirectUrl = data.data.redirectUrl;
+                    console.log('Redirect URL from backend:', redirectUrl);
+                    
                     setTimeout(() => {
-                        window.location.href = '/staff/dashboard';
+                        window.location.href = redirectUrl;
                     }, 1000);
                 } else {
                     showError(data.message || 'Đăng nhập thất bại!');

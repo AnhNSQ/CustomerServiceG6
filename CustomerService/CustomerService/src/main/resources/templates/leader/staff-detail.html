@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết nhân viên - Customer Service</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb-nav {
+            margin-top: 0.5rem;
+        }
+        
+        .breadcrumb-nav a {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .breadcrumb-nav a:hover {
+            color: white;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .detail-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        
+        .detail-body {
+            padding: 1.5rem;
+        }
+        
+        .staff-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .info-item {
+            margin-bottom: 1rem;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            color: #212529;
+        }
+        
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .role-badge {
+            background-color: #cfe2ff;
+            color: #084298;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .btn-edit {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-user me-3"></i>Chi tiết nhân viên</h1>
+                    <div class="breadcrumb-nav">
+                        <i class="fas fa-home me-2"></i>
+                        <a href="/leader/dashboard" class="text-white text-decoration-none">Dashboard</a>
+                        <i class="fas fa-chevron-right mx-2"></i>
+                        <a href="/leader/staff" class="text-white text-decoration-none">Nhân viên phòng ban</a>
+                        <i class="fas fa-chevron-right mx-2"></i>
+                        <span>Chi tiết nhân viên</span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/leader/staff" class="btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Staff Detail Card -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <div class="staff-avatar">
+                            <span th:text="${staffDetail.name.charAt(0)}">A</span>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h3 th:text="${staffDetail.name}">Tên nhân viên</h3>
+                        <p class="text-muted mb-0" th:text="${staffDetail.email}">email@example.com</p>
+                    </div>
+                    <div class="col-md-2 text-md-end">
+                        <span class="status-badge" th:classappend="${staffDetail.isActive} ? 'status-active' : 'status-inactive'">
+                            <i class="fas fa-circle me-1"></i>
+                            <span th:text="${staffDetail.isActive} ? 'Hoạt động' : 'Không hoạt động'">Hoạt động</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-label">ID nhân viên</div>
+                            <div class="info-value" th:text="${staffDetail.staffId}">123</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Tên đầy đủ</div>
+                            <div class="info-value" th:text="${staffDetail.name}">Tên nhân viên</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Email</div>
+                            <div class="info-value" th:text="${staffDetail.email}">email@example.com</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Username</div>
+                            <div class="info-value" th:text="${staffDetail.username}">username</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-label">Số điện thoại</div>
+                            <div class="info-value" th:text="${staffDetail.phone ?: 'Chưa cập nhật'}">0123456789</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Vai trò</div>
+                            <div class="info-value">
+                                <span class="role-badge" th:each="role : ${staffDetail.roles}" th:text="${role}">STAFF</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Ngày đăng ký</div>
+                            <div class="info-value" th:text="${#temporals.format(staffDetail.registerDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Trạng thái</div>
+                            <div class="info-value">
+                                <span class="status-badge" th:classappend="${staffDetail.isActive} ? 'status-active' : 'status-inactive'">
+                                    <i class="fas fa-circle me-1"></i>
+                                    <span th:text="${staffDetail.isActive} ? 'Hoạt động' : 'Không hoạt động'">Hoạt động</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button class="btn btn-edit w-100" onclick="editStaff()">
+                                <i class="fas fa-edit me-2"></i>Chỉnh sửa thông tin
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-outline-primary w-100" onclick="viewStaffTickets()">
+                                <i class="fas fa-ticket-alt me-2"></i>Xem ticket được phân công
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editStaff() {
+            alert('Tính năng chỉnh sửa thông tin nhân viên sẽ được phát triển!');
+        }
+        
+        function viewStaffTickets() {
+            alert('Tính năng xem ticket được phân công sẽ được phát triển!');
+        }
+    </script>
+</body>
+</html>
+

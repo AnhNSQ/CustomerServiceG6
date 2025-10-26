@@ -25,40 +25,40 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Transactional
 public class AuthenticationServiceImpl extends BaseUserService implements AuthenticationService {
-    
-    public AuthenticationServiceImpl(CustomerRepository customerRepository, 
-                                   StaffRepository staffRepository,
-                                   PasswordValidator passwordValidator,
-                                   UserConverter userConverter) {
+
+    public AuthenticationServiceImpl(CustomerRepository customerRepository,
+                                     StaffRepository staffRepository,
+                                     PasswordValidator passwordValidator,
+                                     UserConverter userConverter) {
         super(customerRepository, staffRepository, passwordValidator, userConverter);
     }
-    
+
     @Override
     public CustomerResponse authenticateCustomer(CustomerLoginRequest request) {
         log.info("Bắt đầu xác thực customer với email/username: {}", request.getEmailOrUsername());
-        
+
         // Tìm customer theo email hoặc username
         Customer customer = findCustomerByEmailOrUsername(request.getEmailOrUsername())
-            .orElseThrow(InvalidCredentialsException::new);
-        
+                .orElseThrow(InvalidCredentialsException::new);
+
         // Xác thực mật khẩu
         validateCustomerPassword(request.getPassword(), customer);
-        
+
         log.info("Xác thực thành công customer với ID: {}", customer.getCustomerId());
         return convertToCustomerResponse(customer);
     }
-    
+
     @Override
     public StaffResponse authenticateStaff(StaffLoginRequest request) {
         log.info("Bắt đầu xác thực staff với email/username: {}", request.getEmailOrUsername());
-        
+
         // Tìm staff theo email hoặc username
         Staff staff = findStaffByEmailOrUsername(request.getEmailOrUsername())
-            .orElseThrow(InvalidCredentialsException::new);
-        
+                .orElseThrow(InvalidCredentialsException::new);
+
         // Xác thực mật khẩu
         validateStaffPassword(request.getPassword(), staff);
-        
+
         log.info("Xác thực thành công staff với ID: {}", staff.getStaffId());
         return convertToStaffResponse(staff);
     }

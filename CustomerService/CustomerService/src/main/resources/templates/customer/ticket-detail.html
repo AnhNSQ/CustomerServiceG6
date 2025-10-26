@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Ticket - Customer Service</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #dc3545;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #dc3545, #c82333) !important;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 2rem auto;
+            max-width: 1000px;
+            padding: 2rem;
+        }
+
+        .ticket-header {
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .ticket-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .ticket-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border-radius: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .meta-item i {
+            color: var(--primary-color);
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .info-section h5 {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-section h5 i {
+            margin-right: 10px;
+        }
+
+        .description-box {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        /* Conversation Styles */
+        .conversation-container {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .customer-message {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-left: 4px solid #2196f3;
+        }
+
+        .staff-message {
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+            border-left: 4px solid #9c27b0;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .message-sender {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .message-time {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
+        .message-content {
+            line-height: 1.6;
+        }
+
+        .message-subject {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .message-text {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* Reply Form Styles */
+        .reply-form {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .reply-form .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .reply-form .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        .reply-form .btn {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .reply-form .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), #c82333);
+            border: none;
+        }
+
+        .reply-form .btn-primary:hover {
+            background: linear-gradient(45deg, #c82333, #b02a37);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), #c82333);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(45deg, #c82333, #b02a37);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, var(--secondary-color), #545b62);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(45deg, #545b62, #495057);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, var(--danger-color), #c82333);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(45deg, #c82333, #b02a37);
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--danger-color);
+        }
+
+        .badge {
+            font-size: 0.9em;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-headset me-2"></i>Customer Service
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+                <a class="nav-link" href="/customer/tickets">
+                    <i class="fas fa-ticket-alt me-1"></i>Ticket của tôi
+                </a>
+                <a class="nav-link" href="#" onclick="logout(); return false;">
+                    <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="main-container">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="mt-3 text-muted">Đang tải thông tin ticket...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error-message" style="display: none;">
+                <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                <h5 id="errorTitle">Không thể tải thông tin ticket</h5>
+                <p id="errorMessage">Ticket không tồn tại hoặc bạn không có quyền xem ticket này.</p>
+                <a href="/customer/tickets" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i>Quay lại danh sách
+                </a>
+            </div>
+
+            <!-- Ticket Content -->
+            <div id="ticketContent" style="display: none;">
+                <!-- Ticket Header -->
+                <div class="ticket-header">
+                    <h1 class="ticket-title" id="ticketTitle">Loading...</h1>
+                    <div class="ticket-meta" id="ticketMeta">
+                        <!-- Meta information will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Ticket Information -->
+                <div class="info-section">
+                    <h5><i class="fas fa-info-circle"></i>Thông tin cơ bản</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td id="ticketStatus">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Độ ưu tiên:</strong></td>
+                                    <td id="ticketPriority">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Phòng ban:</strong></td>
+                                    <td id="ticketDepartment">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>Ngày tạo:</strong></td>
+                                    <td id="ticketCreatedAt">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày cập nhật:</strong></td>
+                                    <td id="ticketUpdatedAt">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conversation Thread -->
+                <div class="info-section">
+                    <h5><i class="fas fa-comments"></i>Cuộc trò chuyện hỗ trợ</h5>
+                    <div class="conversation-container" id="conversationContainer">
+                        Loading...
+                    </div>
+                </div>
+
+                <!-- Reply Form -->
+                <div class="info-section">
+                    <h5><i class="fas fa-reply"></i>Gửi phản hồi</h5>
+                    <div class="reply-form">
+                        <form id="replyForm">
+                            <div class="mb-3">
+                                <label for="replyMessage" class="form-label">Tin nhắn của bạn:</label>
+                                <textarea class="form-control" id="replyMessage" rows="4" 
+                                    placeholder="Nhập phản hồi của bạn cho nhân viên hỗ trợ..." required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-secondary me-2" onclick="clearReply()">
+                                    <i class="fas fa-times me-1"></i>Xóa
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-1"></i>Gửi phản hồi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="goBack()">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="deleteTicket()">
+                        <i class="fas fa-trash me-2"></i>Xóa ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentTicket = null;
+        const ticketId = /*[[${ticketId}]]*/ null;
+
+        // Load ticket details when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Page loaded, ticketId from Thymeleaf:', ticketId);
+            
+            // Fallback: get ticketId from URL if Thymeleaf didn't work
+            let actualTicketId = ticketId;
+            if (!actualTicketId) {
+                const pathParts = window.location.pathname.split('/');
+                actualTicketId = pathParts[pathParts.length - 1];
+                console.log('Fallback ticketId from URL:', actualTicketId);
+            }
+            
+            if (actualTicketId && !isNaN(actualTicketId)) {
+                loadTicketDetails(actualTicketId);
+            } else {
+                console.error('No valid ticketId found');
+                showError('Không có ID ticket hợp lệ');
+            }
+        });
+
+        function loadTicketDetails(ticketId) {
+            console.log('Loading ticket details for ID:', ticketId);
+            fetch(`/api/customers/tickets/${ticketId}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('API Response:', data);
+                if (data.success) {
+                    currentTicket = data.data;
+                    displayTicketDetails(currentTicket);
+                } else {
+                    showError(data.message || 'Có lỗi xảy ra khi tải ticket');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading ticket details:', error);
+                showError('Lỗi kết nối: ' + error.message);
+            });
+        }
+
+        function displayTicketDetails(ticket) {
+            // Hide loading, show content
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('ticketContent').style.display = 'block';
+
+            // Update ticket title - không hiển thị database ID
+            document.getElementById('ticketTitle').textContent = 'Ticket hỗ trợ';
+
+            // Update ticket meta - bỏ ticket ID
+            const metaHtml = `
+                <div class="meta-item">
+                    <i class="fas fa-building"></i>
+                    <span>${ticket.staffDepartmentName || 'Chưa phân công'}</span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>${formatDate(ticket.createdAt)}</span>
+                </div>
+            `;
+            document.getElementById('ticketMeta').innerHTML = metaHtml;
+
+            // Update basic information - không có ticket ID
+            document.getElementById('ticketStatus').innerHTML = `<span class="badge ${getStatusClass(ticket.status)}">${getStatusText(ticket.status)}</span>`;
+            document.getElementById('ticketPriority').innerHTML = `<span class="badge ${getPriorityClass(ticket.priority)}">${getPriorityText(ticket.priority)}</span>`;
+            document.getElementById('ticketDepartment').textContent = ticket.staffDepartmentName || 'Chưa phân công';
+            document.getElementById('ticketCreatedAt').textContent = formatDate(ticket.createdAt);
+            
+            // Ngày cập nhật sẽ được cập nhật khi có phản hồi từ staff hoặc customer
+            // Hiện tại hiển thị ngày tạo, sau này sẽ cập nhật khi có conversation
+            document.getElementById('ticketUpdatedAt').textContent = formatDate(ticket.createdAt);
+
+            // Hiển thị conversation thread thay vì description đơn thuần
+            displayConversation(ticket);
+        }
+
+        function displayConversation(ticket) {
+            const conversationContainer = document.getElementById('conversationContainer');
+            
+            // Customer's initial message
+            const customerMessage = `
+                <div class="message customer-message">
+                    <div class="message-header">
+                        <div class="message-sender">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <strong>Bạn</strong>
+                        </div>
+                        <div class="message-time">${formatDate(ticket.createdAt)}</div>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-subject">
+                            <strong>Tiêu đề:</strong> ${ticket.subject}
+                        </div>
+                        <div class="message-text">
+                            ${ticket.description}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Staff responses (sẽ được thêm sau)
+            const staffResponses = `
+                <div class="message staff-message">
+                    <div class="message-header">
+                        <div class="message-sender">
+                            <i class="fas fa-headset me-2"></i>
+                            <strong>Nhân viên hỗ trợ</strong>
+                        </div>
+                        <div class="message-time">Chưa có phản hồi</div>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <em>Nhân viên hỗ trợ chưa phản hồi ticket này.</em>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            conversationContainer.innerHTML = customerMessage + staffResponses;
+        }
+
+        // Function để cập nhật ngày cập nhật khi có conversation mới
+        function updateLastActivityDate(lastActivityDate) {
+            if (lastActivityDate) {
+                document.getElementById('ticketUpdatedAt').textContent = formatDate(lastActivityDate);
+            }
+        }
+
+        // Reply form functions
+        function clearReply() {
+            document.getElementById('replyMessage').value = '';
+        }
+
+        // Handle reply form submission
+        document.getElementById('replyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = document.getElementById('replyMessage').value.trim();
+            if (!message) {
+                alert('Vui lòng nhập tin nhắn!');
+                return;
+            }
+
+            // TODO: Gửi reply lên backend
+            console.log('Sending reply:', message);
+            
+            // Tạm thời hiển thị thông báo
+            alert('Chức năng gửi phản hồi sẽ được triển khai trong backend!');
+            
+            // Clear form
+            clearReply();
+        });
+
+        function showError(message = 'Có lỗi xảy ra khi tải ticket') {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                fetch('/api/customers/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/login';
+                    } else {
+                        alert('Có lỗi xảy ra khi đăng xuất!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    window.location.href = '/login';
+                });
+            }
+        }
+
+        function goBack() {
+            window.location.href = '/customer/tickets';
+        }
+
+        function editTicket() {
+            // TODO: Implement edit functionality
+            alert('Tính năng chỉnh sửa ticket sẽ được triển khai sớm!');
+        }
+
+        function deleteTicket() {
+            if (confirm('Bạn có chắc chắn muốn xóa ticket này? Hành động này không thể hoàn tác.')) {
+                fetch(`/api/customers/tickets/${ticketId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Xóa ticket thành công!');
+                        window.location.href = '/customer/tickets';
+                    } else {
+                        alert(data.message || 'Có lỗi xảy ra khi xóa ticket');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting ticket:', error);
+                    alert('Có lỗi xảy ra khi xóa ticket');
+                });
+            }
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'OPEN': return 'bg-success';
+                case 'PENDING': return 'bg-warning';
+                case 'ASSIGNED': return 'bg-info';
+                case 'IN_PROGRESS': return 'bg-primary';
+                case 'RESOLVED': return 'bg-success';
+                case 'CLOSED': return 'bg-secondary';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'OPEN': return 'Mở';
+                case 'PENDING': return 'Chờ xử lý';
+                case 'ASSIGNED': return 'Đã phân công';
+                case 'IN_PROGRESS': return 'Đang xử lý';
+                case 'RESOLVED': return 'Đã giải quyết';
+                case 'CLOSED': return 'Đã đóng';
+                default: return status;
+            }
+        }
+
+        function getPriorityClass(priority) {
+            switch(priority) {
+                case 'HIGH': return 'bg-danger';
+                case 'MEDIUM': return 'bg-warning';
+                case 'LOW': return 'bg-info';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getPriorityText(priority) {
+            switch(priority) {
+                case 'HIGH': return 'Cao';
+                case 'MEDIUM': return 'Trung bình';
+                case 'LOW': return 'Thấp';
+                default: return priority;
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>

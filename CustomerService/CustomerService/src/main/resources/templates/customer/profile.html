@@ -150,6 +150,20 @@
             font-size: 1.1rem;
         }
 
+        .clickable-field {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 8px;
+            border: 2px solid transparent;
+        }
+
+        .clickable-field:hover {
+            background: rgba(211, 47, 47, 0.05);
+            border-color: rgba(211, 47, 47, 0.2);
+            color: var(--primary-color);
+        }
+
         .edit-field {
             display: none;
             margin-top: 0.5rem;
@@ -270,11 +284,36 @@
             transition: all 0.3s ease;
         }
 
-        .btn-logout:hover {
-            background: var(--error-color);
+        .btn-cancel-all {
+            background: #6c757d;
+            border: none;
             color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel-all:hover {
+            background: #5a6268;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(245, 101, 101, 0.4);
+            color: white;
+        }
+
+        .btn-save-all {
+            background: var(--success-color);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save-all:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            color: white;
         }
 
         .alert {
@@ -285,8 +324,10 @@
         }
 
         .alert-success {
-            background: rgba(72, 187, 120, 0.1);
+            background: rgba(72, 187, 120, 0.15);
             color: var(--success-color);
+            border: 1px solid rgba(72, 187, 120, 0.3);
+            font-weight: 600;
         }
 
         .alert-danger {
@@ -390,84 +431,40 @@
                         <div class="info-label">
                             <i class="fas fa-user"></i>Họ và tên
                         </div>
-                        <div class="info-value" id="nameValue" th:text="${customer.name}">Nguyễn Văn A</div>
+                        <div class="info-value clickable-field" id="nameValue" onclick="editField('name')" th:text="${customer.name}">Nguyễn Văn A</div>
                         <div class="edit-field">
                             <input type="text" id="nameInput" th:value="${customer.name}" placeholder="Nhập họ và tên">
                         </div>
-                        <div class="edit-buttons">
-                            <button class="btn-save" onclick="saveField('name')">
-                                <i class="fas fa-check me-1"></i>Lưu
-                            </button>
-                            <button class="btn-cancel" onclick="cancelEdit('name')">
-                                <i class="fas fa-times me-1"></i>Hủy
-                            </button>
-                        </div>
-                        <button class="btn-edit" onclick="editField('name')">
-                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
-                        </button>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
                             <i class="fas fa-envelope"></i>Email
                         </div>
-                        <div class="info-value" id="emailValue" th:text="${customer.email}">nguyenvana@example.com</div>
+                        <div class="info-value clickable-field" id="emailValue" onclick="editField('email')" th:text="${customer.email}">nguyenvana@example.com</div>
                         <div class="edit-field">
                             <input type="email" id="emailInput" th:value="${customer.email}" placeholder="Nhập email">
                         </div>
-                        <div class="edit-buttons">
-                            <button class="btn-save" onclick="saveField('email')">
-                                <i class="fas fa-check me-1"></i>Lưu
-                            </button>
-                            <button class="btn-cancel" onclick="cancelEdit('email')">
-                                <i class="fas fa-times me-1"></i>Hủy
-                            </button>
-                        </div>
-                        <button class="btn-edit" onclick="editField('email')">
-                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
-                        </button>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
                             <i class="fas fa-at"></i>Username
                         </div>
-                        <div class="info-value" id="usernameValue" th:text="${customer.username}">anguyen</div>
+                        <div class="info-value clickable-field" id="usernameValue" onclick="editField('username')" th:text="${customer.username}">anguyen</div>
                         <div class="edit-field">
                             <input type="text" id="usernameInput" th:value="${customer.username}" placeholder="Nhập username">
                         </div>
-                        <div class="edit-buttons">
-                            <button class="btn-save" onclick="saveField('username')">
-                                <i class="fas fa-check me-1"></i>Lưu
-                            </button>
-                            <button class="btn-cancel" onclick="cancelEdit('username')">
-                                <i class="fas fa-times me-1"></i>Hủy
-                            </button>
-                        </div>
-                        <button class="btn-edit" onclick="editField('username')">
-                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
-                        </button>
                     </div>
                     
                     <div class="info-item">
                         <div class="info-label">
                             <i class="fas fa-phone"></i>Số điện thoại
                         </div>
-                        <div class="info-value" id="phoneValue" th:text="${customer.phone ?: 'Chưa cập nhật'}">0123456789</div>
+                        <div class="info-value clickable-field" id="phoneValue" onclick="editField('phone')" th:text="${customer.phone ?: 'Chưa cập nhật'}">0123456789</div>
                         <div class="edit-field">
                             <input type="tel" id="phoneInput" th:value="${customer.phone ?: ''}" placeholder="Nhập số điện thoại">
                         </div>
-                        <div class="edit-buttons">
-                            <button class="btn-save" onclick="saveField('phone')">
-                                <i class="fas fa-check me-1"></i>Lưu
-                            </button>
-                            <button class="btn-cancel" onclick="cancelEdit('phone')">
-                                <i class="fas fa-times me-1"></i>Hủy
-                            </button>
-                        </div>
-                        <button class="btn-edit" onclick="editField('phone')">
-                            <i class="fas fa-edit me-1"></i>Chỉnh sửa
-                        </button>
                     </div>
                     
                     <div class="info-item">
@@ -497,6 +494,16 @@
                     </div>
                 </div>
                 
+                <!-- Save Changes Button -->
+                <div class="text-center mb-4" id="saveChangesContainer" style="display: none;">
+                    <button onclick="saveAllChanges()" class="btn-save-all me-3">
+                        <i class="fas fa-save me-2"></i>Lưu thay đổi
+                    </button>
+                    <button onclick="cancelAllChanges()" class="btn-cancel-all">
+                        <i class="fas fa-times me-2"></i>Hủy tất cả
+                    </button>
+                </div>
+                
                 <!-- Action Buttons -->
                 <div class="text-center">
                     <button onclick="goBack()" class="btn-back me-3">
@@ -515,6 +522,7 @@
     
     <script>
         let originalValues = {};
+        let editedFields = new Set();
 
         function goBack() {
             window.location.href = '/dashboard';
@@ -544,53 +552,60 @@
         }
 
         function editField(fieldName) {
-            // Store original value
-            originalValues[fieldName] = document.getElementById(fieldName + 'Value').textContent.trim();
+            // Store original value if not already stored
+            if (!originalValues[fieldName]) {
+                originalValues[fieldName] = document.getElementById(fieldName + 'Value').textContent.trim();
+            }
             
-            // Hide value and edit button
+            // Hide value
             document.getElementById(fieldName + 'Value').style.display = 'none';
-            document.querySelector(`#${fieldName}Value`).parentElement.querySelector('.btn-edit').style.display = 'none';
             
-            // Show edit field and buttons
+            // Show edit field
             document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'block';
-            document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.style.display = 'block';
+            
+            // Add to edited fields
+            editedFields.add(fieldName);
+            
+            // Show save changes container
+            document.getElementById('saveChangesContainer').style.display = 'block';
             
             // Focus on input
             document.getElementById(fieldName + 'Input').focus();
         }
 
-        function cancelEdit(fieldName) {
-            // Restore original value
-            document.getElementById(fieldName + 'Value').textContent = originalValues[fieldName];
+        function saveAllChanges() {
+            const updateData = {};
+            let hasChanges = false;
             
-            // Hide edit field and buttons
-            document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
-            document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.style.display = 'none';
+            // Collect all edited field values
+            for (let fieldName of editedFields) {
+                const input = document.getElementById(fieldName + 'Input');
+                const newValue = input.value.trim();
+                const originalValue = originalValues[fieldName];
+                
+                if (newValue !== originalValue) {
+                    updateData[fieldName] = newValue;
+                    hasChanges = true;
+                }
+            }
             
-            // Show value and edit button
-            document.getElementById(fieldName + 'Value').style.display = 'block';
-            document.querySelector(`#${fieldName}Value`).parentElement.querySelector('.btn-edit').style.display = 'inline-block';
-        }
-
-        function saveField(fieldName) {
-            const input = document.getElementById(fieldName + 'Input');
-            const newValue = input.value.trim();
-            
-            // Validation
-            if (!validateField(fieldName, newValue)) {
+            if (!hasChanges) {
+                showAlert('info', 'Không có thay đổi nào để lưu!');
                 return;
             }
             
-            // Show loading state
-            const saveBtn = document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.querySelector('.btn-save');
-            const originalText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<div class="loading active"></div>';
-            saveBtn.disabled = true;
+            // Validate all fields
+            for (let fieldName in updateData) {
+                if (!validateField(fieldName, updateData[fieldName])) {
+                    return;
+                }
+            }
             
-            // Prepare update data
-            const updateData = {
-                [fieldName]: newValue
-            };
+            // Show loading state
+            const saveBtn = document.querySelector('.btn-save-all');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<div class="loading active"></div> Đang lưu...';
+            saveBtn.disabled = true;
             
             // Call API to update profile
             fetch('/api/customers/profile', {
@@ -603,25 +618,29 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update display value
-                    document.getElementById(fieldName + 'Value').textContent = newValue;
-                    
-                    // Update header display for name and email
-                    if (fieldName === 'name') {
-                        document.getElementById('displayName').textContent = newValue;
-                    } else if (fieldName === 'email') {
-                        document.getElementById('displayEmail').textContent = newValue;
+                    // Update all display values
+                    for (let fieldName in updateData) {
+                        document.getElementById(fieldName + 'Value').textContent = updateData[fieldName];
+                        
+                        // Update header display for name and email
+                        if (fieldName === 'name') {
+                            document.getElementById('displayName').textContent = updateData[fieldName];
+                        } else if (fieldName === 'email') {
+                            document.getElementById('displayEmail').textContent = updateData[fieldName];
+                        }
                     }
                     
-                    // Hide edit field and buttons
-                    document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
-                    document.querySelector(`#${fieldName}Input`).parentElement.nextElementSibling.style.display = 'none';
+                    // Hide all edit fields and show values
+                    for (let fieldName of editedFields) {
+                        document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
+                        document.getElementById(fieldName + 'Value').style.display = 'block';
+                    }
                     
-                    // Show value and edit button
-                    document.getElementById(fieldName + 'Value').style.display = 'block';
-                    document.querySelector(`#${fieldName}Value`).parentElement.querySelector('.btn-edit').style.display = 'inline-block';
+                    // Clear edited fields and hide save container
+                    editedFields.clear();
+                    document.getElementById('saveChangesContainer').style.display = 'none';
                     
-                    showAlert('success', 'Cập nhật thông tin thành công!');
+                    showAlert('success', 'Cập nhật thông tin thành công! Dữ liệu đã được lưu.');
                 } else {
                     showAlert('danger', data.message || 'Có lỗi xảy ra khi cập nhật!');
                 }
@@ -635,6 +654,21 @@
                 saveBtn.innerHTML = originalText;
                 saveBtn.disabled = false;
             });
+        }
+
+        function cancelAllChanges() {
+            // Restore all original values
+            for (let fieldName of editedFields) {
+                document.getElementById(fieldName + 'Value').textContent = originalValues[fieldName];
+                document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
+                document.getElementById(fieldName + 'Value').style.display = 'block';
+            }
+            
+            // Clear edited fields and hide save container
+            editedFields.clear();
+            document.getElementById('saveChangesContainer').style.display = 'none';
+            
+            showAlert('info', 'Đã hủy tất cả thay đổi!');
         }
 
         function validateField(fieldName, value) {
@@ -680,20 +714,30 @@
             
             const alert = document.createElement('div');
             alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.style.animation = 'slideInDown 0.5s ease-out';
             alert.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
-                ${message}
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'} me-2"></i>
+                <strong>${message}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
             
             document.getElementById('alertContainer').appendChild(alert);
             
-            // Auto remove after 5 seconds
+            // Scroll to alert if it's not visible
+            alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Auto remove after 6 seconds for success messages
+            const timeout = type === 'success' ? 6000 : 5000;
             setTimeout(() => {
                 if (alert && alert.parentNode) {
-                    alert.remove();
+                    alert.style.animation = 'slideOutUp 0.3s ease-in';
+                    setTimeout(() => {
+                        if (alert && alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 300);
                 }
-            }, 5000);
+            }, timeout);
         }
 
         // Initialize phone field display

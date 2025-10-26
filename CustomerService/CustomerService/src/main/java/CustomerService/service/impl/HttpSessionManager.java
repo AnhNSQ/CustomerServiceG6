@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 /**
  * Implementation cho SessionManager sử dụng HttpSession
  */
@@ -15,12 +17,10 @@ public class HttpSessionManager implements SessionManager {
     private static final String CUSTOMER_ID_KEY = "customerId";
     private static final String CUSTOMER_NAME_KEY = "customerName";
     private static final String CUSTOMER_EMAIL_KEY = "customerEmail";
-    private static final String CUSTOMER_ROLES_KEY = "customerRoles";
     
     private static final String STAFF_ID_KEY = "staffId";
     private static final String STAFF_NAME_KEY = "staffName";
     private static final String STAFF_EMAIL_KEY = "staffEmail";
-    private static final String STAFF_ROLES_KEY = "staffRoles";
     
     @Override
     public void setCustomerSession(HttpSession session, Long customerId, String name, String email, Object roles) {
@@ -28,7 +28,6 @@ public class HttpSessionManager implements SessionManager {
             session.setAttribute(CUSTOMER_ID_KEY, customerId);
             session.setAttribute(CUSTOMER_NAME_KEY, name);
             session.setAttribute(CUSTOMER_EMAIL_KEY, email);
-            session.setAttribute(CUSTOMER_ROLES_KEY, roles);
             log.info("Customer session set successfully for ID: {}", customerId);
         } catch (Exception e) {
             log.error("Error setting customer session: ", e);
@@ -42,7 +41,6 @@ public class HttpSessionManager implements SessionManager {
             session.setAttribute(STAFF_ID_KEY, staffId);
             session.setAttribute(STAFF_NAME_KEY, name);
             session.setAttribute(STAFF_EMAIL_KEY, email);
-            session.setAttribute(STAFF_ROLES_KEY, roles);
             log.info("Staff session set successfully for ID: {}", staffId);
         } catch (Exception e) {
             log.error("Error setting staff session: ", e);

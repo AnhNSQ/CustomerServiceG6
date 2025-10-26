@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Customer Service</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #dc3545;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --dark-color: #343a40;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-header h1 {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.9rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+            border-left: 5px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.primary {
+            border-left-color: var(--primary-color);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--info-color);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .stat-card.dark {
+            border-left-color: var(--dark-color);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
+        }
+
+        .quick-action-btn {
+            display: block;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--dark-color);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .quick-action-btn:hover {
+            background: linear-gradient(135deg, var(--primary-color), #c82333);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--danger-color);
+        }
+
+        .ticket-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .ticket-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-resolved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-assigned {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .priority-urgent {
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+
+        .priority-high {
+            color: var(--warning-color);
+            font-weight: 600;
+        }
+
+        .priority-normal {
+            color: var(--info-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-shield-alt me-3"></i>Admin Dashboard</h1>
+                    <div class="admin-badge">
+                        <i class="fas fa-crown me-2"></i>
+                        Chào mừng, <span th:text="${staff.name}">Admin</span>!
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button onclick="logout()" class="btn btn-logout">
+                        <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3 text-muted">Đang tải thông tin dashboard...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Không thể tải dashboard</h5>
+            <p>Bạn không có quyền truy cập trang này hoặc có lỗi xảy ra.</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" style="display: none;">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card primary">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <div class="stat-number text-primary" id="totalTickets">-</div>
+                        <div class="stat-label">Tổng số Ticket</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card warning">
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-number text-warning" id="pendingTickets">-</div>
+                        <div class="stat-label">Đang chờ xử lý</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card success">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-number text-success" id="resolvedTickets">-</div>
+                        <div class="stat-label">Đã giải quyết</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="stat-card danger">
+                        <div class="stat-icon text-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-number text-danger" id="urgentTickets">-</div>
+                        <div class="stat-label">Khẩn cấp</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card info">
+                        <div class="stat-icon text-info">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number text-info" id="totalCustomers">-</div>
+                        <div class="stat-label">Tổng khách hàng</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card dark">
+                        <div class="stat-icon text-dark">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="stat-number text-dark" id="totalStaff">-</div>
+                        <div class="stat-label">Tổng nhân viên</div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card primary">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="stat-number text-primary" id="totalDepartments">-</div>
+                        <div class="stat-label">Tổng phòng ban</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Quick Actions -->
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h4 class="section-title">
+                            <i class="fas fa-bolt"></i>Hành động nhanh
+                        </h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="viewAllTickets()">
+                                    <i class="fas fa-list me-2"></i>Xem tất cả Ticket
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="manageStaff()">
+                                    <i class="fas fa-user-tie me-2"></i>Quản lý nhân viên
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="manageDepartments()">
+                                    <i class="fas fa-building me-2"></i>Quản lý phòng ban
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="manageCustomers()">
+                                    <i class="fas fa-users me-2"></i>Quản lý khách hàng
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="viewReports()">
+                                    <i class="fas fa-chart-bar me-2"></i>Báo cáo thống kê
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="quick-action-btn" onclick="systemSettings()">
+                                    <i class="fas fa-cog me-2"></i>Cài đặt hệ thống
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Tickets -->
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h4 class="section-title">
+                            <i class="fas fa-clock"></i>Ticket gần đây
+                        </h4>
+                        <div id="recentTicketsContainer">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Đang tải...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Tickets Container -->
+            <div id="allTicketsContainer" class="dashboard-card" style="display: none;">
+                <h4 class="section-title">
+                    <i class="fas fa-list"></i>Tất cả Ticket trong hệ thống
+                </h4>
+                <div id="allTicketsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Global variables
+        let globalStats = null;
+        let allTickets = [];
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                showLoadingState();
+                
+                // Load global stats
+                await loadGlobalStats();
+                
+                // Load recent tickets
+                await loadRecentTickets();
+                
+                showDashboardContent();
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showErrorState();
+            }
+        }
+
+        // Load global statistics
+        async function loadGlobalStats() {
+            try {
+                const response = await fetch('/api/admin/stats/global', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load stats');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    globalStats = result.data;
+                    updateStatsDisplay();
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Error loading global stats:', error);
+                throw error;
+            }
+        }
+
+        // Update stats display
+        function updateStatsDisplay() {
+            if (globalStats) {
+                document.getElementById('totalTickets').textContent = globalStats.total || 0;
+                document.getElementById('pendingTickets').textContent = globalStats.pending || 0;
+                document.getElementById('resolvedTickets').textContent = globalStats.resolved || 0;
+                document.getElementById('urgentTickets').textContent = globalStats.urgent || 0;
+                
+                // Mock data for other stats (cần implement API riêng)
+                document.getElementById('totalCustomers').textContent = '150'; // Mock
+                document.getElementById('totalStaff').textContent = '25'; // Mock
+                document.getElementById('totalDepartments').textContent = '5'; // Mock
+            }
+        }
+
+        // Load recent tickets
+        async function loadRecentTickets() {
+            try {
+                const response = await fetch('/api/admin/tickets', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load tickets');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    allTickets = result.data;
+                    displayRecentTickets(allTickets.slice(0, 5)); // Show only 5 recent
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Error loading recent tickets:', error);
+                document.getElementById('recentTicketsContainer').innerHTML = 
+                    '<div class="text-center text-muted">Không thể tải ticket gần đây</div>';
+            }
+        }
+
+        // Display recent tickets
+        function displayRecentTickets(tickets) {
+            const container = document.getElementById('recentTicketsContainer');
+            
+            if (tickets.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted">Chưa có ticket nào</div>';
+                return;
+            }
+            
+            const ticketsHtml = tickets.map(ticket => `
+                <div class="ticket-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">${ticket.title}</h6>
+                            <p class="mb-1 text-muted small">${ticket.description.substring(0, 50)}...</p>
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>${ticket.customerName || 'N/A'}
+                                <span class="ms-2">
+                                    <i class="fas fa-calendar me-1"></i>${new Date(ticket.createdAt).toLocaleDateString('vi-VN')}
+                                </span>
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <span class="ticket-status status-${ticket.status.toLowerCase()}">${ticket.status}</span>
+                            <div class="mt-1">
+                                <span class="priority-${ticket.priority.toLowerCase()}">
+                                    <i class="fas fa-flag me-1"></i>${ticket.priority}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = ticketsHtml;
+        }
+
+        // View all tickets
+        function viewAllTickets() {
+            const container = document.getElementById('allTicketsContainer');
+            const content = document.getElementById('allTicketsContent');
+            
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                displayAllTickets();
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        // Display all tickets
+        function displayAllTickets() {
+            const content = document.getElementById('allTicketsContent');
+            
+            if (allTickets.length === 0) {
+                content.innerHTML = '<div class="text-center text-muted">Chưa có ticket nào</div>';
+                return;
+            }
+            
+            const ticketsHtml = allTickets.map(ticket => `
+                <div class="ticket-item">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6 class="mb-1">${ticket.title}</h6>
+                            <p class="mb-1 text-muted">${ticket.description}</p>
+                            <small class="text-muted">
+                                <i class="fas fa-user me-1"></i>${ticket.customerName || 'N/A'}
+                                <span class="ms-3">
+                                    <i class="fas fa-building me-1"></i>${ticket.departmentName || 'N/A'}
+                                </span>
+                                <span class="ms-3">
+                                    <i class="fas fa-calendar me-1"></i>${new Date(ticket.createdAt).toLocaleDateString('vi-VN')}
+                                </span>
+                            </small>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="ticket-status status-${ticket.status.toLowerCase()}">${ticket.status}</span>
+                            <div class="mt-1">
+                                <span class="priority-${ticket.priority.toLowerCase()}">
+                                    <i class="fas fa-flag me-1"></i>${ticket.priority}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            content.innerHTML = ticketsHtml;
+        }
+
+        // Quick action functions
+        function manageStaff() {
+            alert('Tính năng quản lý nhân viên sẽ được phát triển');
+        }
+
+        function manageDepartments() {
+            alert('Tính năng quản lý phòng ban sẽ được phát triển');
+        }
+
+        function manageCustomers() {
+            alert('Tính năng quản lý khách hàng sẽ được phát triển');
+        }
+
+        function viewReports() {
+            alert('Tính năng báo cáo thống kê sẽ được phát triển');
+        }
+
+        function systemSettings() {
+            alert('Tính năng cài đặt hệ thống sẽ được phát triển');
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                fetch('/api/staff/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/staff/login';
+                    } else {
+                        alert('Có lỗi xảy ra khi đăng xuất');
+                    }
+                })
+                .catch(error => {
+                    console.error('Logout error:', error);
+                    window.location.href = '/staff/login';
+                });
+            }
+        }
+
+        // UI State functions
+        function showLoadingState() {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'none';
+        }
+
+        function showErrorState() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            document.getElementById('dashboardContent').style.display = 'none';
+        }
+
+        function showDashboardContent() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+

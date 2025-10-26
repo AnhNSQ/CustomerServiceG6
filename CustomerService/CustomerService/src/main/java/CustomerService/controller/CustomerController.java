@@ -4,6 +4,8 @@ import CustomerService.dto.ApiResponse;
 import CustomerService.dto.CustomerLoginRequest;
 import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
+import CustomerService.dto.CustomerTicketCreateRequest;
+import CustomerService.dto.TicketResponse;
 import CustomerService.exception.AuthenticationException;
 import CustomerService.exception.UserNotFoundException;
 import CustomerService.service.AuthenticationService;
@@ -17,7 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -172,7 +177,164 @@ public class CustomerController {
     }
 
     /**
-     * Cập nhật thông tin customer
+     * Tạo ticket mới
+     */
+    @PostMapping("/tickets")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createTicket(
+            @Valid @RequestBody CustomerTicketCreateRequest request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Nhận yêu cầu tạo ticket từ customer {}", customerId);
+            
+            TicketResponse ticket = customerService.createTicket(customerId, request);
+
+            Map<String, Object> response = Map.of(
+                "message", "Ticket created successfully",
+                "ticketId", ticket.getTicketId(),
+                "status", "OPEN"
+            );
+            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(response, "Ticket created successfully"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi tạo ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi tạo ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Lấy danh sách ticket của customer hiện tại (có phân trang và tổng số)
+     */
+    @GetMapping("/tickets")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getMyTickets(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Lấy danh sách ticket của customer {} (page: {}, size: {})", customerId, page, size);
+            
+            Map<String, Object> result = customerService.getTicketsByCustomerIdWithPaginationAndTotal(customerId, page, size);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(result));
+                
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy danh sách ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Tìm kiếm ticket của customer theo tiêu đề
+     */
+    @GetMapping("/tickets/search")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> searchTickets(
+            @RequestParam String query,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Tìm kiếm ticket của customer {} với query: {}", customerId, query);
+            
+            List<TicketResponse> tickets = customerService.getTicketsByCustomerId(customerId);
+            
+            // Filter tickets by subject containing query (case insensitive)
+            List<TicketResponse> filteredTickets = tickets.stream()
+                .filter(ticket -> ticket.getSubject().toLowerCase().contains(query.toLowerCase()))
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(filteredTickets));
+                
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi tìm kiếm ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Lấy 5 ticket gần nhất của customer (cho dashboard)
+     */
+    @GetMapping("/tickets/recent")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> getRecentTickets(HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Lấy 5 ticket gần nhất của customer {}", customerId);
+            
+            List<TicketResponse> tickets = customerService.getRecentTicketsByCustomerId(customerId, 5);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(tickets));
+                
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy ticket gần đây: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Lấy tất cả ticket của customer (cho thống kê dashboard)
+     */
+    @GetMapping("/tickets/all")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> getAllTickets(HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Lấy tất cả ticket của customer {} cho thống kê", customerId);
+            
+            List<TicketResponse> tickets = customerService.getTicketsByCustomerId(customerId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(tickets));
+                
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy tất cả ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Cập nhật thông tin profile của customer
      */
     @PutMapping("/profile")
     public ResponseEntity<ApiResponse<CustomerResponse>> updateProfile(
@@ -181,25 +343,99 @@ public class CustomerController {
         try {
             if (!sessionManager.isCustomerLoggedIn(session)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Chưa đăng nhập"));
+                    .body(ApiResponse.error("Authentication required"));
             }
             
             Long customerId = sessionManager.getCustomerId(session);
-            log.info("Nhận yêu cầu cập nhật profile cho customer ID: {}", customerId);
+            
+            log.info("Cập nhật profile cho customer {} với data: {}", customerId, updateData);
             
             CustomerResponse updatedCustomer = customerService.updateProfile(customerId, updateData);
-            
-            log.info("Cập nhật profile thành công cho customer ID: {}", customerId);
             
             return ResponseEntity.ok()
                 .body(ApiResponse.success(updatedCustomer, "Cập nhật thông tin thành công"));
                 
-        } catch (UserNotFoundException e) {
-            log.error("Lỗi cập nhật profile: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi cập nhật profile: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+    @GetMapping("/tickets/{ticketId}")
+    public ResponseEntity<ApiResponse<TicketResponse>> getTicketById(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Lấy thông tin ticket {} của customer {}", ticketId, customerId);
+            
+            Optional<TicketResponse> ticketOpt = customerService.getTicketById(ticketId);
+            if (ticketOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Không tìm thấy ticket với ID: " + ticketId));
+            }
+            
+            TicketResponse ticket = ticketOpt.get();
+            
+            // Kiểm tra ticket có thuộc về customer này không
+            if (!ticket.getCustomerId().equals(customerId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Bạn không có quyền xem ticket này"));
+            }
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(ticket));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy ticket: {}", e.getMessage());
             return ResponseEntity.badRequest()
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
-            log.error("Lỗi không mong muốn khi cập nhật profile: ", e);
+            log.error("Lỗi không mong muốn khi lấy ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Xóa ticket của customer
+     */
+    @DeleteMapping("/tickets/{ticketId}")
+    public ResponseEntity<ApiResponse<String>> deleteTicket(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("Nhận yêu cầu xóa ticket {} từ customer {}", ticketId, customerId);
+            
+            boolean deleted = customerService.deleteTicket(ticketId, customerId);
+            
+            if (deleted) {
+                return ResponseEntity.ok()
+                    .body(ApiResponse.success("Xóa ticket thành công", null));
+            } else {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Không thể xóa ticket. Ticket không tồn tại hoặc không thuộc về bạn"));
+            }
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi xóa ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi xóa ticket: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

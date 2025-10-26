@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết ticket - Customer Service</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page-header {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .breadcrumb-nav {
+            margin-top: 0.5rem;
+        }
+        
+        .breadcrumb-nav a {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .breadcrumb-nav a:hover {
+            color: white;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+        
+        .detail-card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 1.5rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+        
+        .detail-body {
+            padding: 1.5rem;
+        }
+        
+        .ticket-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .info-item {
+            margin-bottom: 1rem;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            color: #212529;
+        }
+        
+        .status-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+        
+        .status-assigned {
+            background-color: #cfe2ff;
+            color: #084298;
+        }
+        
+        .status-resolved {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        
+        .priority-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+        
+        .priority-normal {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+        
+        .priority-low {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        
+        .action-buttons {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .btn-edit {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+        
+        .btn-assign {
+            background-color: #198754;
+            border-color: #198754;
+            color: white;
+        }
+        
+        .btn-assign:hover {
+            background-color: #157347;
+            border-color: #146c43;
+            color: white;
+        }
+        
+        .description-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            min-height: 120px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1><i class="fas fa-ticket-alt me-3"></i>Chi tiết ticket</h1>
+                    <div class="breadcrumb-nav">
+                        <i class="fas fa-home me-2"></i>
+                        <a href="/leader/dashboard" class="text-white text-decoration-none">Dashboard</a>
+                        <i class="fas fa-chevron-right mx-2"></i>
+                        <a href="/leader/tickets" class="text-white text-decoration-none">Ticket phòng ban</a>
+                        <i class="fas fa-chevron-right mx-2"></i>
+                        <span>Chi tiết ticket</span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/leader/tickets" class="btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Ticket Detail Card -->
+        <div class="detail-card">
+            <div class="detail-header">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <div class="ticket-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h3 th:text="${ticketDetail.title}">Tiêu đề ticket</h3>
+                        <p class="text-muted mb-0">ID: <span th:text="${ticketDetail.ticketId}">123</span></p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="mb-2">
+                            <span class="status-badge" th:classappend="'status-' + ${ticketDetail.status.toLowerCase()}" th:text="${ticketDetail.status}">PENDING</span>
+                        </div>
+                        <div>
+                            <span class="priority-badge" th:classappend="'priority-' + ${ticketDetail.priority.toLowerCase()}" th:text="${ticketDetail.priority}">NORMAL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-label">ID ticket</div>
+                            <div class="info-value" th:text="${ticketDetail.ticketId}">123</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Tiêu đề</div>
+                            <div class="info-value" th:text="${ticketDetail.title}">Tiêu đề ticket</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Khách hàng</div>
+                            <div class="info-value" th:text="${ticketDetail.customerName ?: 'Chưa xác định'}">Tên khách hàng</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Phòng ban</div>
+                            <div class="info-value" th:text="${ticketDetail.departmentName ?: 'Chưa phân công'}">Phòng ban</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <div class="info-label">Trạng thái</div>
+                            <div class="info-value">
+                                <span class="status-badge" th:classappend="'status-' + ${ticketDetail.status.toLowerCase()}" th:text="${ticketDetail.status}">PENDING</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Độ ưu tiên</div>
+                            <div class="info-value">
+                                <span class="priority-badge" th:classappend="'priority-' + ${ticketDetail.priority.toLowerCase()}" th:text="${ticketDetail.priority}">NORMAL</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Ngày tạo</div>
+                            <div class="info-value" th:text="${#temporals.format(ticketDetail.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-label">Ngày cập nhật</div>
+                            <div class="info-value" th:text="${#temporals.format(ticketDetail.updatedAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="info-item">
+                    <div class="info-label">Mô tả chi tiết</div>
+                    <div class="description-box" th:text="${ticketDetail.description}">
+                        Mô tả chi tiết về ticket này...
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button class="btn btn-edit w-100" onclick="editTicketStatus()">
+                                <i class="fas fa-edit me-2"></i>Chỉnh sửa trạng thái
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-assign w-100" onclick="assignTicket()">
+                                <i class="fas fa-user-check me-2"></i>Phân công cho nhân viên
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100" onclick="viewTicketHistory()">
+                                <i class="fas fa-history me-2"></i>Lịch sử xử lý
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function editTicketStatus() {
+            const currentStatus = '[[${ticketDetail.status}]]';
+            const newStatus = prompt(`Chỉnh sửa trạng thái ticket:\n\nTrạng thái hiện tại: ${currentStatus}\n\nNhập trạng thái mới (PENDING/ASSIGNED/RESOLVED):`, currentStatus);
+            
+            if (newStatus && newStatus !== currentStatus) {
+                // TODO: Call API to update ticket status
+                alert(`Cập nhật trạng thái ticket từ ${currentStatus} thành ${newStatus} - Tính năng sẽ được phát triển`);
+            }
+        }
+        
+        function assignTicket() {
+            alert('Tính năng phân công ticket cho nhân viên sẽ được phát triển!');
+        }
+        
+        function viewTicketHistory() {
+            alert('Tính năng xem lịch sử xử lý ticket sẽ được phát triển!');
+        }
+    </script>
+</body>
+</html>
+
