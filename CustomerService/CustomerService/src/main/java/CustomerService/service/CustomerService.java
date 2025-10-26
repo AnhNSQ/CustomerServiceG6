@@ -1,6 +1,5 @@
 package CustomerService.service;
 
-import CustomerService.dto.CustomerLoginRequest;
 import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.CustomerTicketCreateRequest;
@@ -15,13 +14,6 @@ public interface CustomerService {
      * Đăng ký tài khoản customer mới
      */
     CustomerResponse register(CustomerRegisterRequest request);
-    
-    /**
-     * Đăng nhập customer
-     * @deprecated Sử dụng AuthenticationService thay thế
-     */
-    @Deprecated
-    CustomerResponse login(CustomerLoginRequest request);
     
     /**
      * Tìm customer theo ID

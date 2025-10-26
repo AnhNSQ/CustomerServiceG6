@@ -1,6 +1,5 @@
 package CustomerService.service.impl;
 
-import CustomerService.dto.CustomerLoginRequest;
 import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.CustomerTicketCreateRequest;
@@ -96,27 +95,6 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
 
         return convertToCustomerResponse(savedCustomer);
     }
-
-    /**
-     * Đăng nhập customer
-     * @deprecated Sử dụng AuthenticationService thay thế
-     */
-    @Override
-    @Deprecated
-    public CustomerResponse login(CustomerLoginRequest request) {
-        log.info("Bắt đầu đăng nhập với email/username: {}", request.getEmailOrUsername());
-
-        // Tìm customer theo email hoặc username
-        Customer customer = findCustomerByEmailOrUsername(request.getEmailOrUsername())
-                .orElseThrow(() -> new RuntimeException("Email/Username hoặc mật khẩu không đúng"));
-
-        // Xác thực mật khẩu
-        validateCustomerPassword(request.getPassword(), customer);
-
-        log.info("Đăng nhập thành công customer với ID: {}", customer.getCustomerId());
-        return convertToCustomerResponse(customer);
-    }
-
 
     /**
      * Tìm customer theo ID
