@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Navigation -->
+<nav th:fragment="navigation">
+    <div class="nav-content">
+        <a href="/catalog">TẤT CẢ SẢN PHẨM</a>
+        <th:block th:each="category : ${categories}">
+            <a th:href="@{'/category/' + ${category.categoryId}}" th:text="${category.name}">CATEGORY</a>
+        </th:block>
+    </div>
+</nav>
+</body>
+</html>
+

@@ -536,48 +536,14 @@
     </style>
 </head>
 <body>
-<!-- Top Bar -->
-<div class="top-bar">
-    <div class="top-bar-content">
-        <div class="top-nav">
-            <a href="/">HOME</a>
-            <a href="/home">TRANG CHỦ</a>
-            <a href="/login">ĐĂNG NHẬP</a>
-            <a href="/register">ĐĂNG KÝ</a>
-            <a href="#contact">LIÊN HỆ</a>
-        </div>
-        <div class="top-actions">
-            <a href="/dashboard">👤 TÀI KHOẢN</a>
-            <a href="/login">👤 ĐĂNG NHẬP</a>
-            <a href="#cart">GIỎ HÀNG 🛒</a>
-        </div>
-    </div>
-</div>
+    <!-- Top Bar -->
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
 
-<!-- Header -->
-<header>
-    <div class="header-content">
-        <div class="logo"><a href="/" style="text-decoration: none; color: inherit;">TECHSAVE</a></div>
-        <div class="search-box">
-            <input type="text" placeholder="Search">
-            <button>🔍</button>
-        </div>
-        <div class="phone-info">
-            <p>QUESTIONS? CALL US</p>
-            <a href="tel:555.555.5555">📞 555.555.5555</a>
-        </div>
-    </div>
-</header>
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
 
-<!-- Navigation -->
-<nav>
-    <div class="nav-content">
-        <a href="/catalog">TẤT CẢ</a>
-        <th:block th:each="category : ${categories}">
-            <a th:href="@{'/category/' + ${category.categoryId}}" th:text="${category.name}">CATEGORY</a>
-        </th:block>
-    </div>
-</nav>
+    <!-- Navigation -->
+    <div th:replace="~{fragments/navigation :: navigation}"></div>
 
 <!-- Breadcrumb -->
 <div class="breadcrumb">
