@@ -13,9 +13,15 @@ import java.util.Optional;
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
     
     /**
-     * Tìm tất cả ticket của một customer
+     * Tìm tất cả ticket của một customer (bao gồm assign)
      */
-    @Query("SELECT t FROM Ticket t LEFT JOIN FETCH t.customer LEFT JOIN FETCH t.staffDepartment WHERE t.customer.customerId = :customerId ORDER BY t.createdAt DESC")
+    @Query("SELECT DISTINCT t FROM Ticket t " +
+           "LEFT JOIN FETCH t.customer " +
+           "LEFT JOIN FETCH t.staffDepartment " +
+           "LEFT JOIN FETCH t.ticketAssignments ta " +
+           "LEFT JOIN FETCH ta.assignedTo " +
+           "WHERE t.customer.customerId = :customerId " +
+           "ORDER BY t.createdAt DESC")
     List<Ticket> findByCustomerIdOrderByCreatedAtDesc(@Param("customerId") Long customerId);
     
     /**
@@ -52,8 +58,32 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findTop5ByOrderByCreatedAtDesc();
     
     /**
-     * Tìm ticket theo department
+     * Tìm ticket theo department với đầy đủ thông tin (bao gồm assignments)
      */
-    @Query("SELECT t FROM Ticket t LEFT JOIN FETCH t.customer LEFT JOIN FETCH t.staffDepartment WHERE t.staffDepartment.staffDepartmentId = :departmentId ORDER BY t.createdAt DESC")
+    @Query("SELECT DISTINCT t FROM Ticket t " +
+           "LEFT JOIN FETCH t.customer " +
+           "LEFT JOIN FETCH t.staffDepartment " +
+           "LEFT JOIN FETCH t.order o " +
+           "LEFT JOIN FETCH o.customer " +
+           "LEFT JOIN FETCH t.ticketAssignments ta " +
+           "LEFT JOIN FETCH ta.assignedTo " +
+           "WHERE t.staffDepartment.staffDepartmentId = :departmentId " +
+           "ORDER BY t.createdAt DESC")
     List<Ticket> findByStaffDepartmentIdOrderByCreatedAtDesc(@Param("departmentId") Long departmentId);
+    
+    /**
+     * Tìm ticket OPEN của department (để phân công)
+     */
+    @Query("SELECT DISTINCT t FROM Ticket t " +
+           "LEFT JOIN FETCH t.customer " +
+           "LEFT JOIN FETCH t.staffDepartment " +
+           "LEFT JOIN FETCH t.order o " +
+           "LEFT JOIN FETCH o.customer " +
+           "WHERE t.staffDepartment.staffDepartmentId = :departmentId " +
+           "AND t.status = :status " +
+           "ORDER BY t.createdAt DESC")
+    List<Ticket> findByStaffDepartmentIdAndStatusOrderByCreatedAtDesc(
+        @Param("departmentId") Long departmentId, 
+        @Param("status") Ticket.Status status
+    );
 }

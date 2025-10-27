@@ -97,6 +97,76 @@
             font-size: 1rem;
         }
 
+        /* Button Styles */
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #c82333);
+            border: none;
+            box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #c82333, #b02a37);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(220,53,69,0.4);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+        }
+        
+        .btn-outline-danger {
+            border: 2px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        .btn-outline-danger:hover {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220,53,69,0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #1e7e34);
+            border: none;
+            box-shadow: 0 4px 10px rgba(40,167,69,0.3);
+        }
+        
+        .btn-success:hover {
+            background: linear-gradient(135deg, #1e7e34, #155724);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(40,167,69,0.4);
+        }
+        
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            border-radius: 6px;
+        }
+        
+        .btn-lg {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+        }
+
         .dashboard-card {
             background: white;
             border-radius: 15px;
@@ -324,7 +394,7 @@
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <a href="#" class="quick-action-btn" onclick="assignTickets()">
+                                <a href="/leader/assign-tickets" class="quick-action-btn">
                                     <i class="fas fa-user-check me-2"></i>Phân công ticket
                                 </a>
                             </div>
@@ -367,6 +437,57 @@
                 </h4>
                 <div id="departmentStaffContent"></div>
             </div>
+
+            <!-- Assign Tickets Container -->
+            <div id="assignTicketsContent" class="dashboard-card" style="display: none;">
+                <h4 class="section-title">
+                    <i class="fas fa-user-check"></i>Phân công ticket
+                    <button class="btn btn-sm btn-outline-light float-end" onclick="backToDashboard()">
+                        <i class="fas fa-arrow-left me-1"></i>Về dashboard
+                    </button>
+                </h4>
+                <div id="assignTicketsLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Đang tải danh sách ticket chưa phân công...</p>
+                </div>
+                <div id="assignTicketsError" class="alert alert-danger" style="display: none;"></div>
+                <div id="assignTicketsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Modal -->
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="assignModalLabel">
+                        <i class="fas fa-user-check me-2"></i>Phân công ticket cho nhân viên
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="assignModalLoading" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                    <div id="assignModalContent" style="display: none;">
+                        <p class="mb-3"><i class="fas fa-info-circle me-2"></i>Chọn nhân viên để phân công:</p>
+                        <select id="assignModalStaffSelect" class="form-select form-select-lg mb-3" onchange="onAssignModalStaffSelected()">
+                            <option value="">-- Chọn nhân viên --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmAssignModal" onclick="confirmAssignModal()" disabled>
+                        <i class="fas fa-check me-2"></i>Xác nhận
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -378,6 +499,8 @@
         let departmentStats = null;
         let departmentTickets = [];
         let departmentStaff = [];
+        let currentAssigningTicketId = null;
+        let assignModalStaffList = [];
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
@@ -624,11 +747,7 @@
 
         // Quick action functions
         function assignTickets() {
-            alert('Tính năng phân công ticket sẽ được phát triển');
-        }
-
-        function assignTicket(ticketId) {
-            alert(`Phân công ticket ${ticketId} - Tính năng sẽ được phát triển`);
+            window.location.href = '/leader/assign-tickets';
         }
 
         function viewReports() {
@@ -674,6 +793,107 @@
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('errorState').style.display = 'none';
             document.getElementById('dashboardContent').style.display = 'block';
+        }
+
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('[id$="Content"], [id$="Container"]').forEach(el => {
+                if (el.id.includes('Content') || el.id.includes('Container')) {
+                    el.style.display = 'none';
+                }
+            });
+            // Show selected section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.style.display = 'block';
+            }
+        }
+
+        function backToDashboard() {
+            showSection('dashboardContent');
+        }
+
+        async function loadStaffForAssignModal() {
+            const modal = new bootstrap.Modal(document.getElementById('assignModal'));
+            modal.show();
+
+            try {
+                document.getElementById('assignModalLoading').style.display = 'block';
+                document.getElementById('assignModalContent').style.display = 'none';
+                document.getElementById('assignModalStaffSelect').innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+                document.getElementById('btnConfirmAssignModal').disabled = true;
+
+                const response = await fetch('/api/leaders/staffs/department', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Failed to load staff');
+
+                const result = await response.json();
+                if (result.success) {
+                    assignModalStaffList = result.data;
+                    result.data.forEach(staff => {
+                        const option = document.createElement('option');
+                        option.value = staff.staffId;
+                        option.textContent = `${staff.name} (${staff.email})`;
+                        document.getElementById('assignModalStaffSelect').appendChild(option);
+                    });
+                    document.getElementById('assignModalLoading').style.display = 'none';
+                    document.getElementById('assignModalContent').style.display = 'block';
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error loading staff:', error);
+                alert('Không thể tải danh sách nhân viên');
+                modal.hide();
+            }
+        }
+
+        function onAssignModalStaffSelected() {
+            const selectedStaffId = document.getElementById('assignModalStaffSelect').value;
+            document.getElementById('btnConfirmAssignModal').disabled = !selectedStaffId;
+        }
+
+        async function confirmAssignModal() {
+            if (!currentAssigningTicketId) return;
+
+            const selectedStaffId = document.getElementById('assignModalStaffSelect').value;
+            if (!selectedStaffId) {
+                alert('Vui lòng chọn nhân viên');
+                return;
+            }
+
+            const staff = assignModalStaffList.find(s => s.staffId == selectedStaffId);
+            if (!staff) {
+                alert('Không tìm thấy thông tin nhân viên');
+                return;
+            }
+
+            if (!confirm(`Xác nhận phân công ticket cho ${staff.name}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/leaders/tickets/${currentAssigningTicketId}/assign`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ staffId: selectedStaffId, note: '' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Phân công ticket thành công!');
+                    bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+                    loadOpenTickets(); // Reload list
+                } else {
+                    alert(`Lỗi: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error assigning ticket:', error);
+                alert('Có lỗi xảy ra khi phân công ticket');
+            }
         }
     </script>
 </body>

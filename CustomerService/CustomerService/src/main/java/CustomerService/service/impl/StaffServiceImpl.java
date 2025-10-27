@@ -109,12 +109,14 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
      */
     private TicketResponse convertToTicketResponse(Ticket ticket) {
         Long customerId = null;
+        String customerName = null;
         Long staffDepartmentId = null;
         String staffDepartmentName = null;
         
         try {
             if (ticket.getCustomer() != null) {
                 customerId = ticket.getCustomer().getCustomerId();
+                customerName = ticket.getCustomer().getName();
             }
         } catch (Exception e) {
             log.warn("Ticket {} has no associated customer or failed to load customer: {}", ticket.getTicketId(), e.getMessage());
@@ -137,6 +139,7 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
             ticket.getStatus() != null ? ticket.getStatus().name() : null,
             ticket.getCreatedAt(),
             customerId,
+            customerName,
             staffDepartmentId,
             staffDepartmentName
         );

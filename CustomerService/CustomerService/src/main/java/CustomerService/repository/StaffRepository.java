@@ -32,6 +32,12 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
     Optional<Staff> findByIdWithRole(@Param("id") Long id);
     
     /**
+     * Tìm staff theo ID và load cả role và department
+     */
+    @Query("SELECT s FROM Staff s LEFT JOIN FETCH s.role LEFT JOIN FETCH s.staffDepartment WHERE s.staffId = :id")
+    Optional<Staff> findByIdWithRoleAndDepartment(@Param("id") Long id);
+    
+    /**
      * Kiểm tra email đã tồn tại
      */
     boolean existsByEmail(String email);

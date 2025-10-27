@@ -76,6 +76,47 @@ public class LeaderController {
     }
 
     /**
+     * LEADER: Lấy danh sách ticket OPEN của phòng ban (để phân công)
+     */
+    @GetMapping("/tickets/department/open")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> getOpenDepartmentTickets(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+
+            // Kiểm tra quyền LEADER từ database
+            Staff staff = staffRepository.findByIdWithRole(staffId)
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
+            
+            Set<String> roles = userConverter.extractRoleNames(staff.getRole());
+            if (!roles.contains("LEAD")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Chỉ LEADER mới có quyền truy cập"));
+            }
+            
+            log.info("LEADER {} lấy danh sách ticket OPEN của phòng ban", staffId);
+            
+            List<TicketResponse> tickets = leaderService.getOpenTicketsByLeaderDepartment(staffId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(tickets));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy ticket OPEN phòng ban: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy ticket OPEN phòng ban: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
      * LEADER: Lấy danh sách nhân viên trong phòng ban
      */
     @GetMapping("/staffs/department")
@@ -152,7 +193,7 @@ public class LeaderController {
             
             log.info("LEADER {} phân công ticket {} cho staff {}", leaderId, ticketId, request.getStaffId());
             
-            boolean assigned = leaderService.assignTicketToStaff(ticketId, request.getStaffId(), leaderId, request.getNote());
+            boolean assigned = leaderService.assignTicketToStaff(ticketId, request.getStaffId(), leaderId);
             
             if (assigned) {
                 return ResponseEntity.ok()
@@ -263,6 +304,49 @@ public class LeaderController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy thống kê phòng ban: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * LEADER: Lấy danh sách ticket được phân công cho một nhân viên
+     */
+    @GetMapping("/staffs/{staffId}/tickets")
+    public ResponseEntity<ApiResponse<List<TicketResponse>>> getStaffTickets(
+            @PathVariable Long staffId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long leaderId = sessionManager.getStaffId(session);
+
+            // Kiểm tra quyền LEADER từ database
+            Staff staff = staffRepository.findByIdWithRole(leaderId)
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
+            
+            Set<String> roles = userConverter.extractRoleNames(staff.getRole());
+            if (!roles.contains("LEAD")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Chỉ LEADER mới có quyền truy cập"));
+            }
+            
+            log.info("LEADER {} lấy danh sách ticket của staff {}", leaderId, staffId);
+            
+            List<TicketResponse> tickets = leaderService.getTicketsAssignedToStaff(staffId, leaderId);
+
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(tickets));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy ticket của staff: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy ticket của staff: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

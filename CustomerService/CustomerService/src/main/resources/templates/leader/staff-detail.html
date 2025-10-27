@@ -239,13 +239,8 @@
                 <!-- Action Buttons -->
                 <div class="action-buttons">
                     <div class="row">
-                        <div class="col-md-6">
-                            <button class="btn btn-edit w-100" onclick="editStaff()">
-                                <i class="fas fa-edit me-2"></i>Chỉnh sửa thông tin
-                            </button>
-                        </div>
-                        <div class="col-md-6">
-                            <button class="btn btn-outline-primary w-100" onclick="viewStaffTickets()">
+                        <div class="col-md-12">
+                            <button class="btn w-100" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; border: none;" onclick="viewStaffTickets()">
                                 <i class="fas fa-ticket-alt me-2"></i>Xem ticket được phân công
                             </button>
                         </div>
@@ -257,14 +252,161 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Tickets Modal -->
+    <div class="modal fade" id="ticketsModal" tabindex="-1" aria-labelledby="ticketsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-ticket-alt me-2"></i>Tickets được phân công
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="ticketsLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Đang tải danh sách tickets...</p>
+                    </div>
+                    
+                    <div id="ticketsError" class="alert alert-danger" style="display: none;"></div>
+                    
+                    <div id="ticketsTableContainer" style="display: none;">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
+                                        <th style="border-color: rgba(255,255,255,0.3);">STT</th>
+                                        <th style="border-color: rgba(255,255,255,0.3);">Tiêu đề</th>
+                                        <th style="border-color: rgba(255,255,255,0.3);">Khách hàng</th>
+                                        <th style="border-color: rgba(255,255,255,0.3);">Ưu tiên</th>
+                                        <th style="border-color: rgba(255,255,255,0.3);">Trạng thái</th>
+                                        <th style="border-color: rgba(255,255,255,0.3);">Ngày tạo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticketsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function editStaff() {
-            alert('Tính năng chỉnh sửa thông tin nhân viên sẽ được phát triển!');
+        function viewStaffTickets() {
+            const modal = new bootstrap.Modal(document.getElementById('ticketsModal'));
+            modal.show();
+            
+            // Lấy staffId từ URL hoặc từ model
+            loadStaffTickets();
         }
         
-        function viewStaffTickets() {
-            alert('Tính năng xem ticket được phân công sẽ được phát triển!');
+        async function loadStaffTickets() {
+            // Lấy staffId từ URL
+            const pathParts = window.location.pathname.split('/');
+            const staffId = pathParts[pathParts.length - 1];
+            
+            try {
+                document.getElementById('ticketsLoading').style.display = 'block';
+                document.getElementById('ticketsError').style.display = 'none';
+                document.getElementById('ticketsTableContainer').style.display = 'none';
+                
+                const response = await fetch(`/api/leaders/staffs/${staffId}/tickets`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load tickets');
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayTickets(result.data);
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+                document.getElementById('ticketsLoading').style.display = 'none';
+                document.getElementById('ticketsError').textContent = error.message || 'Có lỗi xảy ra khi tải tickets';
+                document.getElementById('ticketsError').style.display = 'block';
+            }
         }
+        
+        function displayTickets(tickets) {
+            const tbody = document.getElementById('ticketsTableBody');
+            
+            document.getElementById('ticketsLoading').style.display = 'none';
+            
+            if (tickets.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <i class="fas fa-inbox me-2"></i>Nhân viên này chưa được phân công ticket nào
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = tickets.map((ticket, index) => `
+                    <tr style="border-bottom: 1px solid #e9ecef;" onmouseover="this.style.backgroundColor='rgba(220, 53, 69, 0.05)';" onmouseout="this.style.backgroundColor='white';">
+                        <td><strong>${index + 1}</strong></td>
+                        <td><strong style="color: #dc3545;">${ticket.subject || 'N/A'}</strong></td>
+                        <td>${ticket.customerName || 'N/A'}</td>
+                        <td>
+                            <span class="badge ${getPriorityClass(ticket.priority)}">
+                                ${ticket.priority || 'N/A'}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge ${getStatusClass(ticket.status)}">
+                                ${ticket.status || 'N/A'}
+                            </span>
+                        </td>
+                        <td>${formatDate(ticket.createdAt)}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            document.getElementById('ticketsTableContainer').style.display = 'block';
+        }
+        
+        function getPriorityClass(priority) {
+            switch(priority) {
+                case 'HIGH': return 'bg-danger';
+                case 'MEDIUM': return 'bg-warning';
+                case 'LOW': return 'bg-info';
+                default: return 'bg-secondary';
+            }
+        }
+        
+        function getStatusClass(status) {
+            switch(status) {
+                case 'OPEN': return 'bg-success';
+                case 'IN_PROGRESS': return 'bg-primary';
+                case 'RESOLVED': return 'bg-success';
+                case 'CLOSED': return 'bg-secondary';
+                default: return 'bg-secondary';
+            }
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('vi-VN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
     </script>
 </body>
 </html>
