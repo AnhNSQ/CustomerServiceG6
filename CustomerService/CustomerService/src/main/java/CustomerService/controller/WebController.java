@@ -795,7 +795,7 @@ public class WebController {
     }
 
     /**
-     * Leader Ticket Detail
+     * Leader Ticket Detail (Page sẽ tự load data bằng AJAX)
      */
     @GetMapping("/leader/tickets/{ticketId}")
     public String leaderTicketDetail(@PathVariable Long ticketId, Model model, HttpSession session) {
@@ -808,28 +808,35 @@ public class WebController {
             }
 
             log.info("Loading ticket detail page for ticket {} by leader {}", ticketId, staffId);
-
-            // Lấy thông tin leader từ database
-            StaffResponse leader = staffService.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin leader"));
-
-            // Lấy thông tin ticket chi tiết từ leader service
-            List<TicketResponse> departmentTickets = leaderService.getTicketsByLeaderDepartment(staffId);
-            TicketResponse ticketDetail = departmentTickets.stream()
-                .filter(t -> t.getTicketId().equals(ticketId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Ticket không thuộc phòng ban của bạn"));
-
-            model.addAttribute("leader", leader);
-            model.addAttribute("ticketDetail", ticketDetail);
-            model.addAttribute("staffName", leader.getName());
-            model.addAttribute("staffEmail", leader.getEmail());
-
+            
+            // Page sẽ tự load data bằng AJAX từ API endpoint
             return "leader/ticket-detail";
 
         } catch (Exception e) {
             log.error("Error loading ticket detail page: ", e);
             return "redirect:/leader/tickets";
+        }
+    }
+
+    /**
+     * Leader - Phân công ticket (hiển thị tickets OPEN)
+     */
+    @GetMapping("/leader/assign-tickets")
+    public String leaderAssignTickets(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+
+            if (staffId == null) {
+                log.warn("Unauthorized access - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+
+            log.info("Loading assign tickets page for leader {}", staffId);
+            return "leader/assign-tickets";
+
+        } catch (Exception e) {
+            log.error("Error loading assign tickets page: ", e);
+            return "redirect:/leader/dashboard";
         }
     }
 }

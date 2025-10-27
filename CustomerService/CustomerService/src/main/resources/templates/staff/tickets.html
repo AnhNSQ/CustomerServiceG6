@@ -19,8 +19,19 @@
         .status-in-progress { background:#fff3cd; color:#856404; }
         .status-resolved { background:#d4edda; color:#155724; }
         .status-closed { background:#e2e3e5; color:#495057; }
-        .btn-linkish { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; padding:.5rem 1rem; border-radius:8px; font-weight:600; }
+        .btn-linkish { background:rgba(255,255,255,0.2); border:2px solid #fff; color:#fff; padding:.5rem 1rem; border-radius:8px; font-weight:600; transition:all 0.3s ease; }
+        .btn-linkish:hover { background:rgba(255,255,255,0.3); transform:translateY(-2px); box-shadow:0 4px 10px rgba(0,0,0,0.2); }
         .header-actions a { color:#fff; text-decoration:none; }
+        
+        /* Button Styles */
+        .btn { border-radius:8px; padding:8px 16px; font-weight:600; transition:all 0.3s ease; }
+        .btn-primary { background:linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border:none; box-shadow:0 4px 10px rgba(102,126,234,0.3); }
+        .btn-primary:hover { background:linear-gradient(135deg, var(--secondary-color), #6a4c93); transform:translateY(-2px); box-shadow:0 6px 15px rgba(102,126,234,0.4); }
+        .btn-outline-primary { border:2px solid var(--primary-color); color:var(--primary-color); }
+        .btn-outline-primary:hover { background:var(--primary-color); border-color:var(--primary-color); color:white; transform:translateY(-2px); box-shadow:0 4px 10px rgba(102,126,234,0.3); }
+        .btn-outline-danger { border:2px solid var(--danger-color); color:var(--danger-color); }
+        .btn-outline-danger:hover { background:var(--danger-color); border-color:var(--danger-color); color:white; transform:translateY(-2px); box-shadow:0 4px 10px rgba(245,101,101,0.3); }
+        .btn-sm { padding:4px 8px; font-size:0.8rem; border-radius:6px; }
     </style>
 </head>
 <body>

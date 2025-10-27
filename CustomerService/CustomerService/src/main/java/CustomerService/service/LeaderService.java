@@ -29,6 +29,11 @@ public interface LeaderService {
     List<TicketResponse> getTicketsByLeaderDepartment(Long leaderId);
     
     /**
+     * LEADER: Lấy danh sách ticket OPEN của phòng ban (để phân công)
+     */
+    List<TicketResponse> getOpenTicketsByLeaderDepartment(Long leaderId);
+    
+    /**
      * LEADER: Lấy danh sách nhân viên trong phòng ban
      */
     List<StaffResponse> getStaffByLeaderDepartment(Long leaderId);
@@ -36,10 +41,15 @@ public interface LeaderService {
     /**
      * LEADER: Phân công ticket cho nhân viên
      */
-    boolean assignTicketToStaff(Long ticketId, Long staffId, Long leaderId, String note);
+    boolean assignTicketToStaff(Long ticketId, Long staffId, Long leaderId);
     
     /**
      * LEADER: Lấy thống kê dashboard của phòng ban
      */
     TicketDashboardStats getLeaderDashboardStats(Long leaderId);
+    
+    /**
+     * LEADER: Lấy danh sách ticket được phân công cho một nhân viên
+     */
+    List<TicketResponse> getTicketsAssignedToStaff(Long staffId, Long leaderId);
 }

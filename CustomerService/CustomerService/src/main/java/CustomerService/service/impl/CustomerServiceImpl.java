@@ -8,6 +8,7 @@ import CustomerService.entity.Customer;
 import CustomerService.entity.Role;
 import CustomerService.entity.StaffDepartment;
 import CustomerService.entity.Ticket;
+import CustomerService.entity.TicketAssign;
 import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.RoleRepository;
 import CustomerService.repository.StaffDepartmentRepository;
@@ -292,12 +293,16 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
      */
     private TicketResponse convertToTicketResponse(Ticket ticket) {
         Long customerId = null;
+        String customerName = null;
         Long staffDepartmentId = null;
         String staffDepartmentName = null;
+        Long assignedToStaffId = null;
+        String assignedToStaffName = null;
         
         try {
             if (ticket.getCustomer() != null) {
                 customerId = ticket.getCustomer().getCustomerId();
+                customerName = ticket.getCustomer().getName();
             }
         } catch (Exception e) {
             log.warn("Ticket {} has no associated customer or failed to load customer: {}", ticket.getTicketId(), e.getMessage());
@@ -312,6 +317,22 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             log.warn("Ticket {} has no associated department or failed to load department: {}", ticket.getTicketId(), e.getMessage());
         }
         
+        // Lấy thông tin nhân viên được assign
+        try {
+            if (ticket.getTicketAssignments() != null && !ticket.getTicketAssignments().isEmpty()) {
+                TicketAssign latestAssignment = ticket.getTicketAssignments().stream()
+                    .max((a1, a2) -> a1.getAssignedAt().compareTo(a2.getAssignedAt()))
+                    .orElse(ticket.getTicketAssignments().get(0));
+                    
+                if (latestAssignment != null && latestAssignment.getAssignedTo() != null) {
+                    assignedToStaffId = latestAssignment.getAssignedTo().getStaffId();
+                    assignedToStaffName = latestAssignment.getAssignedTo().getName();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Ticket {} has no assignment info: {}", ticket.getTicketId(), e.getMessage());
+        }
+        
         return new TicketResponse(
             ticket.getTicketId(),
             ticket.getSubject(),
@@ -320,8 +341,11 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             ticket.getStatus() != null ? ticket.getStatus().name() : null,
             ticket.getCreatedAt(),
             customerId,
+            customerName,
             staffDepartmentId,
-            staffDepartmentName
+            staffDepartmentName,
+            assignedToStaffId,
+            assignedToStaffName
         );
     }
 }

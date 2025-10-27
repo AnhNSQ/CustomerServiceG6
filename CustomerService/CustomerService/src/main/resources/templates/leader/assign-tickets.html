@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket Phòng Ban - Leader Dashboard</title>
-    
+    <title>Phân công Ticket - Leader</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -116,57 +115,27 @@
             border-radius: 6px;
         }
 
-        .ticket-card {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            margin-bottom: 1.5rem;
-            border-left: 5px solid var(--primary-color);
-            transition: transform 0.3s ease;
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
         }
 
-        .ticket-card:hover {
-            transform: translateY(-3px);
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--danger-color);
         }
 
-        .ticket-header {
-            display: flex;
-            justify-content-between;
-            align-items-start;
-            margin-bottom: 1rem;
-        }
-
-        .ticket-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .ticket-description {
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
             color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
             margin-bottom: 1rem;
-            line-height: 1.5;
-        }
-
-        .ticket-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .meta-item i {
-            margin-right: 0.5rem;
-            color: var(--primary-color);
+            color: #dee2e6;
         }
 
         .ticket-status {
@@ -182,31 +151,6 @@
         /* Status Colors */
         .status-open {
             background: linear-gradient(135deg, #28a745, #1e7e34);
-            color: white;
-        }
-
-        .status-pending {
-            background: linear-gradient(135deg, #ffc107, #e0a800);
-            color: #333;
-        }
-
-        .status-assigned {
-            background: linear-gradient(135deg, #17a2b8, #138496);
-            color: white;
-        }
-
-        .status-in_progress {
-            background: linear-gradient(135deg, #fd7e14, #e86510);
-            color: white;
-        }
-
-        .status-resolved {
-            background: linear-gradient(135deg, #28a745, #1e7e34);
-            color: white;
-        }
-
-        .status-closed {
-            background: linear-gradient(135deg, #6c757d, #545b62);
             color: white;
         }
 
@@ -234,44 +178,6 @@
             background: linear-gradient(135deg, #17a2b8, #138496);
             color: white;
         }
-
-        .assign-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-
-        .assign-btn:hover {
-            background: #c82333;
-            transform: translateY(-1px);
-        }
-
-        .loading-spinner {
-            text-align: center;
-            padding: 3rem;
-        }
-
-        .error-message {
-            text-align: center;
-            padding: 3rem;
-            color: var(--danger-color);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #6c757d;
-        }
-
-        .empty-state i {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            color: #dee2e6;
-        }
     </style>
 </head>
 <body>
@@ -280,12 +186,12 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1><i class="fas fa-ticket-alt me-3"></i>Ticket Phòng Ban</h1>
+                    <h1><i class="fas fa-user-check me-3"></i>Phân công Ticket</h1>
                     <div class="breadcrumb-nav">
                         <i class="fas fa-home me-2"></i>
                         <a href="/leader/dashboard" class="text-white text-decoration-none">Dashboard</a>
                         <i class="fas fa-chevron-right mx-2"></i>
-                        <span>Ticket Phòng Ban</span>
+                        <span>Phân công Ticket</span>
                     </div>
                 </div>
                 <div class="col-md-4 text-md-end">
@@ -298,33 +204,33 @@
     </div>
 
     <div class="container">
-            <!-- Loading State -->
-            <div id="loadingState" class="loading-spinner">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Đang tải...</span>
-                </div>
-                <p class="mt-3 text-muted">Đang tải danh sách ticket...</p>
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
             </div>
+            <p class="mt-3 text-muted">Đang tải danh sách ticket cần phân công...</p>
+        </div>
 
-            <!-- Error State -->
-            <div id="errorState" class="error-message" style="display: none;">
-                <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                <h5>Không thể tải danh sách ticket</h5>
-            <p>Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.</p>
-                </div>
+        <!-- Error State -->
+        <div id="errorState" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Không thể tải danh sách ticket</h5>
+            <p id="errorMessage">Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.</p>
+        </div>
 
-                <!-- Empty State -->
-                <div id="emptyState" class="empty-state" style="display: none;">
-                    <i class="fas fa-ticket-alt"></i>
-                    <h5>Chưa có ticket nào</h5>
-            <p>Phòng ban của bạn chưa có ticket nào được tạo.</p>
-    </div>
+        <!-- Empty State -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <i class="fas fa-ticket-alt"></i>
+            <h5>Không có ticket nào cần phân công</h5>
+            <p>Tất cả ticket đã được phân công hoặc không có ticket OPEN.</p>
+        </div>
 
-        <!-- Search and Filter - Always visible -->
-        <div class="row mb-4">
+        <!-- Search and Filter -->
+        <div class="row mb-4" id="filterSection" style="display: none;">
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4>Tất cả ticket phòng ban</h4>
+                    <h4>Ticket chưa được phân công (OPEN)</h4>
                     <span class="badge bg-primary" id="ticketCount">0 ticket</span>
                 </div>
             </div>
@@ -342,18 +248,7 @@
                                 <input type="text" class="form-control" id="searchTickets" placeholder="Tìm theo tiêu đề ticket...">
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <select class="form-select" id="filterStatus">
-                                <option value="">Tất cả trạng thái</option>
-                                <option value="PENDING">PENDING</option>
-                                <option value="OPEN">OPEN</option>
-                                <option value="ASSIGNED">ASSIGNED</option>
-                                <option value="IN_PROGRESS">IN_PROGRESS</option>
-                                <option value="RESOLVED">RESOLVED</option>
-                                <option value="CLOSED">CLOSED</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <select class="form-select" id="filterPriority">
                                 <option value="">Tất cả độ ưu tiên</option>
                                 <option value="HIGH">HIGH</option>
@@ -361,9 +256,9 @@
                                 <option value="LOW">LOW</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <button class="btn btn-outline-danger w-100" onclick="clearFilters()">
-                                <i class="fas fa-refresh"></i> Reset
+                                <i class="fas fa-refresh me-1"></i>Reset
                             </button>
                         </div>
                     </div>
@@ -377,7 +272,7 @@
             </div>
             
             <!-- Tickets Table -->
-            <div class="card">
+            <div class="card" id="ticketsTableContainer">
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -386,11 +281,10 @@
                                     <th>STT</th>
                                     <th>Tiêu đề</th>
                                     <th>Khách hàng</th>
-                                    <th>Người xử lý</th>
                                     <th>Trạng thái</th>
                                     <th>Độ ưu tiên</th>
                                     <th>Ngày tạo</th>
-                                    <th>Actions</th>
+                                    <th>Phân công</th>
                                 </tr>
                             </thead>
                             <tbody id="ticketsTableBody">
@@ -408,130 +302,168 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Assign Modal -->
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="assignModalLabel">
+                        <i class="fas fa-user-check me-2"></i>Phân công ticket cho nhân viên
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="assignModalLoading" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                    <div id="assignModalContent" style="display: none;">
+                        <p class="mb-3"><i class="fas fa-info-circle me-2"></i>Chọn nhân viên để phân công:</p>
+                        <select id="assignModalStaffSelect" class="form-select form-select-lg mb-3" onchange="onAssignModalStaffSelected()">
+                            <option value="">-- Chọn nhân viên --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmAssignModal" onclick="confirmAssignModal()" disabled>
+                        <i class="fas fa-check me-2"></i>Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        let departmentTickets = [];
+        let currentAssigningTicketId = null;
+        let assignModalStaffList = [];
+        let openTickets = [];
         let filteredTickets = [];
         
         // Pagination
         const itemsPerPage = 10;
         let currentPage = 1;
 
-        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            loadDepartmentTickets();
+            loadOpenTickets();
             setupEventListeners();
         });
 
-        // Setup event listeners
         function setupEventListeners() {
-            document.getElementById('searchTickets').addEventListener('input', filterTickets);
-            document.getElementById('filterStatus').addEventListener('change', filterTickets);
-            document.getElementById('filterPriority').addEventListener('change', filterTickets);
+            document.getElementById('searchTickets').addEventListener('input', function(e) {
+                searchTickets(e.target.value);
+            });
+            
+            document.getElementById('filterPriority').addEventListener('change', function(e) {
+                filterTickets();
+            });
         }
 
-        // Load department tickets
-        async function loadDepartmentTickets() {
+        function searchTickets(query) {
+            const filtered = openTickets.filter(ticket => {
+                const searchText = query.toLowerCase();
+                const subject = ticket.subject?.toLowerCase() || '';
+                const customerName = ticket.customerName?.toLowerCase() || '';
+                return subject.includes(searchText) || customerName.includes(searchText);
+            });
+            filteredTickets = filtered;
+            currentPage = 1;
+            displayTickets(filteredTickets);
+        }
+
+        function filterTickets() {
+            const priorityFilter = document.getElementById('filterPriority').value;
+            
+            let filtered = openTickets;
+            
+            if (priorityFilter) {
+                filtered = filtered.filter(ticket => ticket.priority === priorityFilter);
+            }
+            
+            filteredTickets = filtered;
+            currentPage = 1;
+            displayTickets(filteredTickets);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchTickets').value = '';
+            document.getElementById('filterPriority').value = '';
+            filteredTickets = [...openTickets];
+            currentPage = 1;
+            displayTickets(filteredTickets);
+        }
+
+        async function loadOpenTickets() {
             try {
                 showLoadingState();
                 
-                const response = await fetch('/api/leaders/tickets/department', {
+                const response = await fetch('/api/leaders/tickets/department/open', {
                     credentials: 'include'
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to load department tickets');
+                    throw new Error('Failed to load open tickets');
                 }
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    departmentTickets = result.data;
-                    filteredTickets = [...departmentTickets];
-                    displayTickets();
+                    openTickets = result.data;
+                    filteredTickets = [...openTickets];
+                    displayTickets(filteredTickets);
                 } else {
                     throw new Error(result.message);
                 }
                 
             } catch (error) {
-                console.error('Error loading department tickets:', error);
-                showErrorState();
+                console.error('Error loading open tickets:', error);
+                showError(error.message);
             }
-        }
-
-        // Filter tickets
-        function filterTickets() {
-            const searchTerm = document.getElementById('searchTickets').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value;
-            const priorityFilter = document.getElementById('filterPriority').value;
-            
-            filteredTickets = departmentTickets.filter(ticket => {
-                // Search by subject
-                const matchesSearch = (ticket.subject || '').toLowerCase().includes(searchTerm);
-                
-                // Filter by status
-                const matchesStatus = !statusFilter || ticket.status === statusFilter;
-                
-                // Filter by priority
-                const matchesPriority = !priorityFilter || ticket.priority === priorityFilter;
-                
-                return matchesSearch && matchesStatus && matchesPriority;
-            });
-            
-            displayTickets();
-        }
-
-        // Clear filters
-        function clearFilters() {
-            document.getElementById('searchTickets').value = '';
-            document.getElementById('filterStatus').value = '';
-            document.getElementById('filterPriority').value = '';
-            filteredTickets = [...departmentTickets];
-            displayTickets();
-        }
-
-        // Display tickets
-        function displayTickets() {
-            const ticketsTableBody = document.getElementById('ticketsTableBody');
-            const ticketCount = document.getElementById('ticketCount');
-            const noResultsMessage = document.getElementById('noResultsMessage');
-            
-            // Kiểm tra nếu không có kết quả từ search/filter
-            if (filteredTickets.length === 0) {
-                // Nếu có dữ liệu gốc nhưng filter không ra gì -> hiển thị thông báo search
-                if (departmentTickets.length > 0) {
-                    ticketCount.textContent = '0 ticket';
-                    ticketsTableBody.innerHTML = '';
-                    noResultsMessage.style.display = 'block';
-                    document.getElementById('paginationContainer').style.display = 'none';
-                    showTicketsContent();
-                    return;
-                } else {
-                    // Nếu không có dữ liệu gốc -> hiển thị empty state
-                    showEmptyState();
-                    return;
-                }
-            }
-            
-            // Ẩn thông báo không có kết quả
-            noResultsMessage.style.display = 'none';
-            ticketCount.textContent = `${filteredTickets.length} ticket${filteredTickets.length > 1 ? 's' : ''}`;
-            
-            // Reset pagination
-            currentPage = 1;
-            renderTable();
-            showTicketsContent();
         }
         
+        function displayTickets(tickets) {
+            const count = filteredTickets.length;
+            document.getElementById('ticketCount').textContent = `${count} ticket${count > 1 ? 's' : ''}`;
+            
+            // Check if no results from filter
+            if (tickets.length === 0) {
+                document.getElementById('ticketsTableContainer').style.display = 'none';
+                document.getElementById('filterSection').style.display = 'none';
+                
+                if (openTickets.length > 0) {
+                    // Has data but filter returns nothing
+                    document.getElementById('noResultsMessage').style.display = 'block';
+                } else {
+                    // No data at all
+                    document.getElementById('emptyState').style.display = 'block';
+                }
+                showContent();
+                return;
+            }
+            
+            // Hide no results message and empty state
+            document.getElementById('noResultsMessage').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
+            
+            // Show filter section
+            document.getElementById('filterSection').style.display = 'block';
+            
+            // Reset pagination and show table
+            currentPage = 1;
+            renderTable();
+            document.getElementById('ticketsTableContainer').style.display = 'block';
+            showContent();
+        }
+
         function renderTable() {
             const ticketsTableBody = document.getElementById('ticketsTableBody');
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
             const pageTickets = filteredTickets.slice(start, end);
             
-            const ticketsHtml = pageTickets.map((ticket, index) => `
+            ticketsTableBody.innerHTML = pageTickets.map((ticket, index) => `
                 <tr>
                     <td>${start + index + 1}</td>
                     <td>
@@ -539,12 +471,7 @@
                     </td>
                     <td>${ticket.customerName || 'N/A'}</td>
                     <td>
-                        ${ticket.assignedToStaffName ? 
-                            `<span class="badge bg-info"><i class="fas fa-user me-1"></i>${ticket.assignedToStaffName}</span>` : 
-                            '<span class="text-muted">Chưa phân công</span>'}
-                    </td>
-                    <td>
-                        <span class="ticket-status status-${ticket.status.toLowerCase().replace('_', '-')}">${ticket.status}</span>
+                        <span class="ticket-status status-open">OPEN</span>
                     </td>
                     <td>
                         <span class="priority-badge priority-${ticket.priority.toLowerCase()}">
@@ -553,14 +480,13 @@
                     </td>
                     <td>${new Date(ticket.createdAt).toLocaleDateString('vi-VN')}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewTicketDetail(${ticket.ticketId})" title="Xem chi tiết">
-                            <i class="fas fa-eye"></i> View
+                        <button class="btn btn-sm btn-primary w-100" onclick="openAssignModal(${ticket.ticketId})" title="Phân công cho nhân viên">
+                            <i class="fas fa-user-check me-1"></i>Phân công
                         </button>
                     </td>
                 </tr>
             `).join('');
             
-            ticketsTableBody.innerHTML = ticketsHtml;
             renderPagination();
         }
 
@@ -615,54 +541,133 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Action functions
         function viewTicketDetail(ticketId) {
-            // Redirect to ticket detail page
             window.location.href = `/leader/tickets/${ticketId}`;
         }
-
-        function editTicket(ticketId) {
-            const ticket = departmentTickets.find(t => t.ticketId === ticketId);
-            if (ticket) {
-                const newStatus = prompt(`Chỉnh sửa trạng thái ticket "${ticket.subject}":\n\nTrạng thái hiện tại: ${ticket.status}\n\nNhập trạng thái mới (PENDING/ASSIGNED/RESOLVED):`, ticket.status);
-                if (newStatus && newStatus !== ticket.status) {
-                    // TODO: Call API to update ticket status
-                    alert(`Cập nhật trạng thái ticket ${ticketId} từ ${ticket.status} thành ${newStatus} - Tính năng sẽ được phát triển`);
-                }
-            }
+        
+        function openAssignModal(ticketId) {
+            currentAssigningTicketId = ticketId;
+            loadStaffForAssignModal();
         }
 
-        function assignTicket(ticketId) {
-            alert(`Phân công ticket ${ticketId} - Tính năng sẽ được phát triển`);
-        }
-
-        // UI State functions
         function showLoadingState() {
             document.getElementById('loadingState').style.display = 'block';
             document.getElementById('errorState').style.display = 'none';
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('ticketsContent').style.display = 'none';
+            document.getElementById('filterSection').style.display = 'none';
         }
 
-        function showErrorState() {
+        function showError(message) {
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('errorState').style.display = 'block';
             document.getElementById('emptyState').style.display = 'none';
-            document.getElementById('ticketsContent').style.display = 'none';
+            document.getElementById('errorMessage').textContent = message;
         }
 
-        function showEmptyState() {
+        function showContent() {
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('errorState').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'block';
-            document.getElementById('ticketsContent').style.display = 'none';
-        }
-
-        function showTicketsContent() {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('errorState').style.display = 'none';
-            document.getElementById('emptyState').style.display = 'none';
             document.getElementById('ticketsContent').style.display = 'block';
+        }
+
+        async function loadStaffForAssignModal() {
+            const modal = new bootstrap.Modal(document.getElementById('assignModal'));
+            modal.show();
+
+            try {
+                document.getElementById('assignModalLoading').style.display = 'block';
+                document.getElementById('assignModalContent').style.display = 'none';
+                document.getElementById('assignModalStaffSelect').innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+                document.getElementById('btnConfirmAssignModal').disabled = true;
+
+                const response = await fetch('/api/leaders/staffs/department', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Failed to load staff');
+
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Staff list received:', result.data);
+                    
+                    assignModalStaffList = result.data;
+                    
+                    // Check if has valid staff
+                    if (assignModalStaffList.length === 0) {
+                        alert('Không có nhân viên nào trong phòng ban!');
+                        modal.hide();
+                        return;
+                    }
+                    
+                    // Debug: show roles
+                    assignModalStaffList.forEach(staff => {
+                        console.log('Staff:', staff.name, 'Roles:', staff.roles);
+                    });
+                    
+                    assignModalStaffList.forEach(staff => {
+                        // Show all staff for now - backend will validate role
+                        const option = document.createElement('option');
+                        option.value = staff.staffId;
+                        option.textContent = `${staff.name} (${staff.email})`;
+                        document.getElementById('assignModalStaffSelect').appendChild(option);
+                    });
+                    document.getElementById('assignModalLoading').style.display = 'none';
+                    document.getElementById('assignModalContent').style.display = 'block';
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error loading staff:', error);
+                alert('Không thể tải danh sách nhân viên');
+                modal.hide();
+            }
+        }
+
+        function onAssignModalStaffSelected() {
+            const selectedStaffId = document.getElementById('assignModalStaffSelect').value;
+            document.getElementById('btnConfirmAssignModal').disabled = !selectedStaffId;
+        }
+
+        async function confirmAssignModal() {
+            if (!currentAssigningTicketId) return;
+
+            const selectedStaffId = document.getElementById('assignModalStaffSelect').value;
+            if (!selectedStaffId) {
+                alert('Vui lòng chọn nhân viên');
+                return;
+            }
+
+            const staff = assignModalStaffList.find(s => s.staffId == selectedStaffId);
+            if (!staff) {
+                alert('Không tìm thấy thông tin nhân viên');
+                return;
+            }
+
+            if (!confirm(`Xác nhận phân công ticket cho ${staff.name}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/leaders/tickets/${currentAssigningTicketId}/assign`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ staffId: selectedStaffId, note: '' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Phân công ticket thành công!');
+                    bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+                    loadOpenTickets(); // Reload list
+                } else {
+                    alert(`Lỗi: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error assigning ticket:', error);
+                alert('Có lỗi xảy ra khi phân công ticket');
+            }
         }
     </script>
 </body>

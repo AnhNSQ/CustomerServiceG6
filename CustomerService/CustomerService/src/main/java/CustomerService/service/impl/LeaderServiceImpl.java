@@ -3,7 +3,6 @@ package CustomerService.service.impl;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
-import CustomerService.entity.Role;
 import CustomerService.entity.Role.RoleName;
 import CustomerService.entity.Staff;
 import CustomerService.entity.Ticket;
@@ -77,8 +76,8 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     public List<TicketResponse> getTicketsByLeaderDepartment(Long leaderId) {
         log.info("Lấy danh sách ticket của phòng ban cho LEADER {}", leaderId);
         
-        // Lấy thông tin LEADER
-        Staff leader = staffRepository.findByIdWithRole(leaderId)
+        // Lấy thông tin LEADER (với department)
+        Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
@@ -96,6 +95,37 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     }
 
     /**
+     * LEADER: Lấy danh sách ticket OPEN của phòng ban
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getOpenTicketsByLeaderDepartment(Long leaderId) {
+        log.info("Lấy danh sách ticket OPEN của phòng ban cho LEADER {}", leaderId);
+        
+        // Lấy thông tin LEADER (với department)
+        Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
+            .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
+        
+        if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
+            throw new RuntimeException("Staff is not a LEADER");
+        }
+        
+        // Lấy tất cả ticket của phòng ban
+        List<Ticket> departmentTickets = ticketRepository.findByStaffDepartmentIdOrderByCreatedAtDesc(
+            leader.getStaffDepartment().getStaffDepartmentId()
+        );
+        
+        // Filter chỉ ticket OPEN
+        List<Ticket> openTickets = departmentTickets.stream()
+            .filter(ticket -> ticket.getStatus() == Ticket.Status.OPEN)
+            .collect(Collectors.toList());
+        
+        return openTickets.stream()
+            .map(this::convertToTicketResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * LEADER: Lấy danh sách nhân viên trong phòng ban
      */
     @Override
@@ -103,8 +133,8 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     public List<StaffResponse> getStaffByLeaderDepartment(Long leaderId) {
         log.info("Lấy danh sách nhân viên trong phòng ban cho LEADER {}", leaderId);
         
-        // Lấy thông tin LEADER
-        Staff leader = staffRepository.findByIdWithRole(leaderId)
+        // Lấy thông tin LEADER (với department)
+        Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
@@ -127,11 +157,11 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
      */
     @Override
     @Transactional
-    public boolean assignTicketToStaff(Long ticketId, Long staffId, Long leaderId, String note) {
+    public boolean assignTicketToStaff(Long ticketId, Long staffId, Long leaderId) {
         log.info("LEADER {} phân công ticket {} cho staff {}", leaderId, ticketId, staffId);
         
-        // Kiểm tra LEADER
-        Staff leader = staffRepository.findByIdWithRole(leaderId)
+        // Kiểm tra LEADER (với department)
+        Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
@@ -147,19 +177,18 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
             throw new RuntimeException("Ticket does not belong to leader's department");
         }
         
-        // Kiểm tra staff
-        Staff staff = staffRepository.findByIdWithRole(staffId)
+        // Chỉ được phép phân công ticket có status = OPEN
+        if (ticket.getStatus() != Ticket.Status.OPEN) {
+            throw new RuntimeException("Chỉ có thể phân công ticket có trạng thái OPEN");
+        }
+        
+        // Kiểm tra staff (với department)
+        Staff staff = staffRepository.findByIdWithRoleAndDepartment(staffId)
             .orElseThrow(() -> new RuntimeException("Staff not found with ID: " + staffId));
         
         // Kiểm tra staff có cùng phòng ban với LEADER không
         if (!staff.getStaffDepartment().getStaffDepartmentId().equals(leader.getStaffDepartment().getStaffDepartmentId())) {
             throw new RuntimeException("Staff does not belong to leader's department");
-        }
-        
-        // Kiểm tra staff có phải FINANCIAL_STAFF hoặc TECHNICAL_SUPPORT không
-        String staffRole = staff.getRole().getRoleName().name();
-        if (!"FINANCIAL_STAFF".equals(staffRole) && !"TECHNICAL_SUPPORT".equals(staffRole)) {
-            throw new RuntimeException("Staff must be FINANCIAL_STAFF or TECHNICAL_SUPPORT");
         }
         
         // Tạo ticket assignment
@@ -168,18 +197,23 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
         assignment.setAssignedTo(staff);
         assignment.setAssignedBy(leader);
         assignment.setAssignedAt(LocalDateTime.now());
-        
-        // Set role needed based on staff role
-        if ("FINANCIAL_STAFF".equals(staffRole)) {
+
+        // Xác định roleNeeded dựa trên phòng ban của staff
+        String departmentName = staff.getStaffDepartment().getName().toUpperCase();
+
+        if (departmentName.contains("FINANCE") || departmentName.contains("TÀI CHÍNH")) {
             assignment.setRoleNeeded(TicketAssign.RoleNeeded.FINANCIAL_STAFF);
-        } else if ("TECHNICAL_SUPPORT".equals(staffRole)) {
+        } else if (departmentName.contains("TECH") || departmentName.contains("KỸ THUẬT")) {
+            assignment.setRoleNeeded(TicketAssign.RoleNeeded.TECHNICAL_SUPPORT);
+        } else {
+            // Default fallback (nếu có phòng ban lạ)
             assignment.setRoleNeeded(TicketAssign.RoleNeeded.TECHNICAL_SUPPORT);
         }
-        
+
         ticketAssignRepository.save(assignment);
         
-        // Cập nhật status ticket
-        ticket.setStatus(Ticket.Status.ASSIGNED);
+        // Cập nhật status ticket: OPEN → IN_PROGRESS
+        ticket.setStatus(Ticket.Status.IN_PROGRESS);
         ticketRepository.save(ticket);
         
         log.info("Phân công ticket {} cho staff {} thành công", ticketId, staffId);
@@ -194,8 +228,8 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     public TicketDashboardStats getLeaderDashboardStats(Long leaderId) {
         log.info("Lấy thống kê dashboard cho LEADER {}", leaderId);
         
-        // Lấy thông tin LEADER
-        Staff leader = staffRepository.findByIdWithRole(leaderId)
+        // Lấy thông tin LEADER (với department)
+        Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
@@ -212,7 +246,7 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
             .mapToLong(ticket -> ticket.getStatus() == Ticket.Status.OPEN ? 1 : 0)
             .sum();
         long resolved = departmentTickets.stream()
-            .mapToLong(ticket -> ticket.getStatus() == Ticket.Status.RESOLVED ? 1 : 0)
+            .mapToLong(ticket -> ticket.getStatus() == Ticket.Status.CLOSED ? 1 : 0)
             .sum();
         long urgent = departmentTickets.stream()
             .mapToLong(ticket -> 
@@ -224,16 +258,53 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     }
 
     /**
+     * LEADER: Lấy danh sách ticket được phân công cho một nhân viên
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TicketResponse> getTicketsAssignedToStaff(Long staffId, Long leaderId) {
+        log.info("LEADER {} lấy danh sách ticket được phân công cho staff {}", leaderId, staffId);
+        
+        // Kiểm tra LEADER
+        Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
+            .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
+        
+        if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
+            throw new RuntimeException("Staff is not a LEADER");
+        }
+        
+        // Kiểm tra staff
+        Staff staff = staffRepository.findByIdWithRoleAndDepartment(staffId)
+            .orElseThrow(() -> new RuntimeException("Staff not found with ID: " + staffId));
+        
+        // Kiểm tra staff có cùng phòng ban với LEADER không
+        if (!staff.getStaffDepartment().getStaffDepartmentId().equals(leader.getStaffDepartment().getStaffDepartmentId())) {
+            throw new RuntimeException("Staff does not belong to leader's department");
+        }
+        
+        // Lấy danh sách ticket assignments
+        List<TicketAssign> assignments = ticketAssignRepository.findByAssignedToStaffIdOrderByAssignedAtDesc(staffId);
+        
+        return assignments.stream()
+            .map(assignment -> convertToTicketResponse(assignment.getTicket()))
+            .collect(Collectors.toList());
+    }
+
+    /**
      * Convert Ticket entity to TicketResponse DTO
      */
     private TicketResponse convertToTicketResponse(Ticket ticket) {
         Long customerId = null;
+        String customerName = null;
         Long staffDepartmentId = null;
         String staffDepartmentName = null;
+        Long assignedToStaffId = null;
+        String assignedToStaffName = null;
         
         try {
             if (ticket.getCustomer() != null) {
                 customerId = ticket.getCustomer().getCustomerId();
+                customerName = ticket.getCustomer().getName();
             }
         } catch (Exception e) {
             log.warn("Ticket {} has no associated customer or failed to load customer: {}", ticket.getTicketId(), e.getMessage());
@@ -248,6 +319,23 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
             log.warn("Ticket {} has no associated department or failed to load department: {}", ticket.getTicketId(), e.getMessage());
         }
         
+        // Lấy thông tin nhân viên được assign
+        try {
+            if (ticket.getTicketAssignments() != null && !ticket.getTicketAssignments().isEmpty()) {
+                // Lấy assignment mới nhất (giả sử list đã sắp xếp theo thời gian)
+                TicketAssign latestAssignment = ticket.getTicketAssignments().stream()
+                    .max((a1, a2) -> a1.getAssignedAt().compareTo(a2.getAssignedAt()))
+                    .orElse(ticket.getTicketAssignments().get(0));
+                    
+                if (latestAssignment != null && latestAssignment.getAssignedTo() != null) {
+                    assignedToStaffId = latestAssignment.getAssignedTo().getStaffId();
+                    assignedToStaffName = latestAssignment.getAssignedTo().getName();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Ticket {} has no assignment info: {}", ticket.getTicketId(), e.getMessage());
+        }
+        
         return new TicketResponse(
             ticket.getTicketId(),
             ticket.getSubject(),
@@ -256,8 +344,11 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
             ticket.getStatus() != null ? ticket.getStatus().name() : null,
             ticket.getCreatedAt(),
             customerId,
+            customerName,
             staffDepartmentId,
-            staffDepartmentName
+            staffDepartmentName,
+            assignedToStaffId,
+            assignedToStaffName
         );
     }
 }
