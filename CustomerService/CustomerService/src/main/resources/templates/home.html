@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechSave - Cửa hàng công nghệ hàng đầu</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="/js/cart-utils.js" defer></script>
     <style>
         * {
             margin: 0;
@@ -814,48 +815,13 @@
 </head>
 <body>
     <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <div class="top-nav">
-                <a href="/home"><i class="fas fa-home"></i> TRANG CHỦ</a>
-                <a href="/login"><i class="fas fa-sign-in-alt"></i> ĐĂNG NHẬP</a>
-                <a href="/register"><i class="fas fa-user-plus"></i> ĐĂNG KÝ</a>
-                <a href="#contact"><i class="fas fa-phone"></i> LIÊN HỆ</a>
-            </div>
-            <div class="top-actions">
-                <a href="/dashboard"><i class="fas fa-user"></i> TÀI KHOẢN</a>
-                <a href="/cart"><i class="fas fa-shopping-cart"></i> GIỎ HÀNG <span id="cartCount" style="background: #ff4444; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px; font-weight: bold;">0</span></a>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
 
     <!-- Header -->
-    <header>
-        <div class="header-content">
-            <a href="/" class="logo">TECHSAVE</a>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." onkeypress="handleSearchKeyPress(event)" oninput="handleSearchInput(event)">
-                <button onclick="handleSearchClick()"><i class="fas fa-search"></i></button>
-                <div class="search-suggestions" id="searchSuggestions">
-                    <!-- Suggestions will be populated here -->
-                </div>
-            </div>
-            <div class="phone-info">
-                <p>CÂU HỎI? GỌI CHO CHÚNG TÔI</p>
-                <a href="tel:1900123456"><i class="fas fa-phone"></i> 1900.123.456</a>
-            </div>
-        </div>
-    </header>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <!-- Navigation -->
-    <nav>
-        <div class="nav-content">
-            <a href="/catalog">TẤT CẢ SẢN PHẨM</a>
-            <th:block th:each="category : ${categories}">
-                <a th:href="@{'/category/' + ${category.categoryId}}" th:text="${category.name}">CATEGORY</a>
-            </th:block>
-        </div>
-    </nav>
+    <div th:replace="~{fragments/navigation :: navigation}"></div>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -997,45 +963,7 @@
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="footer-content">
-            <div class="footer-grid">
-                <div class="footer-section">
-                    <h3>Về TechSave</h3>
-                    <p>TechSave là cửa hàng công nghệ hàng đầu Việt Nam, chuyên cung cấp các sản phẩm công nghệ chính hãng với giá cả cạnh tranh.</p>
-                    <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-                    </div>
-                </div>
-                <div class="footer-section">
-                    <h3>Liên kết nhanh</h3>
-                    <a href="/catalog">Tất cả sản phẩm</a>
-                    <a href="/login">Đăng nhập</a>
-                    <a href="/register">Đăng ký</a>
-                    <a href="/cart">Giỏ hàng</a>
-                </div>
-                <div class="footer-section">
-                    <h3>Hỗ trợ khách hàng</h3>
-                    <a href="#contact">Liên hệ</a>
-                    <a href="#shipping">Chính sách giao hàng</a>
-                    <a href="#return">Chính sách đổi trả</a>
-                    <a href="#warranty">Chính sách bảo hành</a>
-                </div>
-                <div class="footer-section">
-                    <h3>Thông tin liên hệ</h3>
-                    <p><i class="fas fa-map-marker-alt"></i> 123 Đường ABC, Quận XYZ, TP.HCM</p>
-                    <p><i class="fas fa-phone"></i> 1900.123.456</p>
-                    <p><i class="fas fa-envelope"></i> info@techsave.vn</p>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 TechSave. Tất cả quyền được bảo lưu. | <a href="#privacy">Chính sách bảo mật</a> | <a href="#terms">Điều khoản sử dụng</a></p>
-            </div>
-        </div>
-    </footer>
+    <div th:replace="~{fragments/footer :: footer}"></div>
 
     <!-- Toast Container -->
     <div id="toastContainer"></div>
@@ -1051,6 +979,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'same-origin',
                     body: JSON.stringify({
                         productId: productId,
                         quantity: 1
@@ -1061,30 +990,16 @@
                 
                 if (result.success) {
                     showToast('Đã thêm sản phẩm vào giỏ hàng!', 'success');
-                    updateCartCount();
+                    // Update cart count badge using the function from topbar
+                    if (window.updateCartCount) {
+                        window.updateCartCount();
+                    }
                 } else {
                     showToast('Lỗi: ' + (result.message || 'Không thể thêm sản phẩm vào giỏ hàng'), 'error');
                 }
             } catch (error) {
                 console.error('Error adding to cart:', error);
                 showToast('Lỗi khi thêm sản phẩm vào giỏ hàng', 'error');
-            }
-        }
-        
-        // Update cart count display
-        async function updateCartCount() {
-            try {
-                const response = await fetch('/api/cart/count');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const cartCountElement = document.getElementById('cartCount');
-                    if (cartCountElement) {
-                        cartCountElement.textContent = result.data;
-                    }
-                }
-            } catch (error) {
-                console.error('Error updating cart count:', error);
             }
         }
 
@@ -1233,8 +1148,7 @@
                 }
             });
             
-            // Load cart count on page load
-            updateCartCount();
+            // Cart count is automatically loaded by the topbar fragment
         });
     </script>
 </body>

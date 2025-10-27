@@ -771,47 +771,13 @@
 </head>
 <body>
     <!-- Top Bar -->
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <div class="top-nav">
-                <a href="/">HOME</a>
-                <a href="/home">TRANG CHỦ</a>
-                <a href="/login">ĐĂNG NHẬP</a>
-                <a href="/register">ĐĂNG KÝ</a>
-                <a href="#contact">LIÊN HỆ</a>
-            </div>
-            <div class="top-actions">
-                <a href="/dashboard">👤 TÀI KHOẢN</a>
-                <a href="/cart">GIỎ HÀNG 🛒 <span id="cartCount" style="background: #ff4444; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px; font-weight: bold;">0</span></a>
-            </div>
-        </div>
-    </div>
+    <div th:replace="~{fragments/topbar :: topbar}"></div>
 
     <!-- Header -->
-    <header>
-        <div class="header-content">
-            <div class="logo"><a href="/" style="text-decoration: none; color: inherit;">TECHSAVE</a></div>
-            <div class="search-box">
-                <input type="text" placeholder="Tìm kiếm sản phẩm...">
-                <button>🔍</button>
-            </div>
-            <div class="phone-info">
-                <p>CÂU HỎI? GỌI CHO CHÚNG TÔI</p>
-                <a href="tel:555.555.5555">📞 555.555.5555</a>
-            </div>
-        </div>
-    </header>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <!-- Navigation -->
-    <nav>
-        <div class="nav-content">
-            <a href="/catalog">TẤT CẢ</a>
-            <a href="/catalog">LAPTOP</a>
-            <a href="/catalog">PHONE</a>
-            <a href="/catalog">TABLET</a>
-            <a href="/catalog">ACCESSORIES</a>
-        </div>
-    </nav>
+    <div th:replace="~{fragments/navigation :: navigation}"></div>
 
     <!-- Breadcrumb -->
     <div class="breadcrumb">

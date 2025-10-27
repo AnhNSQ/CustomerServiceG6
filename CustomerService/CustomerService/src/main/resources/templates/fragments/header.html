@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Header -->
+<header th:fragment="header">
+    <div class="header-content">
+        <a href="/" class="logo">TECHSAVE</a>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm sản phẩm..." onkeypress="handleSearchKeyPress(event)" oninput="handleSearchInput(event)">
+            <button onclick="handleSearchClick()"><i class="fas fa-search"></i></button>
+            <div class="search-suggestions" id="searchSuggestions">
+                <!-- Suggestions will be populated here -->
+            </div>
+        </div>
+        <div class="phone-info">
+            <p>CÂU HỎI? GỌI CHO CHÚNG TÔI</p>
+            <a href="tel:1900123456"><i class="fas fa-phone"></i> 1900.123.456</a>
+        </div>
+    </div>
+</header>
+</body>
+</html>
+
