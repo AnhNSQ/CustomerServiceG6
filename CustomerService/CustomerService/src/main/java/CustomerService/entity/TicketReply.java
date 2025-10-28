@@ -33,6 +33,9 @@ public class TicketReply {
     @Column(name = "message", nullable = false, columnDefinition = "nvarchar(2000)")
     private String message;
 
+    @Column(name = "image_url", columnDefinition = "nvarchar(500)")
+    private String imageURL;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -48,5 +51,14 @@ public class TicketReply {
         this.senderType = senderType;
         this.senderId = senderId;
         this.message = message;
+    }
+    
+    // Constructor với imageURL
+    public TicketReply(Ticket ticket, SenderType senderType, Long senderId, String message, String imageURL) {
+        this.ticket = ticket;
+        this.senderType = senderType;
+        this.senderId = senderId;
+        this.message = message;
+        this.imageURL = imageURL;
     }
 }

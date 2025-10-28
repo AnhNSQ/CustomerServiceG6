@@ -17,13 +17,13 @@ public interface CartRepository extends JpaRepository<CartItem, Long> {
     /**
      * Tìm tất cả cart items của một customer
      */
-    @Query("SELECT ci FROM CartItem ci WHERE ci.customer.customerId = :customerId ORDER BY ci.createdAt DESC")
+    @Query("SELECT ci FROM CartItem ci LEFT JOIN FETCH ci.product LEFT JOIN FETCH ci.product.vendor LEFT JOIN FETCH ci.product.category WHERE ci.customer.customerId = :customerId ORDER BY ci.createdAt DESC")
     List<CartItem> findByCustomerId(@Param("customerId") Long customerId);
 
     /**
      * Tìm cart item của customer với product cụ thể
      */
-    @Query("SELECT ci FROM CartItem ci WHERE ci.customer.customerId = :customerId AND ci.product.productId = :productId")
+    @Query("SELECT ci FROM CartItem ci LEFT JOIN FETCH ci.product LEFT JOIN FETCH ci.product.vendor LEFT JOIN FETCH ci.product.category WHERE ci.customer.customerId = :customerId AND ci.product.productId = :productId")
     Optional<CartItem> findByCustomerIdAndProductId(@Param("customerId") Long customerId, @Param("productId") Long productId);
 
     /**

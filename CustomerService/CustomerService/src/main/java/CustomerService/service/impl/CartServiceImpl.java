@@ -39,7 +39,7 @@ public class CartServiceImpl implements CartService {
             .orElseThrow(() -> new RuntimeException("Customer not found"));
 
         // Kiểm tra product tồn tại và đang hoạt động
-        Product product = productRepository.findById(request.getProductId())
+        Product product = productRepository.findByIdWithVendorAndCategory(request.getProductId())
             .orElseThrow(() -> new RuntimeException("Product not found"));
 
         if (product.getStatus() != Product.ProductStatus.ACTIVE) {

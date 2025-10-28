@@ -688,9 +688,6 @@
                 <button class="btn-primary" onclick="addToCart()" th:disabled="${!isInStock}">
                     🛒 ADD TO CART
                 </button>
-                <button class="btn-secondary" onclick="addToWishlist()">
-                    ❤️ ADD TO WISHLIST
-                </button>
             </div>
 
             <!-- Additional Actions -->
@@ -874,15 +871,6 @@
         } catch (error) {
             console.error('Error updating cart count:', error);
         }
-    }
-
-    // Add to wishlist functionality
-    function addToWishlist() {
-        const productId = /*[[${product.productId}]]*/ 0;
-        
-        // TODO: Implement wishlist functionality
-        alert('Đã thêm sản phẩm vào danh sách yêu thích!');
-        console.log('Adding to wishlist:', productId);
     }
 
     // Tab functionality

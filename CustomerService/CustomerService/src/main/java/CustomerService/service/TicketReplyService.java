@@ -12,7 +12,7 @@ public interface TicketReplyService {
     /**
      * Tạo ticket reply mới
      */
-    TicketReply createReply(Long ticketId, TicketReply.SenderType senderType, Long senderId, String message);
+    TicketReply createReply(Long ticketId, TicketReply.SenderType senderType, Long senderId, String message, String imageURL);
     
     /**
      * Lấy tất cả replies của một ticket
