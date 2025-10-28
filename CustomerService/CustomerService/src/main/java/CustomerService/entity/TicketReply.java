@@ -19,7 +19,7 @@ public class TicketReply {
     @Column(name = "ticket_reply_id")
     private Long ticketReplyId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = false)
     private Ticket ticket;
 

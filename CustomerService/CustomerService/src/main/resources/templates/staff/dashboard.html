@@ -27,7 +27,7 @@
         }
 
         .dashboard-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #dc3545, #c82333);
             color: white;
             padding: 2rem 0;
             margin-bottom: 2rem;
@@ -47,58 +47,56 @@
             font-size: 0.9rem;
         }
 
-        .dashboard-card {
+        .stat-card {
             background: white;
             border-radius: 15px;
             padding: 2rem;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             margin-bottom: 2rem;
             transition: transform 0.3s ease;
-        }
-
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-        }
-
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            border-left: 4px solid;
+            border-left: 5px solid;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
 
-        .stat-card.primary { border-color: var(--primary-color); }
-        .stat-card.success { border-color: var(--success-color); }
-        .stat-card.warning { border-color: var(--warning-color); }
-        .stat-card.danger { border-color: var(--danger-color); }
+        .stat-card.primary {
+            border-left-color: var(--primary-color);
+        }
 
-        .stat-card h3 {
+        .stat-card.success {
+            border-left-color: var(--success-color);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--info-color);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
-            margin: 0.5rem 0;
+            margin-bottom: 0.5rem;
         }
 
-        .stat-card.primary h3 { color: var(--primary-color); }
-        .stat-card.success h3 { color: var(--success-color); }
-        .stat-card.warning h3 { color: var(--warning-color); }
-        .stat-card.danger h3 { color: var(--danger-color); }
-
-        .stat-card p {
-            color: #718096;
-            margin: 0;
-            font-weight: 600;
+        .stat-label {
+            color: #6c757d;
+            font-size: 1rem;
         }
 
-        /* Button Styles */
         .btn {
             border-radius: 8px;
             padding: 10px 20px;
@@ -117,134 +115,65 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(220,53,69,0.4);
         }
-        
-        .btn-outline-primary {
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        .btn-outline-primary:hover {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(220,53,69,0.3);
-        }
-        
-        .btn-outline-danger {
-            border: 2px solid var(--danger-color);
-            color: var(--danger-color);
-        }
-        
-        .btn-outline-danger:hover {
-            background: var(--danger-color);
-            border-color: var(--danger-color);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(220,53,69,0.3);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color), #1e7e34);
-            border: none;
-            box-shadow: 0 4px 10px rgba(40,167,69,0.3);
-        }
-        
-        .btn-success:hover {
-            background: linear-gradient(135deg, #1e7e34, #155724);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(40,167,69,0.4);
-        }
-        
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.875rem;
-            border-radius: 6px;
-        }
-        
-        .btn-lg {
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            border-radius: 10px;
+
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
         }
 
-        .stat-card i {
-            font-size: 2rem;
-            opacity: 0.8;
+        .section-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 0.5rem;
         }
 
         .quick-action-btn {
-            background: linear-gradient(135deg, var(--primary-color), #c82333);
-            border: none;
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-decoration: none;
             display: block;
-            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
             margin-bottom: 1rem;
         }
 
         .quick-action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+            background: linear-gradient(135deg, var(--primary-color), #c82333);
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(220,53,69,0.3);
         }
-
-        .ticket-item {
-            background: #fff5f5;
-            border-radius: 10px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-color);
-            transition: all 0.3s ease;
-        }
-
-        .ticket-item:hover {
-            background: #ffe6e6;
-            transform: translateX(5px);
-        }
-
-        .status-badge {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .status-open { background: #ffe6e6; color: #dc3545; }
-        .status-in-progress { background: #fff3cd; color: #856404; }
-        .status-resolved { background: #d4edda; color: #155724; }
-        .status-closed { background: #e2e3e5; color: #495057; }
 
         .btn-logout {
             background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
             padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 25px;
             transition: all 0.3s ease;
         }
 
         .btn-logout:hover {
-            background: white;
-            color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
         }
 
-        .section-title {
-            color: #2d3748;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
+        .loading-spinner {
+            text-align: center;
+            padding: 3rem;
         }
 
-        .section-title i {
-            margin-right: 0.5rem;
-            color: var(--primary-color);
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--danger-color);
         }
     </style>
 </head>
@@ -254,10 +183,10 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h1><i class="fas fa-user-shield me-3"></i>Dashboard Nhân viên</h1>
+                    <h1><i class="fas fa-user-tie me-3"></i>Staff Dashboard</h1>
                     <div class="staff-badge">
-                        <i class="fas fa-id-badge me-2"></i>
-                        Chào mừng, <span th:text="${staff.name}">Nhân viên</span>!
+                        <i class="fas fa-user me-2"></i>
+                        Chào mừng, <span th:text="${staff.name}">Staff</span>!
                     </div>
                 </div>
                 <div class="col-md-4 text-md-end">
@@ -270,139 +199,87 @@
     </div>
 
     <div class="container">
-        <!-- Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-4 col-sm-6 mb-3">
-                <div class="stat-card primary">
-                    <i class="fas fa-ticket-alt"></i>
-                    <h3 id="totalAssignedTickets">-</h3>
-                    <p>Tổng số ticket được giao</p>
-                </div>
+        <!-- Loading State -->
+        <div id="loadingState" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Đang tải...</span>
             </div>
-            <div class="col-md-4 col-sm-6 mb-3">
-                <div class="stat-card warning">
-                    <i class="fas fa-clock"></i>
-                    <h3 id="inProgressTickets">-</h3>
-                    <p>Đang xử lý</p>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6 mb-3">
-                <div class="stat-card success">
-                    <i class="fas fa-check-circle"></i>
-                    <h3 id="completedTickets">-</h3>
-                    <p>Đã giải quyết</p>
-                </div>
-            </div>
+            <p class="mt-3 text-muted">Đang tải thông tin dashboard...</p>
         </div>
 
-        <div class="row">
-            <!-- Main Content -->
-            <div class="col-md-8">
-                <!-- Quick Actions -->
-                <div class="dashboard-card">
-                    <h4 class="section-title">
-                        <i class="fas fa-bolt"></i>Hành động nhanh
-                    </h4>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <a href="#" class="quick-action-btn" onclick="viewAllTickets()">
-                                <i class="fas fa-list me-2"></i>Xem tất cả Ticket
-                            </a>
+        <!-- Error State -->
+        <div id="errorState" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Không thể tải dashboard</h5>
+            <p>Bạn không có quyền truy cập trang này hoặc có lỗi xảy ra.</p>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div id="dashboardContent" style="display: none;">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card primary">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-ticket-alt"></i>
                         </div>
-                        <div class="col-md-6">
-                            <a href="#" class="quick-action-btn" onclick="viewAssignedTickets()">
-                                <i class="fas fa-user-check me-2"></i>Ticket được giao
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="#" class="quick-action-btn" onclick="manageCustomers()">
-                                <i class="fas fa-users me-2"></i>Quản lý khách hàng
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="#" class="quick-action-btn" onclick="viewReports()">
-                                <i class="fas fa-chart-bar me-2"></i>Báo cáo thống kê
-                            </a>
-                        </div>
+                        <div class="stat-number text-primary" id="totalAssignedTickets">-</div>
+                        <div class="stat-label">Tổng ticket được giao</div>
                     </div>
                 </div>
-
-                <!-- Dynamic All Tickets Container -->
-                <div id="allTicketsContainer" class="dashboard-card" style="display: none;">
-                    <h5 class="section-title">
-                        <i class="fas fa-list"></i>Tất cả Ticket
-                    </h5>
-                    <div id="allTicketsContent"></div>
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card warning">
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-number text-warning" id="inProgressTickets">-</div>
+                        <div class="stat-label">Đang xử lý</div>
+                    </div>
                 </div>
-
+                <div class="col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card success">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-number text-success" id="completedTickets">-</div>
+                        <div class="stat-label">Đã giải quyết</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Sidebar -->
-            <div class="col-md-4">
-                <!-- Staff Info -->
-                <div class="dashboard-card">
-                    <h5 class="section-title">
-                        <i class="fas fa-user-circle"></i>Thông tin cá nhân
-                    </h5>
-                    
-                    <div class="mb-3">
-                        <strong>Họ và tên:</strong><br>
-                        <span th:text="${staff.name}">Nhân viên</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Email:</strong><br>
-                        <span th:text="${staff.email}">staff@example.com</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Số điện thoại:</strong><br>
-                        <span th:text="${staff.phone ?: 'Chưa cập nhật'}">0123456789</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Vai trò:</strong><br>
-                        <span th:each="role : ${staff.roles}" th:text="${role}" class="badge bg-primary me-1">STAFF</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>Ngày vào làm:</strong><br>
-                        <span th:text="${#temporals.format(staff.registerDate, 'dd/MM/yyyy')}">01/01/2024</span>
+            <div class="row">
+                <!-- Quick Actions -->
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h4 class="section-title">
+                            <i class="fas fa-bolt"></i>Hành động nhanh
+                        </h4>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <a href="/staff/tickets" class="quick-action-btn">
+                                    <i class="fas fa-ticket-alt me-2"></i>Xem ticket được giao
+                                </a>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <a href="#" class="quick-action-btn" onclick="viewReports()">
+                                    <i class="fas fa-chart-bar me-2"></i>Báo cáo thống kê
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Today's Schedule -->
-                <div class="dashboard-card">
-                    <h5 class="section-title">
-                        <i class="fas fa-calendar-day"></i>Lịch làm việc hôm nay
-                    </h5>
-                    
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Ca làm việc: 8:00 - 17:00
-                    </div>
-                    
-                    <div class="text-muted small">
-                        <i class="fas fa-clock me-2"></i>Thời gian còn lại: 4 giờ 30 phút
-                    </div>
-                </div>
-
-                <!-- Quick Links -->
-                <div class="dashboard-card">
-                    <h5 class="section-title">
-                        <i class="fas fa-link"></i>Liên kết nhanh
-                    </h5>
-                    
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action" onclick="viewProfile()">
-                            <i class="fas fa-user-edit me-2"></i>Cập nhật hồ sơ
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="changePassword()">
-                            <i class="fas fa-key me-2"></i>Đổi mật khẩu
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action" onclick="viewNotifications()">
-                            <i class="fas fa-bell me-2"></i>Thông báo
-                        </a>
+                <!-- Recent Tickets -->
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <h4 class="section-title">
+                            <i class="fas fa-clock"></i>Ticket gần đây
+                        </h4>
+                        <div id="recentTicketsContainer">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin"></i> Đang tải...
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -411,7 +288,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
         function logout() {
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
@@ -436,43 +313,89 @@
             }
         }
 
-        function viewAllTickets() {
-            window.location.href = '/staff/tickets';
+        function loadDashboardData() {
+            loadAssignedTicketsStats();
+            loadRecentTickets();
         }
 
-        function renderTicketItem(t) {
-            const statusClass = mapStatusToClass(t.status);
-            const createdAt = formatDateTime(t.createdAt);
-            return `
-                <div class="ticket-item">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="mb-1">#${t.ticketId} - ${escapeHtml(t.subject)}</h6>
-                            <p class="text-muted mb-2">${escapeHtml(t.description || '')}</p>
-                            <small class="text-muted">
-                                <i class="fas fa-user me-1"></i>
-                                Customer ID: ${t.customerId}
-                                <i class="fas fa-calendar ms-3 me-1"></i>
-                                ${createdAt}
-                            </small>
-                        </div>
-                        <div class="text-end">
-                            <span class="status-badge ${statusClass}">${t.status}</span>
-                            <br>
-                            <small class="text-muted mt-1 d-block">${t.priority}</small>
-                        </div>
+        function loadAssignedTicketsStats() {
+            fetch('/api/staff/stats/assigned', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayStats(data.data || {});
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('dashboardContent').style.display = 'block';
+                } else {
+                    console.error('Failed to load stats:', data.message);
+                    showError();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading stats:', error);
+                showError();
+            });
+        }
+
+        function loadRecentTickets() {
+            fetch('/api/staff/tickets/assigned', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayRecentTickets(data.data || []);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading recent tickets:', error);
+            });
+        }
+
+        function displayStats(stats) {
+            document.getElementById('totalAssignedTickets').textContent = stats.total || 0;
+            document.getElementById('inProgressTickets').textContent = stats.pending || 0;
+            document.getElementById('completedTickets').textContent = stats.resolved || 0;
+        }
+
+        function displayRecentTickets(tickets) {
+            const container = document.getElementById('recentTicketsContainer');
+            
+            if (tickets.length === 0) {
+                container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-inbox fa-2x mb-2"></i><p>Chưa có ticket nào</p></div>';
+                return;
+            }
+            
+            const recentTickets = tickets.slice(0, 5);
+            container.innerHTML = recentTickets.map(ticket => `
+                <div class="ticket-item" style="background: #f8f9fa; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid var(--warning-color); cursor: pointer;" onclick="viewTicketDetail(${ticket.ticketId})">
+                    <h6 class="mb-1"><strong>#${ticket.ticketId} - ${ticket.subject || 'N/A'}</strong></h6>
+                    <p class="text-muted mb-2">${(ticket.description || '').substring(0, 100)}${(ticket.description || '').length > 100 ? '...' : ''}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge ${getStatusClass(ticket.status)}">${ticket.status || 'N/A'}</span>
+                        <small class="text-muted">${formatDateTime(ticket.createdAt)}</small>
                     </div>
-                </div>`;
+                </div>
+            `).join('');
         }
 
-        function mapStatusToClass(status) {
-            switch ((status || '').toUpperCase()) {
-                case 'OPEN': return 'status-open';
-                case 'ASSIGNED': return 'status-in-progress';
-                case 'IN_PROGRESS': return 'status-in-progress';
-                case 'RESOLVED': return 'status-resolved';
-                case 'CLOSED': return 'status-closed';
-                default: return 'status-open';
+        function getStatusClass(status) {
+            switch(status) {
+                case 'OPEN': return 'bg-success';
+                case 'IN_PROGRESS': return 'bg-primary';
+                case 'RESOLVED': return 'bg-success';
+                case 'CLOSED': return 'bg-secondary';
+                default: return 'bg-secondary';
             }
         }
 
@@ -481,90 +404,29 @@
                 if (!iso) return '';
                 const d = new Date(iso);
                 const pad = n => String(n).padStart(2, '0');
-                return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;
             } catch {
                 return '';
             }
         }
 
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
-
-        function viewAssignedTickets() {
-            loadAssignedTicketsStats();
-        }
-
         function viewTicketDetail(ticketId) {
-            // Redirect đến trang ticket detail giống customer
             window.location.href = `/staff/tickets/${ticketId}`;
-        }
-
-        function manageCustomers() {
-            alert('Tính năng đang phát triển - Quản lý khách hàng');
         }
 
         function viewReports() {
             alert('Tính năng đang phát triển - Báo cáo thống kê');
         }
 
-        function viewProfile() {
-            alert('Tính năng đang phát triển - Cập nhật hồ sơ');
+        function showError() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
         }
 
-        function changePassword() {
-            alert('Tính năng đang phát triển - Đổi mật khẩu');
-        }
-
-        function viewNotifications() {
-            alert('Tính năng đang phát triển - Thông báo');
-        }
-
-        // Load assigned tickets statistics for current staff
-        function loadAssignedTicketsStats() {
-            fetch('/api/staff/tickets/assigned/stats', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    displayAssignedTicketsStats(data.data || {});
-                } else {
-                    showAssignedTicketsStatsError(data.message || 'Không thể tải thống kê ticket');
-                }
-            })
-            .catch(error => {
-                console.error('Error loading assigned tickets stats:', error);
-                showAssignedTicketsStatsError('Có lỗi xảy ra khi tải thống kê');
-            });
-        }
-
-        function displayAssignedTicketsStats(stats) {
-            document.getElementById('totalAssignedTickets').textContent = stats.totalAssigned || 0;
-            document.getElementById('inProgressTickets').textContent = stats.inProgress || 0;
-            document.getElementById('completedTickets').textContent = stats.completed || 0;
-        }
-
-        function showAssignedTicketsStatsError(message) {
-            document.getElementById('totalAssignedTickets').textContent = '-';
-            document.getElementById('inProgressTickets').textContent = '-';
-            document.getElementById('completedTickets').textContent = '-';
-            console.error('Error loading assigned tickets stats:', message);
-        }
-
-        // Auto-load assigned tickets statistics when page loads
+        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            loadAssignedTicketsStats();
+            loadDashboardData();
         });
     </script>
 </body>
 </html>
-
