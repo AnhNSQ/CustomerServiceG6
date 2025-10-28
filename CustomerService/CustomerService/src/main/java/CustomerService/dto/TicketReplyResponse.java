@@ -16,6 +16,7 @@ public class TicketReplyResponse {
     private TicketReply.SenderType senderType;
     private Long senderId;
     private String message;
+    private String imageURL;
     private LocalDateTime createdAt;
     
     public static TicketReplyResponse fromEntity(TicketReply reply) {
@@ -25,6 +26,7 @@ public class TicketReplyResponse {
         dto.setSenderType(reply.getSenderType());
         dto.setSenderId(reply.getSenderId());
         dto.setMessage(reply.getMessage());
+        dto.setImageURL(reply.getImageURL());
         dto.setCreatedAt(reply.getCreatedAt());
         return dto;
     }

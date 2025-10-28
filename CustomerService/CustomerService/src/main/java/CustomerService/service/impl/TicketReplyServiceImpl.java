@@ -26,7 +26,7 @@ public class TicketReplyServiceImpl implements TicketReplyService {
     
     @Override
     @Transactional
-    public TicketReply createReply(Long ticketId, TicketReply.SenderType senderType, Long senderId, String message) {
+    public TicketReply createReply(Long ticketId, TicketReply.SenderType senderType, Long senderId, String message, String imageURL) {
         log.info("Tạo ticket reply cho ticket {}, senderType: {}, senderId: {}", ticketId, senderType, senderId);
         
         // Kiểm tra ticket tồn tại
@@ -38,7 +38,8 @@ public class TicketReplyServiceImpl implements TicketReplyService {
             ticket,
             senderType,
             senderId,
-            message
+            message,
+            imageURL
         );
         
         // Note: Không tự động chuyển status khi reply, status đã được set khi phân công ticket

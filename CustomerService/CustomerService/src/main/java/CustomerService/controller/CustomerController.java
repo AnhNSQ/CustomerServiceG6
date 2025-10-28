@@ -510,6 +510,7 @@ public class CustomerController {
             
             Long customerId = sessionManager.getCustomerId(session);
             String message = request.get("message");
+            String imageURL = request.get("imageURL");
             
             if (message == null || message.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
@@ -522,7 +523,8 @@ public class CustomerController {
                 ticketId,
                 TicketReply.SenderType.CUSTOMER,
                 customerId,
-                message
+                message,
+                imageURL
             );
             
             return ResponseEntity.ok()

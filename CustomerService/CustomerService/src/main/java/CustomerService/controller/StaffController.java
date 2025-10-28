@@ -313,6 +313,7 @@ public class StaffController {
             
             Long staffId = sessionManager.getStaffId(session);
             String message = request.get("message");
+            String imageURL = request.get("imageURL");
             
             if (message == null || message.trim().isEmpty()) {
                 return ResponseEntity.badRequest()
@@ -335,7 +336,8 @@ public class StaffController {
                 ticketId,
                 TicketReply.SenderType.STAFF,
                 staffId,
-                message
+                message,
+                imageURL
             );
             
             return ResponseEntity.ok()
