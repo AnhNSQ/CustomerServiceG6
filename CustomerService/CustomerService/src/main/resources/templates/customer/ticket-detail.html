@@ -259,9 +259,62 @@
             font-size: 0.9em;
             padding: 0.5rem 1rem;
         }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            min-width: 300px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease-out;
+            border-radius: 8px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .toast-body {
+            padding: 1rem 1.5rem;
+        }
     </style>
 </head>
 <body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="/dashboard">
@@ -392,6 +445,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let currentTicket = null;
+        let pollingInterval = null;
         const ticketId = /*[[${ticketId}]]*/ null;
 
         // Load ticket details when page loads
@@ -408,10 +462,47 @@
             
             if (actualTicketId && !isNaN(actualTicketId)) {
                 loadTicketDetails(actualTicketId);
+                
+                // Start polling for new replies every 3 seconds
+                startPolling();
             } else {
                 console.error('No valid ticketId found');
                 showError('Không có ID ticket hợp lệ');
             }
+        });
+
+        /**
+         * Bắt đầu polling (tự động reload tin nhắn mới)
+         * Cứ mỗi 3 giây sẽ gọi API để lấy replies mới nhất
+         */
+        function startPolling() {
+            // Xóa interval cũ nếu có
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+            
+            // Tạo interval mới, cứ 3000ms (3 giây) gọi lại loadTicketReplies
+            pollingInterval = setInterval(() => {
+                if (currentTicket) {
+                    console.log('Polling for new replies...');
+                    loadTicketReplies();
+                }
+            }, 3000);
+        }
+
+        /**
+         * Dừng polling khi rời trang để tiết kiệm tài nguyên
+         */
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        // Dừng polling khi user đóng trang hoặc điều hướng sang trang khác
+        window.addEventListener('beforeunload', function() {
+            stopPolling();
         });
 
         function loadTicketDetails(ticketId) {
@@ -435,6 +526,7 @@
                 if (data.success) {
                     currentTicket = data.data;
                     displayTicketDetails(currentTicket);
+                    loadTicketReplies();
                 } else {
                     showError(data.message || 'Có lỗi xảy ra khi tải ticket');
                 }
@@ -483,6 +575,50 @@
         function displayConversation(ticket) {
             const conversationContainer = document.getElementById('conversationContainer');
             
+            // Load replies
+            loadTicketReplies();
+        }
+        
+        /**
+         * Load danh sách replies của ticket từ API
+         * Sử dụng ticketId từ currentTicket để gọi API
+         */
+        async function loadTicketReplies() {
+            const conversationContainer = document.getElementById('conversationContainer');
+            
+            // Nếu chưa có currentTicket thì hiển thị loading
+            if (!currentTicket) {
+                conversationContainer.innerHTML = '<p class="text-muted">Đang tải...</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/customers/tickets/${currentTicket.ticketId}/replies`, {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayReplies(result.data);
+                }
+                
+            } catch (error) {
+                console.error('Error loading replies:', error);
+            }
+        }
+        
+        /**
+         * Hiển thị cuộc trò chuyện gồm tin nhắn ban đầu của customer và các replies
+         * @param {Array} replies - Danh sách replies từ API
+         */
+        function displayReplies(replies) {
+            const conversationContainer = document.getElementById('conversationContainer');
+            
             // Customer's initial message
             const customerMessage = `
                 <div class="message customer-message">
@@ -491,38 +627,62 @@
                             <i class="fas fa-user-circle me-2"></i>
                             <strong>Bạn</strong>
                         </div>
-                        <div class="message-time">${formatDate(ticket.createdAt)}</div>
+                        <div class="message-time">${formatDate(currentTicket.createdAt)}</div>
                     </div>
                     <div class="message-content">
                         <div class="message-subject">
-                            <strong>Tiêu đề:</strong> ${ticket.subject}
+                            <strong>Tiêu đề:</strong> ${currentTicket.subject}
                         </div>
                         <div class="message-text">
-                            ${ticket.description}
+                            ${currentTicket.description}
                         </div>
                     </div>
                 </div>
             `;
             
-            // Staff responses (sẽ được thêm sau)
-            const staffResponses = `
-                <div class="message staff-message">
-                    <div class="message-header">
-                        <div class="message-sender">
-                            <i class="fas fa-headset me-2"></i>
-                            <strong>Nhân viên hỗ trợ</strong>
-                        </div>
-                        <div class="message-time">Chưa có phản hồi</div>
-                    </div>
-                    <div class="message-content">
-                        <div class="message-text">
-                            <em>Nhân viên hỗ trợ chưa phản hồi ticket này.</em>
-                        </div>
-                    </div>
-                </div>
-            `;
+            // Replies
+            let repliesHtml = '';
+            if (replies && replies.length > 0) {
+                replies.forEach(reply => {
+                    if (reply.senderType === 'STAFF') {
+                        repliesHtml += `
+                            <div class="message staff-message">
+                                <div class="message-header">
+                                    <div class="message-sender">
+                                        <i class="fas fa-headset me-2"></i>
+                                        <strong>Nhân viên hỗ trợ</strong>
+                                    </div>
+                                    <div class="message-time">${formatDate(reply.createdAt)}</div>
+                                </div>
+                                <div class="message-content">
+                                    <div class="message-text">
+                                        ${reply.message}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (reply.senderType === 'CUSTOMER') {
+                        repliesHtml += `
+                            <div class="message customer-message">
+                                <div class="message-header">
+                                    <div class="message-sender">
+                                        <i class="fas fa-user-circle me-2"></i>
+                                        <strong>Bạn</strong>
+                                    </div>
+                                    <div class="message-time">${formatDate(reply.createdAt)}</div>
+                                </div>
+                                <div class="message-content">
+                                    <div class="message-text">
+                                        ${reply.message}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
             
-            conversationContainer.innerHTML = customerMessage + staffResponses;
+            conversationContainer.innerHTML = customerMessage + repliesHtml;
         }
 
         // Function để cập nhật ngày cập nhật khi có conversation mới
@@ -538,24 +698,58 @@
         }
 
         // Handle reply form submission
-        document.getElementById('replyForm').addEventListener('submit', function(e) {
+        document.getElementById('replyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const message = document.getElementById('replyMessage').value.trim();
             if (!message) {
-                alert('Vui lòng nhập tin nhắn!');
+                showToast('Vui lòng nhập tin nhắn!', 'error');
                 return;
             }
-
-            // TODO: Gửi reply lên backend
-            console.log('Sending reply:', message);
             
-            // Tạm thời hiển thị thông báo
-            alert('Chức năng gửi phản hồi sẽ được triển khai trong backend!');
-            
-            // Clear form
-            clearReply();
+            await submitReply(message);
         });
+        
+        async function submitReply(message) {
+            const submitBtn = document.querySelector('#replyForm button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+            
+            try {
+                const response = await fetch(`/api/customers/tickets/${currentTicket.ticketId}/reply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Phản hồi đã được gửi thành công!', 'success');
+                    document.getElementById('replyMessage').value = '';
+                    
+                    // Reload replies
+                    loadTicketReplies();
+                    
+                    // Reload ticket detail
+                    loadTicketDetails(currentTicket.ticketId);
+                } else {
+                    showToast(`Lỗi: ${result.message}`, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error submitting reply:', error);
+                showToast('Có lỗi xảy ra khi gửi phản hồi', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
 
         function showError(message = 'Có lỗi xảy ra khi tải ticket') {
             document.getElementById('loadingState').style.display = 'none';
@@ -668,6 +862,34 @@
                 hour: '2-digit',
                 minute: '2-digit'
             });
+        }
+
+        /**
+         * Hiển thị toast notification (thông báo popup) ở góc trên bên phải
+         * @param {string} message - Nội dung thông báo
+         * @param {string} type - Loại toast: 'success' (màu xanh) hoặc 'error' (màu đỏ)
+         */
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <div class="toast-body d-flex align-items-center">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} me-2"></i>
+                    ${message}
+                </div>
+            `;
+            
+            // Thêm toast vào container
+            toastContainer.appendChild(toast);
+            
+            // Tự động xóa toast sau 3 giây với animation fade out
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
         }
     </script>
 </body>

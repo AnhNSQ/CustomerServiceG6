@@ -8,9 +8,12 @@ import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketResponse;
 import CustomerService.exception.AuthenticationException;
 import CustomerService.exception.UserNotFoundException;
+import CustomerService.entity.TicketReply;
+import CustomerService.dto.TicketReplyResponse;
 import CustomerService.service.AuthenticationService;
 import CustomerService.service.CustomerService;
 import CustomerService.service.SessionManager;
+import CustomerService.service.TicketReplyService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,7 @@ public class CustomerController {
     private final CustomerService customerService;
     private final AuthenticationService authenticationService;
     private final SessionManager sessionManager;
+    private final TicketReplyService ticketReplyService;
 
     /**
      * Đăng ký tài khoản customer mới
@@ -436,6 +440,100 @@ public class CustomerController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi xóa ticket: ", e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Lấy danh sách replies của một ticket
+     */
+    @GetMapping("/tickets/{ticketId}/replies")
+    public ResponseEntity<ApiResponse<List<TicketReplyResponse>>> getTicketReplies(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            
+            log.info("CUSTOMER {} lấy danh sách replies của ticket {}", customerId, ticketId);
+            
+            // Kiểm tra ticket có thuộc về customer này không
+            Optional<TicketResponse> ticketOpt = customerService.getTicketById(ticketId);
+            if (ticketOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Không tìm thấy ticket với ID: " + ticketId));
+            }
+            
+            TicketResponse ticket = ticketOpt.get();
+            if (!ticket.getCustomerId().equals(customerId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Bạn không có quyền xem ticket này"));
+            }
+            
+            List<TicketReply> replies = ticketReplyService.getRepliesByTicketId(ticketId);
+            List<TicketReplyResponse> replyResponses = replies.stream()
+                .map(TicketReplyResponse::fromEntity)
+                .toList();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(replyResponses));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy replies của ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy replies của ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Gửi phản hồi cho ticket
+     */
+    @PostMapping("/tickets/{ticketId}/reply")
+    public ResponseEntity<ApiResponse<TicketReplyResponse>> replyToTicket(
+            @PathVariable Long ticketId,
+            @RequestBody Map<String, String> request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            String message = request.get("message");
+            
+            if (message == null || message.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Message không được để trống"));
+            }
+            
+            log.info("CUSTOMER {} phản hồi ticket {}", customerId, ticketId);
+            
+            TicketReply reply = ticketReplyService.createReply(
+                ticketId,
+                TicketReply.SenderType.CUSTOMER,
+                customerId,
+                message
+            );
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(TicketReplyResponse.fromEntity(reply), "Phản hồi đã được gửi thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi phản hồi ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi phản hồi ticket: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

@@ -202,6 +202,61 @@ public class WebController {
     }
 
     /**
+     * Trang danh sách ticket được phân công của staff
+     */
+    @GetMapping("/staff/tickets")
+    public String staffTickets(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            
+            if (staffId == null) {
+                log.warn("Unauthorized access to staff tickets - redirecting to login");
+                return "redirect:/staff/login";
+            }
+            
+            log.info("Loading tickets page for staff {}", staffId);
+            
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+            
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+            
+            return "staff/tickets";
+            
+        } catch (Exception e) {
+            log.error("Error loading staff tickets page: ", e);
+            return "redirect:/staff/login";
+        }
+    }
+
+    /**
+     * Trang chi tiết ticket của staff
+     */
+    @GetMapping("/staff/tickets/{ticketId}")
+    public String staffTicketDetail(@PathVariable Long ticketId, Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            
+            if (staffId == null) {
+                log.warn("Unauthorized access to ticket detail - redirecting to login");
+                return "redirect:/staff/login";
+            }
+            
+            log.info("Loading ticket detail for ticket {} by staff {}", ticketId, staffId);
+            
+            // Page sẽ tự load data bằng AJAX từ API endpoint
+            return "staff/ticket-detail";
+            
+        } catch (Exception e) {
+            log.error("Error loading ticket detail page: ", e);
+            return "redirect:/staff/tickets";
+        }
+    }
+
+    /**
      * Trang tạo ticket mới của customer
      */
     @GetMapping("/customer/tickets/create")
