@@ -18,3 +18,4 @@ public interface TicketReplyRepository extends JpaRepository<TicketReply, Long> 
     List<TicketReply> findByTicketIdOrderByCreatedAtAsc(@Param("ticketId") Long ticketId);
 }
 
+
