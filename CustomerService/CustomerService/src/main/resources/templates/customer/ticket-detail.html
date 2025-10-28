@@ -417,6 +417,19 @@
                                 <textarea class="form-control" id="replyMessage" rows="4" 
                                     placeholder="Nhập phản hồi của bạn cho nhân viên hỗ trợ..." required></textarea>
                             </div>
+                            <div class="mb-3">
+                                <label for="imageUpload" class="form-label">
+                                    <i class="fas fa-image me-1"></i>Ảnh đính kèm (tùy chọn):
+                                </label>
+                                <input type="file" class="form-control" id="imageUpload" accept="image/*">
+                                <small class="text-muted">Chọn ảnh để đính kèm (tối đa 10MB)</small>
+                            </div>
+                            <div id="imagePreview" class="mb-3" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeImage()">
+                                    <i class="fas fa-times me-1"></i>Xóa ảnh
+                                </button>
+                            </div>
                             <div class="d-flex justify-content-end">
                                 <button type="button" class="btn btn-secondary me-2" onclick="clearReply()">
                                     <i class="fas fa-times me-1"></i>Xóa
@@ -658,6 +671,7 @@
                                     <div class="message-text">
                                         ${reply.message}
                                     </div>
+                                    ${reply.imageURL ? `<div class="mt-2"><img src="${reply.imageURL}" alt="Ảnh đính kèm" style="max-width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open('${reply.imageURL}', '_blank')"></div>` : ''}
                                 </div>
                             </div>
                         `;
@@ -675,6 +689,7 @@
                                     <div class="message-text">
                                         ${reply.message}
                                     </div>
+                                    ${reply.imageURL ? `<div class="mt-2"><img src="${reply.imageURL}" alt="Ảnh đính kèm" style="max-width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open('${reply.imageURL}', '_blank')"></div>` : ''}
                                 </div>
                             </div>
                         `;
@@ -692,9 +707,38 @@
             }
         }
 
+        // Variables for image handling
+        let uploadedImageUrl = null;
+
+        // Image preview
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Kích thước file quá lớn (tối đa 10MB)');
+                    e.target.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function removeImage() {
+            document.getElementById('imageUpload').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            uploadedImageUrl = null;
+        }
+
         // Reply form functions
         function clearReply() {
             document.getElementById('replyMessage').value = '';
+            removeImage();
         }
 
         // Handle reply form submission
@@ -718,13 +762,40 @@
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
             
             try {
+                let imageURL = null;
+                
+                // Upload image if exists
+                const imageFile = document.getElementById('imageUpload').files[0];
+                if (imageFile) {
+                    showToast('Đang upload ảnh...', 'success');
+                    
+                    const formData = new FormData();
+                    formData.append('file', imageFile);
+                    
+                    const uploadResponse = await fetch('/api/customers/upload-image', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: formData
+                    });
+                    
+                    const uploadResult = await uploadResponse.json();
+                    
+                    if (uploadResult.success) {
+                        imageURL = uploadResult.data;
+                        showToast('Upload ảnh thành công!', 'success');
+                    } else {
+                        throw new Error(uploadResult.message || 'Upload ảnh thất bại');
+                    }
+                }
+                
+                // Send reply with image
                 const response = await fetch(`/api/customers/tickets/${currentTicket.ticketId}/reply`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     credentials: 'include',
-                    body: JSON.stringify({ message: message })
+                    body: JSON.stringify({ message: message, imageURL: imageURL })
                 });
                 
                 const result = await response.json();
@@ -732,6 +803,7 @@
                 if (result.success) {
                     showToast('Phản hồi đã được gửi thành công!', 'success');
                     document.getElementById('replyMessage').value = '';
+                    removeImage();
                     
                     // Reload replies
                     loadTicketReplies();
@@ -744,7 +816,7 @@
                 
             } catch (error) {
                 console.error('Error submitting reply:', error);
-                showToast('Có lỗi xảy ra khi gửi phản hồi', 'error');
+                showToast('Có lỗi xảy ra khi gửi phản hồi: ' + error.message, 'error');
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
