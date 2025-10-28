@@ -11,9 +11,11 @@ import CustomerService.exception.UserNotFoundException;
 import CustomerService.entity.TicketReply;
 import CustomerService.dto.TicketReplyResponse;
 import CustomerService.service.AuthenticationService;
+import CustomerService.service.CloudinaryService;
 import CustomerService.service.CustomerService;
 import CustomerService.service.SessionManager;
 import CustomerService.service.TicketReplyService;
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,7 @@ public class CustomerController {
     private final AuthenticationService authenticationService;
     private final SessionManager sessionManager;
     private final TicketReplyService ticketReplyService;
+    private final CloudinaryService cloudinaryService;
 
     /**
      * Đăng ký tài khoản customer mới
@@ -538,6 +541,39 @@ public class CustomerController {
             log.error("Lỗi không mong muốn khi phản hồi ticket: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Upload ảnh lên Cloudinary
+     */
+    @PostMapping("/upload-image")
+    public ResponseEntity<ApiResponse<String>> uploadImage(
+            @RequestParam("file") MultipartFile file,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("CUSTOMER {} upload ảnh", customerId);
+            
+            // Upload to Cloudinary
+            String imageUrl = cloudinaryService.uploadImage(file);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(imageUrl, "Upload ảnh thành công"));
+                
+        } catch (IllegalArgumentException e) {
+            log.error("Lỗi upload ảnh: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi upload ảnh: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra khi upload ảnh, vui lòng thử lại sau"));
         }
     }
 }
