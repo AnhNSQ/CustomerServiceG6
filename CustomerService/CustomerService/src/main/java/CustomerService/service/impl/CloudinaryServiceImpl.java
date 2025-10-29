@@ -49,7 +49,8 @@ public class CloudinaryServiceImpl implements CloudinaryService {
                 "resource_type", "image"
             );
             
-            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), params);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> uploadResult = (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(), params);
             String imageUrl = (String) uploadResult.get("secure_url");
             
             log.info("Image uploaded successfully: {}", imageUrl);
