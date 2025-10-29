@@ -34,13 +34,23 @@ public class TicketReplyServiceImpl implements TicketReplyService {
             .orElseThrow(() -> new RuntimeException("Ticket not found with ID: " + ticketId));
         
         // Tạo reply
-        TicketReply reply = new TicketReply(
-            ticket,
-            senderType,
-            senderId,
-            message,
-            imageURL
-        );
+        TicketReply reply;
+        if (imageURL != null && !imageURL.trim().isEmpty()) {
+            reply = new TicketReply(
+                ticket,
+                senderType,
+                senderId,
+                message,
+                imageURL
+            );
+        } else {
+            reply = new TicketReply(
+                ticket,
+                senderType,
+                senderId,
+                message
+            );
+        }
         
         // Note: Không tự động chuyển status khi reply, status đã được set khi phân công ticket
         TicketReply savedReply = ticketReplyRepository.save(reply);
