@@ -4,6 +4,7 @@ import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketResponse;
+import CustomerService.dto.ChangePasswordRequest;
 
 import java.util.Map;
 import java.util.Optional;
@@ -39,6 +40,11 @@ public interface CustomerService {
      * Cập nhật thông tin customer
      */
     CustomerResponse updateProfile(Long customerId, Map<String, Object> updateData);
+    
+    /**
+     * Thay đổi mật khẩu customer (xác thực mật khẩu cũ và xác nhận mật khẩu mới)
+     */
+    void changePassword(Long customerId, ChangePasswordRequest request);
     
     /**
      * Tạo ticket mới cho customer

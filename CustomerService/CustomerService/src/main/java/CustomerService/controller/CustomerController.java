@@ -6,6 +6,7 @@ import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketResponse;
+import CustomerService.dto.ChangePasswordRequest;
 import CustomerService.exception.AuthenticationException;
 import CustomerService.exception.UserNotFoundException;
 import CustomerService.entity.TicketReply;
@@ -125,6 +126,33 @@ public class CustomerController {
             log.error("Lỗi khi đăng xuất: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra khi đăng xuất"));
+        }
+    }
+
+    /**
+     * Thay đổi mật khẩu Customer
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+
+            Long customerId = sessionManager.getCustomerId(session);
+            customerService.changePassword(customerId, request);
+
+            return ResponseEntity.ok()
+                .body(ApiResponse.success("Đổi mật khẩu thành công", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi đổi mật khẩu: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
     }
 

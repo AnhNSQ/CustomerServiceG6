@@ -3,6 +3,7 @@ package CustomerService.service;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
+import CustomerService.dto.ChangePasswordRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,11 @@ public interface StaffService {
      * Tìm staff theo email hoặc username
      */
     Optional<StaffResponse> findByEmailOrUsername(String emailOrUsername);
+    
+    /**
+     * Thay đổi mật khẩu staff (xác thực mật khẩu cũ và xác nhận mật khẩu mới)
+     */
+    void changePassword(Long staffId, ChangePasswordRequest request);
     
     /**
      * STAFF: Lấy danh sách ticket được phân công

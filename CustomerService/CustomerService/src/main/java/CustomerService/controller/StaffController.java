@@ -120,6 +120,33 @@ public class StaffController {
     }
 
     /**
+     * Thay đổi mật khẩu Staff
+     */
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+
+            Long staffId = sessionManager.getStaffId(session);
+            staffService.changePassword(staffId, request);
+
+            return ResponseEntity.ok()
+                .body(ApiResponse.success("Đổi mật khẩu thành công", null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi đổi mật khẩu staff: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
      * Lấy thông tin profile của staff hiện tại
      */
     @GetMapping("/profile")

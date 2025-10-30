@@ -3,8 +3,10 @@ package CustomerService.service.impl;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
+import CustomerService.dto.ChangePasswordRequest;
 import CustomerService.entity.Ticket;
 import CustomerService.entity.TicketAssign;
+import CustomerService.entity.Staff;
 import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.StaffRepository;
 import CustomerService.repository.TicketAssignRepository;
@@ -61,6 +63,30 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
     public Optional<StaffResponse> findByEmailOrUsername(String emailOrUsername) {
         return staffRepository.findActiveByEmailOrUsernameWithRole(emailOrUsername)
             .map(userConverter::convertToStaffResponse);
+    }
+
+    /**
+     * Thay đổi mật khẩu staff (xác thực mật khẩu cũ và xác nhận mật khẩu mới)
+     */
+    @Override
+    public void changePassword(Long staffId, ChangePasswordRequest request) {
+        log.info("Staff {} yêu cầu thay đổi mật khẩu", staffId);
+
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new RuntimeException("Mật khẩu mới và xác nhận mật khẩu không khớp");
+        }
+
+        Staff staff = staffRepository.findById(staffId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy staff với ID: " + staffId));
+
+        if (!passwordValidator.validatePassword(request.getOldPassword(), staff.getPassword())) {
+            throw new RuntimeException("Mật khẩu cũ không chính xác");
+        }
+
+        String encoded = passwordValidator.encodePassword(request.getNewPassword());
+        staff.setPassword(encoded);
+        staffRepository.save(staff);
+        log.info("Staff {} đã thay đổi mật khẩu thành công", staffId);
     }
 
     /**
