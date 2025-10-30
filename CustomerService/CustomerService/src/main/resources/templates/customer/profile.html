@@ -316,6 +316,22 @@
             color: white;
         }
 
+        /* Brand primary button for modal confirm */
+        .btn-brand {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+        }
+        .btn-brand:hover {
+            background: var(--secondary-color);
+            color: #fff;
+        }
+        .btn-brand:disabled {
+            background: var(--primary-color);
+            opacity: 0.65;
+            color: #fff;
+        }
+
         .alert {
             border-radius: 12px;
             border: none;
@@ -504,28 +520,11 @@
                     </button>
                 </div>
 
-                <!-- Change Password Card -->
-                <div class="profile-card">
-                    <h4 class="mb-3"><i class="fas fa-lock me-2"></i>Đổi mật khẩu</h4>
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label for="oldPassword" class="form-label">Mật khẩu hiện tại</label>
-                            <input type="password" id="oldPassword" class="form-control" placeholder="Nhập mật khẩu hiện tại">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="newPassword" class="form-label">Mật khẩu mới</label>
-                            <input type="password" id="newPassword" class="form-control" placeholder="Ít nhất 6 ký tự">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="confirmNewPassword" class="form-label">Xác nhận mật khẩu mới</label>
-                            <input type="password" id="confirmNewPassword" class="form-control" placeholder="Nhập lại mật khẩu mới">
-                        </div>
-                        <div class="col-12 text-end">
-                            <button class="btn btn-primary" onclick="changePassword()">
-                                <i class="fas fa-key me-2"></i>Đổi mật khẩu
-                            </button>
-                        </div>
-                    </div>
+                <!-- Change Password Trigger -->
+                <div class="text-center mb-4">
+                    <button class="btn btn-outline-secondary me-2" onclick="openChangePasswordModal()">
+                        <i class="fas fa-lock me-2"></i>Đổi mật khẩu
+                    </button>
                 </div>
                 
                 <!-- Action Buttons -->
@@ -541,12 +540,58 @@
         </div>
     </div>
 
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-key me-2"></i>Đổi mật khẩu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="oldPasswordModal" class="form-label">Mật khẩu hiện tại</label>
+                        <input type="password" id="oldPasswordModal" class="form-control" placeholder="Nhập mật khẩu hiện tại">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="newPasswordModal" class="form-label">Mật khẩu mới</label>
+                            <input type="password" id="newPasswordModal" class="form-control" placeholder="Ít nhất 6 ký tự">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="confirmNewPasswordModal" class="form-label">Xác nhận mật khẩu mới</label>
+                            <input type="password" id="confirmNewPasswordModal" class="form-control" placeholder="Nhập lại mật khẩu mới">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" id="confirmChangePasswordBtn" class="btn btn-brand" onclick="changePassword()">
+                        <span class="me-2"><i class="fas fa-check"></i></span>Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
         let originalValues = {};
         let editedFields = new Set();
+        let changePwdModalInstance = null;
+
+        function openChangePasswordModal() {
+            // Reset fields
+            document.getElementById('oldPasswordModal').value = '';
+            document.getElementById('newPasswordModal').value = '';
+            document.getElementById('confirmNewPasswordModal').value = '';
+            
+            const modalEl = document.getElementById('changePasswordModal');
+            changePwdModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            changePwdModalInstance.show();
+        }
 
         function goBack() {
             window.location.href = '/dashboard';
@@ -576,62 +621,41 @@
         }
 
         function editField(fieldName) {
-            // Store original value if not already stored
             if (!originalValues[fieldName]) {
                 originalValues[fieldName] = document.getElementById(fieldName + 'Value').textContent.trim();
             }
-            
-            // Hide value
             document.getElementById(fieldName + 'Value').style.display = 'none';
-            
-            // Show edit field
             document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'block';
-            
-            // Add to edited fields
             editedFields.add(fieldName);
-            
-            // Show save changes container
             document.getElementById('saveChangesContainer').style.display = 'block';
-            
-            // Focus on input
             document.getElementById(fieldName + 'Input').focus();
         }
 
         function saveAllChanges() {
             const updateData = {};
             let hasChanges = false;
-            
-            // Collect all edited field values
             for (let fieldName of editedFields) {
                 const input = document.getElementById(fieldName + 'Input');
                 const newValue = input.value.trim();
                 const originalValue = originalValues[fieldName];
-                
                 if (newValue !== originalValue) {
                     updateData[fieldName] = newValue;
                     hasChanges = true;
                 }
             }
-            
             if (!hasChanges) {
                 showAlert('info', 'Không có thay đổi nào để lưu!');
                 return;
             }
-            
-            // Validate all fields
             for (let fieldName in updateData) {
                 if (!validateField(fieldName, updateData[fieldName])) {
                     return;
                 }
             }
-            
-            // Show loading state
             const saveBtn = document.querySelector('.btn-save-all');
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '<div class="loading active"></div> Đang lưu...';
             saveBtn.disabled = true;
-            
-            // Call API to update profile
             fetch('/api/customers/profile', {
                 method: 'PUT',
                 headers: {
@@ -642,28 +666,20 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Update all display values
                     for (let fieldName in updateData) {
                         document.getElementById(fieldName + 'Value').textContent = updateData[fieldName];
-                        
-                        // Update header display for name and email
                         if (fieldName === 'name') {
                             document.getElementById('displayName').textContent = updateData[fieldName];
                         } else if (fieldName === 'email') {
                             document.getElementById('displayEmail').textContent = updateData[fieldName];
                         }
                     }
-                    
-                    // Hide all edit fields and show values
                     for (let fieldName of editedFields) {
                         document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
                         document.getElementById(fieldName + 'Value').style.display = 'block';
                     }
-                    
-                    // Clear edited fields and hide save container
                     editedFields.clear();
                     document.getElementById('saveChangesContainer').style.display = 'none';
-                    
                     showAlert('success', 'Cập nhật thông tin thành công! Dữ liệu đã được lưu.');
                 } else {
                     showAlert('danger', data.message || 'Có lỗi xảy ra khi cập nhật!');
@@ -674,24 +690,19 @@
                 showAlert('danger', 'Có lỗi xảy ra khi cập nhật!');
             })
             .finally(() => {
-                // Restore button state
                 saveBtn.innerHTML = originalText;
                 saveBtn.disabled = false;
             });
         }
 
         function cancelAllChanges() {
-            // Restore all original values
             for (let fieldName of editedFields) {
                 document.getElementById(fieldName + 'Value').textContent = originalValues[fieldName];
                 document.querySelector(`#${fieldName}Input`).parentElement.style.display = 'none';
                 document.getElementById(fieldName + 'Value').style.display = 'block';
             }
-            
-            // Clear edited fields and hide save container
             editedFields.clear();
             document.getElementById('saveChangesContainer').style.display = 'none';
-            
             showAlert('info', 'Đã hủy tất cả thay đổi!');
         }
 
@@ -730,12 +741,10 @@
         }
 
         function showAlert(type, message) {
-            // Remove existing alerts
             const existingAlert = document.getElementById('alertContainer');
             if (existingAlert) {
                 existingAlert.innerHTML = '';
             }
-            
             const alert = document.createElement('div');
             alert.className = `alert alert-${type} alert-dismissible fade show`;
             alert.style.animation = 'slideInDown 0.5s ease-out';
@@ -744,13 +753,8 @@
                 <strong>${message}</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
             document.getElementById('alertContainer').appendChild(alert);
-            
-            // Scroll to alert if it's not visible
             alert.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Auto remove after 6 seconds for success messages
             const timeout = type === 'success' ? 6000 : 5000;
             setTimeout(() => {
                 if (alert && alert.parentNode) {
@@ -765,9 +769,9 @@
         }
 
         function changePassword() {
-            const oldPassword = document.getElementById('oldPassword').value.trim();
-            const newPassword = document.getElementById('newPassword').value.trim();
-            const confirmNewPassword = document.getElementById('confirmNewPassword').value.trim();
+            const oldPassword = document.getElementById('oldPasswordModal').value.trim();
+            const newPassword = document.getElementById('newPasswordModal').value.trim();
+            const confirmNewPassword = document.getElementById('confirmNewPasswordModal').value.trim();
 
             if (!oldPassword || !newPassword || !confirmNewPassword) {
                 showAlert('danger', 'Vui lòng điền đầy đủ thông tin mật khẩu!');
@@ -782,6 +786,11 @@
                 return;
             }
 
+            const btn = document.getElementById('confirmChangePasswordBtn');
+            const oldBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading active me-2"></span>Đang đổi...';
+
             fetch('/api/customers/change-password', {
                 method: 'POST',
                 headers: {
@@ -792,10 +801,10 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('oldPassword').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('confirmNewPassword').value = '';
                     showAlert('success', 'Đổi mật khẩu thành công!');
+                    if (changePwdModalInstance) {
+                        changePwdModalInstance.hide();
+                    }
                 } else {
                     showAlert('danger', data.message || 'Đổi mật khẩu thất bại!');
                 }
@@ -803,10 +812,13 @@
             .catch(err => {
                 console.error(err);
                 showAlert('danger', 'Có lỗi xảy ra khi đổi mật khẩu!');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = oldBtnHtml;
             });
         }
 
-        // Initialize phone field display
         document.addEventListener('DOMContentLoaded', function() {
             const phoneValue = document.getElementById('phoneValue').textContent.trim();
             if (phoneValue === 'Chưa cập nhật') {
