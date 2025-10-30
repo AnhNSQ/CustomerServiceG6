@@ -21,6 +21,10 @@ ALTER TABLE orders ADD payment_method nvarchar(50);
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ticket_reply' AND COLUMN_NAME = 'image_url')
 ALTER TABLE ticket_reply ADD image_url nvarchar(500);
 
+-- Update message column to support HTML content from TinyMCE
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ticket_reply' AND COLUMN_NAME = 'message' AND CHARACTER_MAXIMUM_LENGTH = 2000)
+ALTER TABLE ticket_reply ALTER COLUMN message nvarchar(MAX);
+
 -- Insert Roles (if not exists) - Updated according to ERD
 IF NOT EXISTS (SELECT 1 FROM roles WHERE role_name = N'CUSTOMER')
 INSERT INTO roles (role_name, description) VALUES (N'CUSTOMER', N'Khách hàng');

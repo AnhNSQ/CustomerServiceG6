@@ -4,6 +4,7 @@ import CustomerService.dto.*;
 import CustomerService.entity.Staff;
 import CustomerService.repository.StaffRepository;
 import CustomerService.service.LeaderService;
+import CustomerService.service.EvaluationService;
 import CustomerService.service.SessionManager;
 import CustomerService.service.UserConverter;
 import jakarta.servlet.http.HttpSession;
@@ -30,6 +31,7 @@ import java.util.Set;
 public class LeaderController {
 
     private final LeaderService leaderService;
+    private final EvaluationService evaluationService;
     private final SessionManager sessionManager;
     private final StaffRepository staffRepository;
     private final UserConverter userConverter;
@@ -347,6 +349,64 @@ public class LeaderController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy ticket của staff: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * LEADER: Lấy rating trung bình và tổng số đánh giá của một staff
+     */
+    @GetMapping("/staffs/{staffId}/rating")
+    public ResponseEntity<ApiResponse<StaffRatingSummary>> getStaffRating(@PathVariable Long staffId,
+                                                                          HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            Staff staff = staffRepository.findByIdWithRole(sessionManager.getStaffId(session))
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
+            Set<String> roles = userConverter.extractRoleNames(staff.getRole());
+            if (!roles.contains("LEAD")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Chỉ LEADER mới có quyền truy cập"));
+            }
+
+            var summary = evaluationService.getStaffRatingSummary(staffId);
+            return ResponseEntity.ok(ApiResponse.success(summary));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * LEADER: Lấy danh sách đánh giá theo ticket của staff
+     */
+    @GetMapping("/staffs/{staffId}/evaluations")
+    public ResponseEntity<ApiResponse<List<StaffTicketEvaluation>>> getStaffEvaluations(@PathVariable Long staffId,
+                                                                                        HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            Staff staff = staffRepository.findByIdWithRole(sessionManager.getStaffId(session))
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
+            Set<String> roles = userConverter.extractRoleNames(staff.getRole());
+            if (!roles.contains("LEAD")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("Chỉ LEADER mới có quyền truy cập"));
+            }
+
+            var list = evaluationService.getEvaluationsByStaff(staffId);
+            return ResponseEntity.ok(ApiResponse.success(list));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

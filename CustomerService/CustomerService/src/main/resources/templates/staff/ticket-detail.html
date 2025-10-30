@@ -61,9 +61,11 @@
         
         /* Conversation Styles */
         .conversation-container {
-            max-height: 500px;
+            max-height: 600px;
             overflow-y: auto;
             padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
         }
         
         .message {
@@ -101,6 +103,96 @@
         .message-time {
             font-size: 0.85rem;
             color: #6c757d;
+        }
+        
+        .message-content {
+            line-height: 1.6;
+        }
+        
+        .message-subject {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #dc3545;
+        }
+        
+        .message-text img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .message-image {
+            margin-top: 10px;
+        }
+        
+        .message-image img {
+            max-width: 280px; /* show smaller in conversation */
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        #imagePreview {
+            margin-top: 10px;
+            max-width: 300px;
+        }
+        
+        #imagePreview img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        
+        /* Image Lightbox Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            cursor: pointer;
+        }
+        
+        .image-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+            transition: 0.3s;
+        }
+        
+        .image-modal-close:hover {
+            color: #ccc;
+        }
+        
+        .message-image img {
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .message-image img:hover {
+            opacity: 0.8;
         }
         
         .message-content {
@@ -321,31 +413,29 @@
                 </div>
             </div>
             
+            <!-- Image Lightbox Modal -->
+            <div id="imageModal" class="image-modal">
+                <span class="image-modal-close">&times;</span>
+                <img class="image-modal-content" id="modalImage" src="" alt="Full size image">
+            </div>
+            
             <!-- Reply Form Card -->
-            <div class="ticket-detail-card">
+            <div class="ticket-detail-card" id="replyCard">
                 <h5 class="mb-3"><i class="fas fa-reply me-2"></i>Phản hồi</h5>
                 <form id="replyForm">
                     <div class="mb-3">
                         <label for="replyTextarea" class="form-label">Tin nhắn của bạn</label>
-                        <textarea 
-                            class="form-control" 
-                            id="replyTextarea" 
-                            rows="4" 
-                            placeholder="Nhập tin nhắn phản hồi cho khách hàng..."
-                            required></textarea>
+                        <textarea id="replyTextarea" class="form-control" rows="5" placeholder="Nhập phản hồi của bạn..."></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="imageUpload" class="form-label">
-                            <i class="fas fa-image me-1"></i>Ảnh đính kèm (tùy chọn):
-                        </label>
-                        <input type="file" class="form-control" id="imageUpload" accept="image/*">
-                        <small class="text-muted">Chọn ảnh để đính kèm (tối đa 10MB)</small>
-                    </div>
-                    <div id="imagePreview" class="mb-3" style="display: none;">
-                        <img id="previewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
-                        <button type="button" class="btn btn-sm btn-danger ms-2" onclick="removeImage()">
-                            <i class="fas fa-times me-1"></i>Xóa ảnh
-                        </button>
+                        <label for="imageInput" class="form-label">Đính kèm ảnh (tùy chọn):</label>
+                        <input type="file" id="imageInput" class="form-control" accept="image/*">
+                        <div id="imagePreview" style="display: none;">
+                            <img id="previewImage" src="" alt="Preview" class="img-thumbnail mt-2">
+                            <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImage()">
+                                <i class="fas fa-times me-1"></i>Xóa ảnh
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-reply w-100">
                         <i class="fas fa-paper-plane me-2"></i>Gửi phản hồi
@@ -367,12 +457,34 @@
         let currentTicket = null;
         let pollingInterval = null;
         let actualTicketId = null;
+        let selectedImageFile = null;
         
         // Lấy ticketId từ URL
         const ticketId = window.location.pathname.split('/').pop();
         
         // Load ticket khi page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Setup image preview
+            document.getElementById('imageInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Kích thước ảnh không được vượt quá 5MB');
+                        this.value = '';
+                        return;
+                    }
+                    
+                    selectedImageFile = file;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('previewImage').src = e.target.result;
+                        document.getElementById('imagePreview').style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
             if (ticketId && !isNaN(ticketId)) {
                 actualTicketId = ticketId;
                 loadTicketDetail(ticketId);
@@ -385,9 +497,9 @@
             }
             
             // Setup reply form
-            document.getElementById('replyForm').addEventListener('submit', function(e) {
+            document.getElementById('replyForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
-                submitReply();
+                await submitReply();
             });
         });
         
@@ -488,6 +600,12 @@
             document.getElementById('ticketDepartment').textContent = ticket.staffDepartmentName || 'Chưa phân công';
             document.getElementById('ticketDescription').textContent = ticket.description || 'Không có mô tả';
             document.getElementById('ticketCreatedAt').textContent = formatDate(ticket.createdAt);
+
+            // Hide reply form for CLOSED tickets
+            const replyCard = document.getElementById('replyCard');
+            if (ticket.status === 'CLOSED' && replyCard) {
+                replyCard.style.display = 'none';
+            }
         }
         
         /**
@@ -533,10 +651,8 @@
                                     <div class="message-time">${formatDate(reply.createdAt)}</div>
                                 </div>
                                 <div class="message-content">
-                                    <div class="message-text">
-                                        ${reply.message}
-                                    </div>
-                                    ${reply.imageURL ? `<div class="mt-2"><img src="${reply.imageURL}" alt="Ảnh đính kèm" style="max-width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open('${reply.imageURL}', '_blank')"></div>` : ''}
+                                    ${reply.message ? `<div class="message-text" style="word-wrap: break-word;">${reply.message}</div>` : ''}
+                                    ${reply.imageURL ? `<div class="message-image"><img src="${reply.imageURL}" alt="Attachment"></div>` : ''}
                                 </div>
                             </div>
                         `;
@@ -551,10 +667,8 @@
                                     <div class="message-time">${formatDate(reply.createdAt)}</div>
                                 </div>
                                 <div class="message-content">
-                                    <div class="message-text">
-                                        ${reply.message}
-                                    </div>
-                                    ${reply.imageURL ? `<div class="mt-2"><img src="${reply.imageURL}" alt="Ảnh đính kèm" style="max-width: 100%; border-radius: 8px; cursor: pointer;" onclick="window.open('${reply.imageURL}', '_blank')"></div>` : ''}
+                                    ${reply.message ? `<div class="message-text" style="word-wrap: break-word;">${reply.message}</div>` : ''}
+                                    ${reply.imageURL ? `<div class="message-image"><img src="${reply.imageURL}" alt="Attachment"></div>` : ''}
                                 </div>
                             </div>
                         `;
@@ -563,36 +677,47 @@
             }
             
             conversationContainer.innerHTML = customerMessage + repliesHtml;
+            
+            // Add click handlers for images to open lightbox
+            setupImageLightbox();
         }
         
-        // Variables for image handling
-        let uploadedImageUrl = null;
-
-        // Image preview
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                if (file.size > 10 * 1024 * 1024) {
-                    alert('Kích thước file quá lớn (tối đa 10MB)');
-                    e.target.value = '';
-                    return;
+        // Setup image lightbox functionality
+        function setupImageLightbox() {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const closeBtn = document.querySelector('.image-modal-close');
+            
+            // Get all message images
+            const messageImages = document.querySelectorAll('.message-image img');
+            
+            messageImages.forEach(img => {
+                img.addEventListener('click', function() {
+                    modal.classList.add('active');
+                    modalImg.src = this.src;
+                });
+            });
+            
+            // Close modal when clicking close button
+            closeBtn.addEventListener('click', function() {
+                modal.classList.remove('active');
+            });
+            
+            // Close modal when clicking on overlay (but not on image)
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
                 }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('previewImg').src = e.target.result;
-                    document.getElementById('imagePreview').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        function removeImage() {
-            document.getElementById('imageUpload').value = '';
-            document.getElementById('imagePreview').style.display = 'none';
-            uploadedImageUrl = null;
+            });
+            
+            // Close modal with ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                }
+            });
         }
-
+        
         /**
          * Gửi phản hồi của staff cho customer
          * Gửi message lên API, sau đó reload replies và hiển thị toast notification
@@ -600,9 +725,8 @@
         async function submitReply() {
             const message = document.getElementById('replyTextarea').value.trim();
             
-            // Kiểm tra message không được rỗng
-            if (!message) {
-                showToast('Vui lòng nhập tin nhắn!', 'error');
+            if (!message && !selectedImageFile) {
+                showToast('Vui lòng nhập tin nhắn hoặc chọn ảnh!', 'error');
                 return;
             }
             
@@ -617,38 +741,40 @@
             try {
                 let imageURL = null;
                 
-                // Upload image if exists
-                const imageFile = document.getElementById('imageUpload').files[0];
-                if (imageFile) {
-                    showToast('Đang upload ảnh...', 'success');
-                    
+                // Upload image first if exists
+                if (selectedImageFile) {
                     const formData = new FormData();
-                    formData.append('file', imageFile);
+                    formData.append('file', selectedImageFile);
                     
                     const uploadResponse = await fetch('/api/staff/upload-image', {
                         method: 'POST',
-                        credentials: 'include',
-                        body: formData
+                        body: formData,
+                        credentials: 'include'
                     });
                     
                     const uploadResult = await uploadResponse.json();
                     
-                    if (uploadResult.success) {
+                    if (uploadResult.success && uploadResult.data) {
                         imageURL = uploadResult.data;
-                        showToast('Upload ảnh thành công!', 'success');
                     } else {
-                        throw new Error(uploadResult.message || 'Upload ảnh thất bại');
+                        showToast('Upload ảnh thất bại: ' + uploadResult.message, 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                        return;
                     }
                 }
                 
-                // Send reply with image
+                // Send reply with text and imageURL separately
                 const response = await fetch(`/api/staff/tickets/${currentTicket.ticketId}/reply`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     credentials: 'include',
-                    body: JSON.stringify({ message: message, imageURL: imageURL })
+                    body: JSON.stringify({ 
+                        message: message || '', 
+                        imageURL: imageURL 
+                    })
                 });
                 
                 const result = await response.json();
@@ -656,9 +782,12 @@
                 if (result.success) {
                     // Hiển thị toast thành công
                     showToast('Phản hồi đã được gửi thành công!', 'success');
-                    // Xóa textarea
+                    
+                    // Clear form
                     document.getElementById('replyTextarea').value = '';
-                    removeImage();
+                    document.getElementById('imageInput').value = '';
+                    selectedImageFile = null;
+                    document.getElementById('imagePreview').style.display = 'none';
                     
                     // Reload replies để hiển thị tin nhắn mới
                     loadTicketReplies(currentTicket.ticketId);
@@ -677,6 +806,12 @@
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalText;
             }
+        }
+        
+        function removeImage() {
+            document.getElementById('imageInput').value = '';
+            selectedImageFile = null;
+            document.getElementById('imagePreview').style.display = 'none';
         }
 
         /**

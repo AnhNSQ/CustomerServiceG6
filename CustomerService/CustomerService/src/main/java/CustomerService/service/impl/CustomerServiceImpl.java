@@ -9,6 +9,8 @@ import CustomerService.entity.Role;
 import CustomerService.entity.StaffDepartment;
 import CustomerService.entity.Ticket;
 import CustomerService.entity.TicketAssign;
+import CustomerService.entity.TicketReply;
+import CustomerService.repository.TicketReplyRepository;
 import CustomerService.repository.CustomerRepository;
 import CustomerService.repository.RoleRepository;
 import CustomerService.repository.StaffDepartmentRepository;
@@ -33,6 +35,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
     private final RoleRepository roleRepository;
     private final StaffDepartmentRepository staffDepartmentRepository;
     private final TicketRepository ticketRepository;
+    private final TicketReplyRepository ticketReplyRepository;
     private final PasswordValidator passwordValidator;
     private final UserConverter userConverter;
     private final OrderValidationService orderValidationService;
@@ -44,6 +47,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
                           RoleRepository roleRepository,
                           StaffDepartmentRepository staffDepartmentRepository,
                           TicketRepository ticketRepository,
+                          TicketReplyRepository ticketReplyRepository,
                           OrderValidationService orderValidationService) {
         super(customerRepository, staffRepository, passwordValidator, userConverter);
         this.customerRepository = customerRepository;
@@ -52,6 +56,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         this.userConverter = userConverter;
         this.staffDepartmentRepository = staffDepartmentRepository;
         this.ticketRepository = ticketRepository;
+        this.ticketReplyRepository = ticketReplyRepository;
         this.orderValidationService = orderValidationService;
     }
 
@@ -202,7 +207,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
      * Lấy danh sách ticket của customer với phân trang
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Map<String, Object> getTicketsByCustomerIdWithPaginationAndTotal(Long customerId, int page, int size) {
         log.info("Lấy danh sách ticket của customer {} với phân trang", customerId);
         
@@ -212,6 +217,9 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         int start = page * size;
         int end = Math.min(start + size, total);
         
+        // Auto-close các ticket đủ điều kiện trước khi trả về
+        tickets.subList(start, end).forEach(this::autoCloseIfInactive);
+
         List<TicketResponse> ticketResponses = tickets.subList(start, end)
             .stream()
             .map(this::convertToTicketResponse)
@@ -229,12 +237,15 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
      * Lấy ticket gần đây của customer
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<TicketResponse> getRecentTicketsByCustomerId(Long customerId, int limit) {
         log.info("Lấy {} ticket gần đây của customer {}", limit, customerId);
         
         List<Ticket> tickets = ticketRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
         
+        // Auto-close trước khi map
+        tickets.stream().limit(limit).forEach(this::autoCloseIfInactive);
+
         return tickets.stream()
             .limit(limit)
             .map(this::convertToTicketResponse)
@@ -245,12 +256,15 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
      * Lấy tất cả ticket của customer
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<TicketResponse> getTicketsByCustomerId(Long customerId) {
         log.info("Lấy danh sách ticket của customer {}", customerId);
         
         List<Ticket> tickets = ticketRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
         
+        // Auto-close trước khi map
+        tickets.forEach(this::autoCloseIfInactive);
+
         return tickets.stream()
             .map(this::convertToTicketResponse)
             .collect(Collectors.toList());
@@ -260,12 +274,15 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
      * Lấy ticket theo ID
      */
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Optional<TicketResponse> getTicketById(Long ticketId) {
         log.info("Lấy ticket với ID {}", ticketId);
         
         return ticketRepository.findByIdWithCustomer(ticketId)
-            .map(this::convertToTicketResponse);
+            .map(ticket -> {
+                autoCloseIfInactive(ticket);
+                return convertToTicketResponse(ticket);
+            });
     }
 
     /**
@@ -347,5 +364,52 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             assignedToStaffId,
             assignedToStaffName
         );
+    }
+
+    /**
+     * Đóng ticket nếu đang IN_PROGRESS và không có phản hồi từ CUSTOMER trong >= 2 ngày.
+     * - Nếu không có bất kỳ reply nào: so sánh createdAt với now - 2d
+     * - Nếu có reply: lấy reply cuối cùng của CUSTOMER; nếu quá 2d thì đóng
+     */
+    private void autoCloseIfInactive(Ticket ticket) {
+        try {
+            if (ticket.getStatus() != Ticket.Status.IN_PROGRESS) {
+                return;
+            }
+
+            var now = java.time.LocalDateTime.now();
+            var twoDaysAgo = now.minusDays(2);
+
+            List<TicketReply> replies = ticketReplyRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getTicketId());
+
+            if (replies == null || replies.isEmpty()) {
+                if (ticket.getCreatedAt() != null && ticket.getCreatedAt().isBefore(twoDaysAgo)) {
+                    ticket.setStatus(Ticket.Status.CLOSED);
+                    ticket.setClosedAt(now);
+                    ticketRepository.save(ticket);
+                }
+                return;
+            }
+
+            TicketReply lastCustomerReply = replies.stream()
+                .filter(r -> r.getSenderType() == TicketReply.SenderType.CUSTOMER)
+                .reduce((first, second) -> second)
+                .orElse(null);
+
+            if (lastCustomerReply == null) {
+                if (ticket.getCreatedAt() != null && ticket.getCreatedAt().isBefore(twoDaysAgo)) {
+                    ticket.setStatus(Ticket.Status.CLOSED);
+                    ticket.setClosedAt(now);
+                    ticketRepository.save(ticket);
+                }
+            } else {
+                if (lastCustomerReply.getCreatedAt() != null && lastCustomerReply.getCreatedAt().isBefore(twoDaysAgo)) {
+                    ticket.setStatus(Ticket.Status.CLOSED);
+                    ticket.setClosedAt(now);
+                    ticketRepository.save(ticket);
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 }
