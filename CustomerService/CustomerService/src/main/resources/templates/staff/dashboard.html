@@ -260,11 +260,6 @@
                                     <i class="fas fa-ticket-alt me-2"></i>Xem ticket được giao
                                 </a>
                             </div>
-                            <div class="col-md-12 mb-3">
-                                <a href="#" class="quick-action-btn" onclick="viewReports()">
-                                    <i class="fas fa-chart-bar me-2"></i>Báo cáo thống kê
-                                </a>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -364,8 +359,8 @@
 
         function displayStats(stats) {
             document.getElementById('totalAssignedTickets').textContent = stats.total || 0;
-            document.getElementById('inProgressTickets').textContent = stats.pending || 0;
-            document.getElementById('completedTickets').textContent = stats.resolved || 0;
+            document.getElementById('inProgressTickets').textContent = stats.processing || 0;
+            document.getElementById('completedTickets').textContent = stats.closed || 0;
         }
 
         function displayRecentTickets(tickets) {

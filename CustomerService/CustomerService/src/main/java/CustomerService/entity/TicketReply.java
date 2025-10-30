@@ -30,7 +30,7 @@ public class TicketReply {
     @Column(name = "sender_id", nullable = false)
     private Long senderId;
 
-    @Column(name = "message", nullable = false, columnDefinition = "nvarchar(2000)")
+    @Column(name = "message", nullable = false, columnDefinition = "nvarchar(MAX)")
     private String message;
 
     @Column(name = "image_url", columnDefinition = "nvarchar(500)")

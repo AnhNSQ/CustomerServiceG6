@@ -10,7 +10,10 @@ import CustomerService.exception.AuthenticationException;
 import CustomerService.exception.UserNotFoundException;
 import CustomerService.entity.TicketReply;
 import CustomerService.dto.TicketReplyResponse;
+import CustomerService.dto.EvaluationRequest;
+import CustomerService.dto.EvaluationResponse;
 import CustomerService.service.AuthenticationService;
+import CustomerService.service.EvaluationService;
 import CustomerService.service.CloudinaryService;
 import CustomerService.service.CustomerService;
 import CustomerService.service.SessionManager;
@@ -40,6 +43,7 @@ public class CustomerController {
     private final AuthenticationService authenticationService;
     private final SessionManager sessionManager;
     private final TicketReplyService ticketReplyService;
+    private final EvaluationService evaluationService;
     private final CloudinaryService cloudinaryService;
 
     /**
@@ -492,6 +496,65 @@ public class CustomerController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy replies của ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Tạo evaluation cho ticket đã đóng
+     */
+    @PostMapping("/tickets/{ticketId}/evaluation")
+    public ResponseEntity<ApiResponse<EvaluationResponse>> createEvaluation(
+            @PathVariable Long ticketId,
+            @RequestBody EvaluationRequest request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+
+            Long customerId = sessionManager.getCustomerId(session);
+
+            EvaluationResponse resp = evaluationService.createEvaluation(
+                customerId, ticketId,
+                request.getScore() != null ? request.getScore() : 0,
+                request.getComment()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(resp, "Đánh giá thành công"));
+
+        } catch (RuntimeException e) {
+            log.error("Lỗi đánh giá ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi đánh giá: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Lấy evaluation của 1 ticket (nếu có)
+     */
+    @GetMapping("/tickets/{ticketId}/evaluation")
+    public ResponseEntity<ApiResponse<EvaluationResponse>> getEvaluation(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+
+            var opt = evaluationService.getByTicketId(ticketId);
+            if (opt.isEmpty()) {
+                return ResponseEntity.ok(ApiResponse.success(null, "Chưa có đánh giá"));
+            }
+            return ResponseEntity.ok(ApiResponse.success(opt.get()));
+        } catch (Exception e) {
+            log.error("Lỗi lấy evaluation: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

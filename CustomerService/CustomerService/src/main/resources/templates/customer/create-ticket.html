@@ -17,9 +17,54 @@
         }
 
         body {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            background: #f8f9fa;
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #dc3545, #c82333) !important;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .navbar-brand {
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+        
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .navbar .nav-link {
+            padding: 10px 20px !important;
+            border-radius: 8px;
+            margin: 0 3px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+        
+        .navbar .nav-link:hover {
+            background: rgba(255,255,255,0.2) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .navbar .nav-link i {
+            margin-right: 5px;
         }
 
         .main-container {
@@ -149,6 +194,25 @@
     </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="fas fa-headset me-2"></i>Customer Service
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/dashboard">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+                <a class="nav-link" href="/customer/tickets/create">
+                    <i class="fas fa-plus me-1"></i>Tạo Ticket
+                </a>
+                <a class="nav-link" href="#" onclick="logout(); return false;">
+                    <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+    
     <div class="container">
         <div class="main-container">
             <!-- Header -->
@@ -292,6 +356,29 @@
         
         function goBack() {
             window.location.href = '/dashboard';
+        }
+        
+        function logout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                fetch('/api/customers/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/login';
+                    } else {
+                        showAlert('Có lỗi xảy ra khi đăng xuất!', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    window.location.href = '/login';
+                });
+            }
         }
         
         // Character counter

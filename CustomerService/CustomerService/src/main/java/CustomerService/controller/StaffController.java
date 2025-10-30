@@ -227,22 +227,23 @@ public class StaffController {
      * STAFF: Lấy thống kê ticket được phân công
      */
     @GetMapping("/stats/assigned")
-    public ResponseEntity<ApiResponse<TicketDashboardStats>> getAssignedStats(HttpSession session) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getAssignedStats(HttpSession session) {
         try {
             if (!sessionManager.isStaffLoggedIn(session)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error("Authentication required"));
             }
-            
             Long staffId = sessionManager.getStaffId(session);
-            
             log.info("STAFF {} lấy thống kê ticket được phân công", staffId);
-            
             TicketDashboardStats stats = staffService.getAssignedTicketStats(staffId);
-            
-            return ResponseEntity.ok()
-                .body(ApiResponse.success(stats));
-                
+            // Chuẩn hóa trả về cho frontend
+            Map<String,Object> result = new HashMap<>();
+            result.put("total", stats.getTotal());
+            result.put("processing", stats.getPending()); // để JS đọc được
+            result.put("pending", stats.getPending());   // legacy
+            result.put("closed", stats.getResolved());
+            result.put("resolved", stats.getResolved()); // legacy
+            return ResponseEntity.ok().body(ApiResponse.success(result));
         } catch (RuntimeException e) {
             log.error("Lỗi lấy thống kê ticket được phân công: {}", e.getMessage());
             return ResponseEntity.badRequest()

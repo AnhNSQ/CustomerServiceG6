@@ -85,23 +85,24 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
     @Transactional(readOnly = true)
     public TicketDashboardStats getAssignedTicketStats(Long staffId) {
         log.info("Lấy thống kê ticket được phân công cho staff {}", staffId);
-        
         List<TicketAssign> assignments = ticketAssignRepository.findByAssignedToStaffIdOrderByAssignedAtDesc(staffId);
-        
+
         long total = assignments.size();
-        long pending = assignments.stream()
-            .mapToLong(assignment -> assignment.getTicket().getStatus() == Ticket.Status.OPEN ? 1 : 0)
-            .sum();
-        long resolved = assignments.stream()
-            .mapToLong(assignment -> assignment.getTicket().getStatus() == Ticket.Status.RESOLVED ? 1 : 0)
-            .sum();
+        long processing = assignments.stream()
+            .map(TicketAssign::getTicket)
+            .filter(t -> t.getStatus() == Ticket.Status.IN_PROGRESS || t.getStatus() == Ticket.Status.ASSIGNED)
+            .count();
+        long closed = assignments.stream()
+            .map(TicketAssign::getTicket)
+            .filter(t -> t.getStatus() == Ticket.Status.CLOSED)
+            .count();
+        // urgent giữ nguyên nếu có nghiệp vụ riêng
         long urgent = assignments.stream()
-            .mapToLong(assignment -> 
-                assignment.getTicket().getPriority() == Ticket.Priority.HIGH && 
-                assignment.getTicket().getStatus() == Ticket.Status.OPEN ? 1 : 0)
-            .sum();
-            
-        return new TicketDashboardStats(total, pending, resolved, urgent);
+            .map(TicketAssign::getTicket)
+            .filter(t -> t.getPriority() == Ticket.Priority.HIGH && (t.getStatus() == Ticket.Status.IN_PROGRESS || t.getStatus() == Ticket.Status.ASSIGNED))
+            .count();
+
+        return new TicketDashboardStats(total, (int)processing, (int)closed, (int)urgent);
     }
 
     /**
