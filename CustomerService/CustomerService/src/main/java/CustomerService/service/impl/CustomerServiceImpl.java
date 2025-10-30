@@ -4,6 +4,7 @@ import CustomerService.dto.CustomerRegisterRequest;
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketResponse;
+import CustomerService.dto.ChangePasswordRequest;
 import CustomerService.entity.Customer;
 import CustomerService.entity.Role;
 import CustomerService.entity.StaffDepartment;
@@ -170,6 +171,30 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         log.info("Cập nhật profile thành công cho customer ID: {}", customerId);
 
         return userConverter.convertToCustomerResponse(updatedCustomer);
+    }
+
+    /**
+     * Thay đổi mật khẩu customer (xác thực mật khẩu cũ và xác nhận mật khẩu mới)
+     */
+    @Override
+    public void changePassword(Long customerId, ChangePasswordRequest request) {
+        log.info("Customer {} yêu cầu thay đổi mật khẩu", customerId);
+
+        if (!request.getNewPassword().equals(request.getConfirmNewPassword())) {
+            throw new RuntimeException("Mật khẩu mới và xác nhận mật khẩu không khớp");
+        }
+
+        Customer customer = customerRepository.findById(customerId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy customer với ID: " + customerId));
+
+        if (!passwordValidator.validatePassword(request.getOldPassword(), customer.getPassword())) {
+            throw new RuntimeException("Mật khẩu cũ không chính xác");
+        }
+
+        String encoded = passwordValidator.encodePassword(request.getNewPassword());
+        customer.setPassword(encoded);
+        customerRepository.save(customer);
+        log.info("Customer {} đã thay đổi mật khẩu thành công", customerId);
     }
 
     /**
