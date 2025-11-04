@@ -6,12 +6,15 @@
     <div class="top-bar-content">
         <div class="top-nav">
             <a href="/home"><i class="fas fa-home"></i> TRANG CHỦ</a>
-            <a href="/login"><i class="fas fa-sign-in-alt"></i> ĐĂNG NHẬP</a>
-            <a href="/register"><i class="fas fa-user-plus"></i> ĐĂNG KÝ</a>
+            <!-- Show Login and Register buttons only when user is NOT authenticated -->
+            <a href="/login" th:if="${session.customerId == null && session.staffId == null}"><i class="fas fa-sign-in-alt"></i> ĐĂNG NHẬP</a>
+            <a href="/register" th:if="${session.customerId == null && session.staffId == null}"><i class="fas fa-user-plus"></i> ĐĂNG KÝ</a>
+            <!-- Show user-related options when authenticated -->
+            <a href="/dashboard" th:if="${session.customerId != null}"><i class="fas fa-user"></i> HỒ SƠ</a>
+            <a href="#" onclick="handleLogout(); return false;" th:if="${session.customerId != null || session.staffId != null}"><i class="fas fa-sign-out-alt"></i> ĐĂNG XUẤT</a>
             <a href="#contact"><i class="fas fa-phone"></i> LIÊN HỆ</a>
         </div>
         <div class="top-actions">
-            <a href="/dashboard"><i class="fas fa-user"></i> TÀI KHOẢN</a>
             <a href="/cart"><i class="fas fa-shopping-cart"></i> GIỎ HÀNG <span id="cartCount" style="background: #ff4444; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 5px; font-weight: bold; display: none;">0</span></a>
         </div>
     </div>
@@ -73,6 +76,63 @@
             // Make function available globally for other scripts to call
             window.updateCartCount = updateCartCountBadge;
         })();
+        
+        /**
+         * Handle logout action - determine if customer or staff and call appropriate endpoint
+         */
+        async function handleLogout() {
+            try {
+                // Determine logout endpoint based on session - check both customer and staff
+                const isCustomer = /*[[${session.customerId != null}]]*/ false;
+                const isStaff = /*[[${session.staffId != null}]]*/ false;
+                
+                // Determine which logout endpoint to use
+                let logoutEndpoint = '/api/customers/logout';
+                let redirectUrl = '/login?logout=true';
+                
+                if (isStaff) {
+                    logoutEndpoint = '/api/staff/logout';
+                    redirectUrl = '/staff/login?logout=true';
+                }
+                
+                const response = await fetch(logoutEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.ok) {
+                    try {
+                        const result = await response.json();
+                        if (result.success) {
+                            // Redirect to appropriate login page after successful logout
+                            window.location.href = redirectUrl;
+                        } else {
+                            console.error('Logout failed:', result.message);
+                            // Still redirect even if API says failed, as session may have been cleared
+                            window.location.href = redirectUrl;
+                        }
+                    } catch (jsonError) {
+                        // Response is not JSON, but status is OK - assume logout succeeded
+                        console.warn('Could not parse logout response as JSON, assuming success');
+                        window.location.href = redirectUrl;
+                    }
+                } else {
+                    console.error('Logout request failed with status:', response.status);
+                    // Even if request fails, try to redirect to login (session may still be cleared)
+                    window.location.href = redirectUrl;
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                // Even if error occurs, try to redirect to login
+                // Determine redirect URL based on session state
+                const isStaff = /*[[${session.staffId != null}]]*/ false;
+                const redirectUrl = isStaff ? '/staff/login?logout=true' : '/login?logout=true';
+                window.location.href = redirectUrl;
+            }
+        }
     </script>
 </div>
 </body>
