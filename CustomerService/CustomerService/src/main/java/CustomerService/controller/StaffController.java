@@ -106,11 +106,18 @@ public class StaffController {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(HttpSession session) {
         try {
-            session.invalidate();
+            Long staffId = sessionManager.getStaffId(session);
+            if (staffId != null) {
+                log.info("Staff ID {} đăng xuất", staffId);
+            }
+            
+            // Invalidate session using sessionManager for consistency
+            sessionManager.invalidateSession(session);
+            
             log.info("Staff đăng xuất thành công");
             
             return ResponseEntity.ok()
-                .body(ApiResponse.success("Đăng xuất thành công"));
+                .body(ApiResponse.success(null, "Đăng xuất thành công"));
                 
         } catch (Exception e) {
             log.error("Lỗi khi đăng xuất staff: ", e);
