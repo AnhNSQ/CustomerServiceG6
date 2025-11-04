@@ -413,6 +413,73 @@ public class WebController {
         }
     }
 
+    /**
+     * Admin Orders Management Page
+     */
+    @GetMapping("/admin/orders")
+    public String adminOrders(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            
+            if (staffId == null) {
+                log.warn("Unauthorized access to admin orders page - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+            
+            log.info("Loading admin orders management page for staff ID: {}", staffId);
+            
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+            
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+            model.addAttribute("staffRoles", staff.getRoles());
+
+            log.info("Admin orders management page loaded successfully for staff {}", staffId);
+            return "admin/orders";
+            
+        } catch (Exception e) {
+            log.error("Error loading admin orders management page: ", e);
+            return "redirect:/staff/login";
+        }
+    }
+
+    /**
+     * Admin Order Detail Page
+     */
+    @GetMapping("/admin/orders/{orderId}")
+    public String adminOrderDetail(@PathVariable Long orderId, Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            
+            if (staffId == null) {
+                log.warn("Unauthorized access to admin order detail page - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+            
+            log.info("Loading admin order detail page for order {} and staff ID: {}", orderId, staffId);
+            
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+            
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+            model.addAttribute("staffRoles", staff.getRoles());
+            model.addAttribute("orderId", orderId);
+
+            log.info("Admin order detail page loaded successfully for order {}", orderId);
+            return "admin/order-detail";
+            
+        } catch (Exception e) {
+            log.error("Error loading admin order detail page: ", e);
+            return "redirect:/staff/login";
+        }
+    }
+
     // ==================== LEADER PAGES ====================
 
     /**

@@ -1,10 +1,6 @@
 package CustomerService.service;
 
-import CustomerService.dto.CustomerResponse;
-import CustomerService.dto.StaffCreateRequest;
-import CustomerService.dto.StaffResponse;
-import CustomerService.dto.TicketDashboardStats;
-import CustomerService.dto.TicketResponse;
+import CustomerService.dto.*;
 import CustomerService.entity.StaffDepartment;
 
 import java.util.List;
@@ -70,4 +66,19 @@ public interface AdminService {
      * ADMIN: Lấy ticket theo ID (có thể xem tất cả)
      */
     Optional<TicketResponse> getTicketById(Long ticketId);
+    
+    /**
+     * ADMIN: Lấy tất cả đơn hàng trong hệ thống
+     */
+    List<AdminOrderResponse> getAllOrders();
+    
+    /**
+     * ADMIN: Lấy chi tiết đơn hàng với lịch sử hoạt động
+     */
+    Optional<AdminOrderDetailResponse> getOrderDetailById(Long orderId);
+    
+    /**
+     * ADMIN: Phê duyệt đơn hàng (chuyển từ PENDING sang PAID)
+     */
+    AdminOrderDetailResponse approveOrder(Long orderId, Long staffId, String notes);
 }
