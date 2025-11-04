@@ -265,11 +265,11 @@ public class StaffController {
             TicketDashboardStats stats = staffService.getAssignedTicketStats(staffId);
             // Chuẩn hóa trả về cho frontend
             Map<String,Object> result = new HashMap<>();
-            result.put("total", stats.getTotal());
-            result.put("processing", stats.getPending()); // để JS đọc được
-            result.put("pending", stats.getPending());   // legacy
-            result.put("closed", stats.getResolved());
-            result.put("resolved", stats.getResolved()); // legacy
+//            result.put("total", stats.getTotal());
+//            result.put("processing", stats.getPending()); // để JS đọc được
+//            result.put("pending", stats.getPending());   // legacy
+//            result.put("closed", stats.getResolved());
+//            result.put("resolved", stats.getResolved()); // legacy
             return ResponseEntity.ok().body(ApiResponse.success(result));
         } catch (RuntimeException e) {
             log.error("Lỗi lấy thống kê ticket được phân công: {}", e.getMessage());

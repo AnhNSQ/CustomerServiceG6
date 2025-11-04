@@ -219,4 +219,97 @@ public class AdminController {
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
     }
+
+    /**
+     * ADMIN: Lấy tất cả customer trong hệ thống
+     */
+    @GetMapping("/customers")
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả customer trong hệ thống", staffId);
+            
+            List<CustomerResponse> customers = adminService.getAllCustomers();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(customers));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy customers: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy customers: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy tất cả staff members (role STAFF) trong hệ thống
+     */
+    @GetMapping("/staff-members")
+    public ResponseEntity<ApiResponse<List<StaffResponse>>> getAllStaffMembers(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả staff members trong hệ thống", staffId);
+            
+            List<StaffResponse> staffMembers = adminService.getAllStaffMembers();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(staffMembers));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy staff members: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy staff members: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy tất cả leads (role LEAD) trong hệ thống
+     */
+    @GetMapping("/leads")
+    public ResponseEntity<ApiResponse<List<StaffResponse>>> getAllLeads(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả leads trong hệ thống", staffId);
+            
+            List<StaffResponse> leads = adminService.getAllLeads();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(leads));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy leads: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy leads: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
 }

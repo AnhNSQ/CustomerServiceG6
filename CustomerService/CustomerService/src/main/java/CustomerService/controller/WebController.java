@@ -380,6 +380,39 @@ public class WebController {
         }
     }
 
+    /**
+     * Admin Users Management Page
+     */
+    @GetMapping("/admin/users")
+    public String adminUsers(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            
+            if (staffId == null) {
+                log.warn("Unauthorized access to admin users page - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+            
+            log.info("Loading admin users management page for staff ID: {}", staffId);
+            
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+            
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+            model.addAttribute("staffRoles", staff.getRoles());
+
+            log.info("Admin users management page loaded successfully for staff {}", staffId);
+            return "admin/users";
+            
+        } catch (Exception e) {
+            log.error("Error loading admin users management page: ", e);
+            return "redirect:/staff/login";
+        }
+    }
+
     // ==================== LEADER PAGES ====================
 
     /**

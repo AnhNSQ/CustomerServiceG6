@@ -1,8 +1,11 @@
 package CustomerService.service.impl;
 
+import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
+import CustomerService.entity.Customer;
+import CustomerService.entity.Role;
 import CustomerService.entity.Staff;
 import CustomerService.entity.StaffDepartment;
 import CustomerService.entity.Ticket;
@@ -118,6 +121,85 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
         List<Staff> staffList = staffRepository.findAll();
         
         return staffList.stream()
+            .map(userConverter::convertToStaffResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * ADMIN: Lấy tất cả customer trong hệ thống
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerResponse> getAllCustomers() {
+        log.info("ADMIN lấy tất cả customer trong hệ thống");
+        
+        List<Customer> customers = customerRepository.findAll();
+        
+        return customers.stream()
+            .map(userConverter::convertToCustomerResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * ADMIN: Lấy tất cả staff (role STAFF) trong hệ thống
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<StaffResponse> getAllStaffMembers() {
+        log.info("ADMIN lấy tất cả staff (role STAFF) trong hệ thống");
+        
+        // Load all staff with role and department
+        List<Staff> staffList = staffRepository.findAll();
+        
+        return staffList.stream()
+            .filter(staff -> {
+                try {
+                    // Ensure role and department are loaded
+                    if (staff.getRole() != null) {
+                        staff.getRole().getRoleName(); // Trigger lazy loading if needed
+                    }
+                    if (staff.getStaffDepartment() != null) {
+                        staff.getStaffDepartment().getName(); // Trigger lazy loading if needed
+                    }
+                    return staff.getRole() != null && 
+                           staff.getRole().getRoleName() == Role.RoleName.STAFF;
+                } catch (Exception e) {
+                    log.warn("Error accessing role for staff {}: {}", staff.getStaffId(), e.getMessage());
+                    return false;
+                }
+            })
+            .map(userConverter::convertToStaffResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * ADMIN: Lấy tất cả lead (role LEAD) trong hệ thống
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<StaffResponse> getAllLeads() {
+        log.info("ADMIN lấy tất cả lead (role LEAD) trong hệ thống");
+        
+        // Load all staff with role and department
+        List<Staff> staffList = staffRepository.findAll();
+        
+        return staffList.stream()
+            .filter(staff -> {
+                try {
+                    // Ensure role and department are loaded
+                    if (staff.getRole() != null) {
+                        staff.getRole().getRoleName(); // Trigger lazy loading if needed
+                    }
+                    if (staff.getStaffDepartment() != null) {
+                        staff.getStaffDepartment().getName(); // Trigger lazy loading if needed
+                    }
+                    return staff.getRole() != null && 
+                           staff.getRole().getRoleName() == Role.RoleName.LEAD;
+                } catch (Exception e) {
+                    log.warn("Error accessing role for staff {}: {}", staff.getStaffId(), e.getMessage());
+                    return false;
+                }
+            })
             .map(userConverter::convertToStaffResponse)
             .collect(Collectors.toList());
     }
