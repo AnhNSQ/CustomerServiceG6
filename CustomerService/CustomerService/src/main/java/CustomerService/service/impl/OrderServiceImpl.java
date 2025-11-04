@@ -27,6 +27,7 @@ public class OrderServiceImpl implements OrderService {
     private final CustomerRepository customerRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
 
     @Override
     public OrderResponse createOrder(Long customerId, CheckoutRequest request) {
@@ -83,6 +84,14 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder = orderRepository.save(order);
         log.info("Order created with ID: {}", savedOrder.getOrderId());
+
+        // Create initial order history
+        OrderHistory initialHistory = new OrderHistory(
+            savedOrder,
+            "CREATED",
+            "Đơn hàng được tạo bởi khách hàng " + customer.getName()
+        );
+        orderHistoryRepository.save(initialHistory);
 
         // Create order details
         List<OrderDetail> orderDetails = cartItems.stream()

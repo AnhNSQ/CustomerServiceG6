@@ -35,4 +35,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      */
     @Query("SELECT o FROM Order o LEFT JOIN FETCH o.customer WHERE o.orderId = :orderId")
     Optional<Order> findByIdWithCustomer(@Param("orderId") Long orderId);
+    
+    /**
+     * Tìm tất cả đơn hàng với customer, sắp xếp theo ngày tạo (mới nhất trước)
+     */
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.customer ORDER BY o.orderDate DESC")
+    List<Order> findAllWithCustomerOrderByOrderDateDesc();
 }
