@@ -2,6 +2,7 @@ package CustomerService.controller;
 
 import CustomerService.dto.*;
 import CustomerService.entity.StaffDepartment;
+import jakarta.validation.Valid;
 import CustomerService.service.AdminService;
 import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
@@ -308,6 +309,39 @@ public class AdminController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy leads: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Tạo tài khoản staff hoặc lead mới
+     */
+    @PostMapping("/staff")
+    public ResponseEntity<ApiResponse<StaffResponse>> createStaff(
+            @Valid @RequestBody StaffCreateRequest request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} tạo tài khoản staff/lead với email: {}", staffId, request.getEmail());
+            
+            StaffResponse createdStaff = adminService.createStaff(request);
+            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(createdStaff, "Tạo tài khoản thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi tạo staff: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi tạo staff: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

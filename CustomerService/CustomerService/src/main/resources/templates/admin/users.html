@@ -206,6 +206,9 @@
                     </div>
                 </div>
                 <div class="col-md-4 text-md-end">
+                    <button onclick="showCreateStaffForm()" class="btn btn-logout me-2">
+                        <i class="fas fa-user-plus me-2"></i>Tạo tài khoản mới
+                    </button>
                     <a href="/admin/dashboard" class="btn btn-logout me-2">
                         <i class="fas fa-arrow-left me-2"></i>Về Dashboard
                     </a>
@@ -272,13 +275,14 @@
                                         <th>UserID</th>
                                         <th>Họ tên</th>
                                         <th>Email</th>
+                                        <th>Điện thoại</th>
                                         <th>Trạng thái</th>
                                         <th>Ngày tạo</th>
                                     </tr>
                                 </thead>
                                 <tbody id="customers-table-body">
                                     <tr>
-                                        <td colspan="5" class="empty-state">
+                                        <td colspan="6" class="empty-state">
                                             <i class="fas fa-spinner fa-spin"></i>
                                             <p>Đang tải dữ liệu...</p>
                                         </td>
@@ -302,6 +306,7 @@
                                         <th>UserID</th>
                                         <th>Họ tên</th>
                                         <th>Email</th>
+                                        <th>Điện thoại</th>
                                         <th>Trạng thái</th>
                                         <th>Phòng ban</th>
                                         <th>Vai trò</th>
@@ -310,7 +315,7 @@
                                 </thead>
                                 <tbody id="staff-table-body">
                                     <tr>
-                                        <td colspan="7" class="empty-state">
+                                        <td colspan="8" class="empty-state">
                                             <i class="fas fa-spinner fa-spin"></i>
                                             <p>Đang tải dữ liệu...</p>
                                         </td>
@@ -334,6 +339,7 @@
                                         <th>UserID</th>
                                         <th>Họ tên</th>
                                         <th>Email</th>
+                                        <th>Điện thoại</th>
                                         <th>Trạng thái</th>
                                         <th>Phòng ban</th>
                                         <th>Vai trò</th>
@@ -342,7 +348,7 @@
                                 </thead>
                                 <tbody id="leads-table-body">
                                     <tr>
-                                        <td colspan="7" class="empty-state">
+                                        <td colspan="8" class="empty-state">
                                             <i class="fas fa-spinner fa-spin"></i>
                                             <p>Đang tải dữ liệu...</p>
                                         </td>
@@ -351,6 +357,72 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Staff Modal -->
+    <div class="modal fade" id="createStaffModal" tabindex="-1" aria-labelledby="createStaffModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--dark-color), var(--primary-color)); color: white;">
+                    <h5 class="modal-title" id="createStaffModalLabel">
+                        <i class="fas fa-user-plus me-2"></i>Tạo tài khoản Staff/Lead mới
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createStaffForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="staffName" class="form-label">Họ tên <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="staffName" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="staffEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="staffEmail" name="email" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="staffUsername" class="form-label">Username <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="staffUsername" name="username" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="staffPassword" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="staffPassword" name="password" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="staffPhone" class="form-label">Điện thoại</label>
+                                <input type="text" class="form-control" id="staffPhone" name="phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="staffRole" class="form-label">Vai trò <span class="text-danger">*</span></label>
+                                <select class="form-select" id="staffRole" name="roleName" required>
+                                    <option value="">-- Chọn vai trò --</option>
+                                    <option value="STAFF">Nhân viên (STAFF)</option>
+                                    <option value="LEAD">Trưởng phòng (LEAD)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="staffDepartment" class="form-label">Phòng ban <span class="text-danger">*</span></label>
+                            <select class="form-select" id="staffDepartment" name="departmentId" required>
+                                <option value="">-- Chọn phòng ban --</option>
+                            </select>
+                        </div>
+                        <div id="createStaffError" class="alert alert-danger" style="display: none;"></div>
+                        <div id="createStaffSuccess" class="alert alert-success" style="display: none;"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" onclick="submitCreateStaffForm()">
+                        <i class="fas fa-save me-2"></i>Tạo tài khoản
+                    </button>
                 </div>
             </div>
         </div>
@@ -365,9 +437,13 @@
         let staffMembers = [];
         let leads = [];
 
+        // Global variables for departments
+        let departments = [];
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             loadAllUsers();
+            loadDepartments();
         });
 
         // Load all users
@@ -414,7 +490,7 @@
             } catch (error) {
                 console.error('Error loading customers:', error);
                 document.getElementById('customers-table-body').innerHTML = 
-                    '<tr><td colspan="5" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Không thể tải danh sách khách hàng</p></td></tr>';
+                    '<tr><td colspan="6" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Không thể tải danh sách khách hàng</p></td></tr>';
             }
         }
 
@@ -442,7 +518,7 @@
             } catch (error) {
                 console.error('Error loading staff members:', error);
                 document.getElementById('staff-table-body').innerHTML = 
-                    '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Không thể tải danh sách nhân viên</p></td></tr>';
+                    '<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Không thể tải danh sách nhân viên</p></td></tr>';
             }
         }
 
@@ -470,7 +546,7 @@
             } catch (error) {
                 console.error('Error loading leads:', error);
                 document.getElementById('leads-table-body').innerHTML = 
-                    '<tr><td colspan="7" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Không thể tải danh sách trưởng phòng</p></td></tr>';
+                    '<tr><td colspan="8" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Không thể tải danh sách trưởng phòng</p></td></tr>';
             }
         }
 
@@ -479,7 +555,7 @@
             const tbody = document.getElementById('customers-table-body');
             
             if (customersList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><i class="fas fa-users"></i><p>Chưa có khách hàng nào</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-users"></i><p>Chưa có khách hàng nào</p></td></tr>';
                 return;
             }
             
@@ -493,6 +569,7 @@
                         <td>${customer.customerId}</td>
                         <td>${customer.name || 'N/A'}</td>
                         <td>${customer.email || 'N/A'}</td>
+                        <td>${customer.phone || 'N/A'}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${createdAt}</td>
                     </tr>
@@ -507,7 +584,7 @@
             const tbody = document.getElementById('staff-table-body');
             
             if (staffList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-user-tie"></i><p>Chưa có nhân viên nào</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-user-tie"></i><p>Chưa có nhân viên nào</p></td></tr>';
                 return;
             }
             
@@ -523,6 +600,7 @@
                         <td>${staff.staffId}</td>
                         <td>${staff.name || 'N/A'}</td>
                         <td>${staff.email || 'N/A'}</td>
+                        <td>${staff.phone || 'N/A'}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${staff.departmentName || 'N/A'}</td>
                         <td>${role}</td>
@@ -539,7 +617,7 @@
             const tbody = document.getElementById('leads-table-body');
             
             if (leadsList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-user-shield"></i><p>Chưa có trưởng phòng nào</p></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-user-shield"></i><p>Chưa có trưởng phòng nào</p></td></tr>';
                 return;
             }
             
@@ -555,6 +633,7 @@
                         <td>${lead.staffId}</td>
                         <td>${lead.name || 'N/A'}</td>
                         <td>${lead.email || 'N/A'}</td>
+                        <td>${lead.phone || 'N/A'}</td>
                         <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                         <td>${lead.departmentName || 'N/A'}</td>
                         <td>${role}</td>
@@ -605,6 +684,153 @@
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('errorState').style.display = 'none';
             document.getElementById('contentState').style.display = 'block';
+        }
+
+        // Load departments for dropdown
+        async function loadDepartments() {
+            try {
+                const response = await fetch('/api/admin/departments', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Failed to load departments. Status:', response.status, 'Response:', errorText);
+                    throw new Error('Failed to load departments: ' + response.status);
+                }
+                
+                const result = await response.json();
+                console.log('Departments API response:', result);
+                
+                if (result.success && result.data) {
+                    departments = result.data;
+                    console.log('Loaded departments:', departments);
+                } else {
+                    throw new Error(result.message || 'Không thể tải danh sách phòng ban');
+                }
+                
+            } catch (error) {
+                console.error('Error loading departments:', error);
+                // Show error message to user
+                alert('Không thể tải danh sách phòng ban. Vui lòng thử lại sau.');
+            }
+        }
+
+        // Show create staff form modal
+        async function showCreateStaffForm() {
+            // Reset form
+            document.getElementById('createStaffForm').reset();
+            document.getElementById('createStaffError').style.display = 'none';
+            document.getElementById('createStaffSuccess').style.display = 'none';
+            
+            // Ensure departments are loaded
+            if (!departments || departments.length === 0) {
+                await loadDepartments();
+            }
+            
+            // Populate department dropdown
+            const departmentSelect = document.getElementById('staffDepartment');
+            departmentSelect.innerHTML = '<option value="">-- Chọn phòng ban --</option>';
+            
+            if (departments && departments.length > 0) {
+                departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    // Handle both possible property names (staffDepartmentId or id)
+                    const deptId = dept.staffDepartmentId !== undefined ? dept.staffDepartmentId : dept.id;
+                    const deptName = dept.name || 'N/A';
+                    
+                    if (deptId && deptName) {
+                        option.value = deptId;
+                        option.textContent = deptName;
+                        departmentSelect.appendChild(option);
+                    }
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'Không có phòng ban nào';
+                option.disabled = true;
+                departmentSelect.appendChild(option);
+                console.error('No departments available');
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('createStaffModal'));
+            modal.show();
+        }
+
+        // Submit create staff form
+        async function submitCreateStaffForm() {
+            const form = document.getElementById('createStaffForm');
+            const errorDiv = document.getElementById('createStaffError');
+            const successDiv = document.getElementById('createStaffSuccess');
+            
+            // Hide previous messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Validate form
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('staffName').value.trim(),
+                email: document.getElementById('staffEmail').value.trim(),
+                username: document.getElementById('staffUsername').value.trim(),
+                password: document.getElementById('staffPassword').value,
+                phone: document.getElementById('staffPhone').value.trim() || null,
+                roleName: document.getElementById('staffRole').value,
+                departmentId: parseInt(document.getElementById('staffDepartment').value)
+            };
+            
+            // Validate department ID
+            if (!formData.departmentId || isNaN(formData.departmentId)) {
+                errorDiv.textContent = 'Vui lòng chọn phòng ban';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/admin/staff', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success message
+                    successDiv.textContent = result.message || 'Tạo tài khoản thành công!';
+                    successDiv.style.display = 'block';
+                    
+                    // Reset form
+                    form.reset();
+                    
+                    // Reload user lists after a short delay
+                    setTimeout(() => {
+                        loadAllUsers();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('createStaffModal'));
+                        modal.hide();
+                    }, 1500);
+                    
+                } else {
+                    // Show error message
+                    errorDiv.textContent = result.message || 'Có lỗi xảy ra khi tạo tài khoản';
+                    errorDiv.style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('Error creating staff:', error);
+                errorDiv.textContent = 'Có lỗi xảy ra khi tạo tài khoản. Vui lòng thử lại sau.';
+                errorDiv.style.display = 'block';
+            }
         }
     </script>
 </body>

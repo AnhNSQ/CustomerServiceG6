@@ -1,6 +1,7 @@
 package CustomerService.service.impl;
 
 import CustomerService.dto.CustomerResponse;
+import CustomerService.dto.StaffCreateRequest;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
@@ -10,6 +11,7 @@ import CustomerService.entity.Staff;
 import CustomerService.entity.StaffDepartment;
 import CustomerService.entity.Ticket;
 import CustomerService.repository.CustomerRepository;
+import CustomerService.repository.RoleRepository;
 import CustomerService.repository.StaffRepository;
 import CustomerService.repository.StaffDepartmentRepository;
 import CustomerService.repository.TicketRepository;
@@ -34,6 +36,7 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
     private final StaffRepository staffRepository;
     private final TicketRepository ticketRepository;
     private final StaffDepartmentRepository staffDepartmentRepository;
+    private final RoleRepository roleRepository;
     private final UserConverter userConverter;
     
     public AdminServiceImpl(CustomerRepository customerRepository,
@@ -41,11 +44,13 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
                            PasswordValidator passwordValidator,
                            UserConverter userConverter,
                            TicketRepository ticketRepository,
-                           StaffDepartmentRepository staffDepartmentRepository) {
+                           StaffDepartmentRepository staffDepartmentRepository,
+                           RoleRepository roleRepository) {
         super(customerRepository, staffRepository, passwordValidator, userConverter);
         this.staffRepository = staffRepository;
         this.ticketRepository = ticketRepository;
         this.staffDepartmentRepository = staffDepartmentRepository;
+        this.roleRepository = roleRepository;
         this.userConverter = userConverter;
     }
 
@@ -202,6 +207,63 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
             })
             .map(userConverter::convertToStaffResponse)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * ADMIN: Tạo tài khoản staff hoặc lead mới
+     */
+    @Override
+    public StaffResponse createStaff(StaffCreateRequest request) {
+        log.info("ADMIN tạo tài khoản staff/lead với email: {}", request.getEmail());
+
+        // Kiểm tra email đã tồn tại
+        if (staffRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email đã được sử dụng");
+        }
+
+        // Kiểm tra username đã tồn tại
+        if (staffRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username đã được sử dụng");
+        }
+
+        // Validate role name
+        Role.RoleName roleName;
+        try {
+            roleName = Role.RoleName.valueOf(request.getRoleName().toUpperCase());
+            if (roleName != Role.RoleName.STAFF && roleName != Role.RoleName.LEAD) {
+                throw new RuntimeException("Vai trò phải là STAFF hoặc LEAD");
+            }
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Vai trò không hợp lệ: " + request.getRoleName());
+        }
+
+        // Tìm role
+        Role role = roleRepository.findByRoleName(roleName)
+                .orElseThrow(() -> new RuntimeException("Role " + roleName + " không tồn tại"));
+
+        // Tìm department
+        StaffDepartment department = staffDepartmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new RuntimeException("Phòng ban không tồn tại"));
+
+        // Mã hóa mật khẩu trước khi lưu
+        String encodedPassword = passwordValidator.encodePassword(request.getPassword());
+
+        // Tạo staff mới
+        Staff staff = new Staff(
+                request.getName(),
+                request.getEmail(),
+                request.getUsername(),
+                encodedPassword,
+                request.getPhone(),
+                role,
+                department
+        );
+
+        // Lưu staff
+        Staff savedStaff = staffRepository.save(staff);
+        log.info("Đăng ký thành công staff với ID: {}", savedStaff.getStaffId());
+
+        return userConverter.convertToStaffResponse(savedStaff);
     }
 
     /**

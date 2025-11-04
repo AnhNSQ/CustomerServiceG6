@@ -1,5 +1,6 @@
 package CustomerService.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,10 +23,12 @@ public class StaffDepartment {
     private String name;
 
     // Quan hệ với Staff
+    @JsonIgnore
     @OneToMany(mappedBy = "staffDepartment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Staff> staff;
 
     // Quan hệ với Ticket
+    @JsonIgnore
     @OneToMany(mappedBy = "staffDepartment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Ticket> tickets;
 
