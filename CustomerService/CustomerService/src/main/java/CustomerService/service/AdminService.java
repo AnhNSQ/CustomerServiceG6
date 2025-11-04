@@ -1,6 +1,7 @@
 package CustomerService.service;
 
 import CustomerService.dto.CustomerResponse;
+import CustomerService.dto.StaffCreateRequest;
 import CustomerService.dto.StaffResponse;
 import CustomerService.dto.TicketDashboardStats;
 import CustomerService.dto.TicketResponse;
@@ -59,6 +60,11 @@ public interface AdminService {
      * ADMIN: Lấy tất cả lead (role LEAD) trong hệ thống
      */
     List<StaffResponse> getAllLeads();
+    
+    /**
+     * ADMIN: Tạo tài khoản staff hoặc lead mới
+     */
+    StaffResponse createStaff(StaffCreateRequest request);
     
     /**
      * ADMIN: Lấy ticket theo ID (có thể xem tất cả)
