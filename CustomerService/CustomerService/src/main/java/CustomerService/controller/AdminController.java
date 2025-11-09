@@ -2,6 +2,7 @@ package CustomerService.controller;
 
 import CustomerService.dto.*;
 import CustomerService.entity.StaffDepartment;
+import jakarta.validation.Valid;
 import CustomerService.service.AdminService;
 import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
@@ -215,6 +216,236 @@ public class AdminController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy staff: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy tất cả customer trong hệ thống
+     */
+    @GetMapping("/customers")
+    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomers(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả customer trong hệ thống", staffId);
+            
+            List<CustomerResponse> customers = adminService.getAllCustomers();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(customers));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy customers: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy customers: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy tất cả staff members (role STAFF) trong hệ thống
+     */
+    @GetMapping("/staff-members")
+    public ResponseEntity<ApiResponse<List<StaffResponse>>> getAllStaffMembers(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả staff members trong hệ thống", staffId);
+            
+            List<StaffResponse> staffMembers = adminService.getAllStaffMembers();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(staffMembers));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy staff members: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy staff members: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy tất cả leads (role LEAD) trong hệ thống
+     */
+    @GetMapping("/leads")
+    public ResponseEntity<ApiResponse<List<StaffResponse>>> getAllLeads(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả leads trong hệ thống", staffId);
+            
+            List<StaffResponse> leads = adminService.getAllLeads();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(leads));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy leads: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy leads: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Tạo tài khoản staff hoặc lead mới
+     */
+    @PostMapping("/staff")
+    public ResponseEntity<ApiResponse<StaffResponse>> createStaff(
+            @Valid @RequestBody StaffCreateRequest request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} tạo tài khoản staff/lead với email: {}", staffId, request.getEmail());
+            
+            StaffResponse createdStaff = adminService.createStaff(request);
+            
+            return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(createdStaff, "Tạo tài khoản thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi tạo staff: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi tạo staff: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy tất cả đơn hàng trong hệ thống
+     */
+    @GetMapping("/orders")
+    public ResponseEntity<ApiResponse<List<AdminOrderResponse>>> getAllOrders(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả đơn hàng trong hệ thống", staffId);
+            
+            List<AdminOrderResponse> orders = adminService.getAllOrders();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(orders));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy đơn hàng: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy đơn hàng: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy chi tiết đơn hàng với lịch sử hoạt động
+     */
+    @GetMapping("/orders/{orderId}")
+    public ResponseEntity<ApiResponse<AdminOrderDetailResponse>> getOrderDetail(
+            @PathVariable Long orderId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy chi tiết đơn hàng {}", staffId, orderId);
+            
+            Optional<AdminOrderDetailResponse> orderDetail = adminService.getOrderDetailById(orderId);
+            
+            if (orderDetail.isPresent()) {
+                return ResponseEntity.ok()
+                    .body(ApiResponse.success(orderDetail.get()));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("Không tìm thấy đơn hàng với ID: " + orderId));
+            }
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy chi tiết đơn hàng: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy chi tiết đơn hàng: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Phê duyệt đơn hàng (chuyển từ PENDING sang PAID)
+     */
+    @PostMapping("/orders/{orderId}/approve")
+    public ResponseEntity<ApiResponse<AdminOrderDetailResponse>> approveOrder(
+            @PathVariable Long orderId,
+            @RequestBody(required = false) ApproveOrderRequest request,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} phê duyệt đơn hàng {}", staffId, orderId);
+            
+            String notes = (request != null && request.getNotes() != null) ? request.getNotes() : null;
+            AdminOrderDetailResponse approvedOrder = adminService.approveOrder(orderId, staffId, notes);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(approvedOrder, "Đơn hàng đã được phê duyệt thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi phê duyệt đơn hàng: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi phê duyệt đơn hàng: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }

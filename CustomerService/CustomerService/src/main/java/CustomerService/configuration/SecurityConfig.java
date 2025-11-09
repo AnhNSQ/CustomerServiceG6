@@ -66,15 +66,19 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
-                                "/api/customers/profile",
-                                "/api/customers/logout"
+                                "/api/customers/profile"
                         ).authenticated()
 
                         .requestMatchers(
                                 "/api/staff/profile",
-                                "/api/staff/logout",
                                 "/api/staff/tickets/all"
                         ).authenticated()
+
+                        // Logout endpoints should be accessible without authentication
+                        .requestMatchers(
+                                "/api/customers/logout",
+                                "/api/staff/logout"
+                        ).permitAll()
 
                         .requestMatchers(
                                 "/staff/**",

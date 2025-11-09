@@ -19,5 +19,6 @@ public class StaffResponse {
     private Boolean isActive;
     private LocalDateTime registerDate;
     private Set<String> roles;
+    private String departmentName; // Department name for Staff and Lead
 }
 

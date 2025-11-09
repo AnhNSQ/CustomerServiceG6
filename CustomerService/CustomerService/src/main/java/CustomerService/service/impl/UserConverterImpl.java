@@ -38,6 +38,11 @@ public class UserConverterImpl implements UserConverter {
     public StaffResponse convertToStaffResponse(Staff staff) {
         Set<String> roleNames = extractRoleNames(staff.getRole());
         
+        String departmentName = null;
+        if (staff.getStaffDepartment() != null) {
+            departmentName = staff.getStaffDepartment().getName();
+        }
+        
         return new StaffResponse(
             staff.getStaffId(),
             staff.getName(),
@@ -46,7 +51,8 @@ public class UserConverterImpl implements UserConverter {
             staff.getPhone(),
             staff.getIsActive(),
             staff.getRegisterDate(),
-            roleNames
+            roleNames,
+            departmentName
         );
     }
     
