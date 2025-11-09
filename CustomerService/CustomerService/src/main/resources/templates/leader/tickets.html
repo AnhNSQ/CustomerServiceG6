@@ -589,9 +589,11 @@
                             <button class="btn btn-sm btn-outline-primary" onclick="viewTicketDetail(${ticket.ticketId})" title="Xem chi tiết">
                                 <i class="fas fa-eye"></i> View
                             </button>
-                            <button class="btn btn-sm btn-primary" onclick="openAssignModal(${ticket.ticketId})" title="Phân công ticket">
-                                <i class="fas fa-user-check"></i> Phân công
-                            </button>
+                            ${ticket.status === 'OPEN' ? 
+                                `<button class="btn btn-sm btn-primary" onclick="openAssignModal(${ticket.ticketId})" title="Phân công ticket">
+                                    <i class="fas fa-user-check"></i> Phân công
+                                </button>` : ''
+                            }
                         </div>
                     </td>
                 </tr>
