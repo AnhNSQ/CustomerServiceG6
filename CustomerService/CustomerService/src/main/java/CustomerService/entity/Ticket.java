@@ -53,6 +53,9 @@ public class Ticket {
     @Column(name = "closed_at")
     private LocalDateTime closedAt;
 
+    @Column(name = "reopened_at")
+    private LocalDateTime reopenedAt;
+
     // Quan hệ với TicketAssign
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TicketAssign> ticketAssignments;
