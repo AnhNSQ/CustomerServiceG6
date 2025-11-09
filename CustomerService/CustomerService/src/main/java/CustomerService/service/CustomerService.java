@@ -75,4 +75,14 @@ public interface CustomerService {
      * Xóa ticket
      */
     boolean deleteTicket(Long ticketId, Long customerId);
+    
+    /**
+     * Đóng ticket (chỉ customer sở hữu ticket mới được đóng)
+     */
+    TicketResponse closeTicket(Long ticketId, Long customerId);
+    
+    /**
+     * Mở lại ticket (chỉ khi ticket đã đóng và chưa có evaluation)
+     */
+    TicketResponse reopenTicket(Long ticketId, Long customerId);
 }

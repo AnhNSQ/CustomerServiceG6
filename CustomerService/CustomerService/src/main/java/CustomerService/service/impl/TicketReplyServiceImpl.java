@@ -28,12 +28,10 @@ public class TicketReplyServiceImpl implements TicketReplyService {
     @Transactional
     public TicketReply createReply(Long ticketId, TicketReply.SenderType senderType, Long senderId, String message, String imageURL) {
         log.info("Tạo ticket reply cho ticket {}, senderType: {}, senderId: {}", ticketId, senderType, senderId);
-        
-        // Kiểm tra ticket tồn tại
+
         Ticket ticket = ticketRepository.findByIdWithCustomer(ticketId)
             .orElseThrow(() -> new RuntimeException("Ticket not found with ID: " + ticketId));
-        
-        // Tạo reply
+
         TicketReply reply;
         if (imageURL != null && !imageURL.trim().isEmpty()) {
             reply = new TicketReply(
@@ -51,8 +49,7 @@ public class TicketReplyServiceImpl implements TicketReplyService {
                 message
             );
         }
-        
-        // Note: Không tự động chuyển status khi reply, status đã được set khi phân công ticket
+
         TicketReply savedReply = ticketReplyRepository.save(reply);
         log.info("Tạo ticket reply thành công với ID: {}", savedReply.getTicketReplyId());
         
@@ -63,21 +60,11 @@ public class TicketReplyServiceImpl implements TicketReplyService {
     @Transactional(readOnly = true)
     public List<TicketReply> getRepliesByTicketId(Long ticketId) {
         log.info("Lấy danh sách replies cho ticket {}", ticketId);
-        
-        // Kiểm tra ticket tồn tại
+
         ticketRepository.findByIdWithCustomer(ticketId)
-            .orElseThrow(() -> new RuntimeException("Ticket not found with ID: " + ticketId));
-        
+                .orElseThrow(() -> new RuntimeException("Ticket not found with ID: " + ticketId));
+
         return ticketReplyRepository.findByTicketIdOrderByCreatedAtAsc(ticketId);
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public TicketReply getReplyById(Long replyId) {
-        log.info("Lấy ticket reply với ID: {}", replyId);
-        
-        return ticketReplyRepository.findById(replyId)
-            .orElseThrow(() -> new RuntimeException("Ticket reply not found with ID: " + replyId));
     }
 }
 

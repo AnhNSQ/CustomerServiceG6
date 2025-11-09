@@ -14,11 +14,18 @@ import CustomerService.dto.TicketReplyResponse;
 import CustomerService.dto.EvaluationRequest;
 import CustomerService.dto.EvaluationResponse;
 import CustomerService.service.AuthenticationService;
-import CustomerService.service.EvaluationService;
 import CustomerService.service.CloudinaryService;
 import CustomerService.service.CustomerService;
+import CustomerService.service.EvaluationService;
+import CustomerService.service.OrderService;
 import CustomerService.service.SessionManager;
 import CustomerService.service.TicketReplyService;
+import CustomerService.dto.OrderResponse;
+import CustomerService.dto.OrderDetailResponse;
+import CustomerService.entity.Order;
+import CustomerService.entity.OrderDetail;
+import CustomerService.repository.OrderRepository;
+import CustomerService.repository.OrderDetailRepository;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -46,6 +53,9 @@ public class CustomerController {
     private final TicketReplyService ticketReplyService;
     private final EvaluationService evaluationService;
     private final CloudinaryService cloudinaryService;
+    private final OrderService orderService;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
     /**
      * Đăng ký tài khoản customer mới
@@ -81,11 +91,9 @@ public class CustomerController {
             HttpSession session) {
         try {
             log.info("Nhận yêu cầu đăng nhập từ: {}", request.getEmailOrUsername());
-            
-            // Sử dụng AuthenticationService để xác thực
+
             CustomerResponse customer = authenticationService.authenticateCustomer(request);
-            
-            // Lưu thông tin customer vào session
+
             sessionManager.setCustomerSession(
                 session, 
                 customer.getCustomerId(), 
@@ -665,6 +673,155 @@ public class CustomerController {
             log.error("Lỗi không mong muốn khi upload ảnh: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra khi upload ảnh, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Lấy danh sách đơn hàng có trạng thái PAID (dùng để select trong dropdown khi tạo ticket)
+     */
+    @GetMapping("/orders/paid")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getPaidOrders(HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("CUSTOMER {} lấy danh sách đơn hàng PAID", customerId);
+            
+            // Dùng query findPaidOrdersByCustomerId trực tiếp từ repository
+            List<Order> paidOrders = orderRepository.findPaidOrdersByCustomerId(customerId);
+            log.info("Found {} PAID orders for customer {}", paidOrders.size(), customerId);
+            
+            // Convert Order entity sang OrderResponse
+            List<OrderResponse> orderResponses = paidOrders.stream()
+                .map(order -> {
+                    List<OrderDetail> orderDetails = orderDetailRepository.findByOrderOrderId(order.getOrderId());
+                    log.info("Order {} has {} orderDetails", order.getOrderId(), orderDetails.size());
+                    OrderResponse response = convertToOrderResponse(order, orderDetails);
+                    log.info("OrderResponse {} has {} orderDetails", response.getOrderId(), 
+                            response.getOrderDetails() != null ? response.getOrderDetails().size() : 0);
+                    return response;
+                })
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(orderResponses));
+                
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy đơn hàng PAID: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * Convert Order entity sang OrderResponse (helper method)
+     */
+    private OrderResponse convertToOrderResponse(Order order, List<OrderDetail> orderDetails) {
+        OrderResponse response = new OrderResponse();
+        response.setOrderId(order.getOrderId());
+        response.setCustomerId(order.getCustomer().getCustomerId());
+        response.setCustomerName(order.getCustomer().getName());
+        response.setOrderDate(order.getOrderDate());
+        response.setTotalAmount(order.getTotalAmount());
+        response.setShippingMethod(order.getShippingMethod());
+        response.setShippingCost(order.getCostEstimate());
+        response.setEstimatedTime(order.getEstimatedTime());
+        response.setShippingAddress(order.getShippingAddress());
+        response.setRecipientName(order.getRecipientName());
+        response.setRecipientPhone(order.getRecipientPhone());
+        response.setOrderStatus(order.getOrderStatus().name());
+        response.setShippingStatus(order.getShippingStatus().name());
+        response.setPaymentMethod(order.getPaymentMethod());
+
+        List<OrderDetailResponse> detailResponses = orderDetails.stream()
+            .map(this::convertToOrderDetailResponse)
+            .collect(Collectors.toList());
+        
+        response.setOrderDetails(detailResponses);
+        
+        return response;
+    }
+
+    /**
+     * Convert OrderDetail entity sang OrderDetailResponse (helper method)
+     */
+    private OrderDetailResponse convertToOrderDetailResponse(OrderDetail orderDetail) {
+        OrderDetailResponse response = new OrderDetailResponse();
+        response.setOrderDetailId(orderDetail.getOrderDetailId());
+        response.setProductId(orderDetail.getProduct().getProductId());
+        response.setProductName(orderDetail.getProduct().getName());
+        response.setProductDescription(orderDetail.getProduct().getDescription());
+        response.setUnitPrice(orderDetail.getUnitPrice());
+        response.setQuantity(orderDetail.getQuantity());
+        response.setSubTotal(orderDetail.getSubTotal());
+        
+        return response;
+    }
+
+    /**
+     * CUSTOMER: Đóng ticket
+     */
+    @PostMapping("/tickets/{ticketId}/close")
+    public ResponseEntity<ApiResponse<TicketResponse>> closeTicket(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("CUSTOMER {} đóng ticket {}", customerId, ticketId);
+            
+            TicketResponse ticket = customerService.closeTicket(ticketId, customerId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(ticket, "Đóng ticket thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi đóng ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi đóng ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Mở lại ticket (chỉ khi chưa đánh giá)
+     */
+    @PostMapping("/tickets/{ticketId}/reopen")
+    public ResponseEntity<ApiResponse<TicketResponse>> reopenTicket(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("CUSTOMER {} mở lại ticket {}", customerId, ticketId);
+            
+            TicketResponse ticket = customerService.reopenTicket(ticketId, customerId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(ticket, "Mở lại ticket thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi mở lại ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi mở lại ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
     }
 }

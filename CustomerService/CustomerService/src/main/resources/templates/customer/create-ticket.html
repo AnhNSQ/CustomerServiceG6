@@ -230,6 +230,15 @@
                     <h5><i class="fas fa-edit"></i>Thông tin Ticket</h5>
                     
                     <div class="mb-3">
+                        <label for="order" class="form-label">
+                            <i class="fas fa-shopping-cart me-1"></i>Đơn hàng liên quan (tùy chọn)
+                        </label>
+                        <select class="form-control" id="order" name="order">
+                            <option value="">-- Không chọn đơn hàng --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="subject" class="form-label">
                             <i class="fas fa-heading me-1"></i>Tiêu đề *
                         </label>
@@ -277,6 +286,69 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Load paid orders when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPaidOrders();
+        });
+
+        function loadPaidOrders() {
+            fetch('/api/customers/orders/paid', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                credentials: 'include'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Orders data:', data);
+                const orderSelect = document.getElementById('order');
+                
+                if (!data.success) {
+                    console.error('API returned error:', data.message);
+                    orderSelect.innerHTML = '<option value="">-- Lỗi khi tải đơn hàng --</option>';
+                    return;
+                }
+                
+                if (!data.data || data.data.length === 0) {
+                    orderSelect.innerHTML = '<option value="">-- Không có đơn hàng PAID --</option>';
+                    return;
+                }
+                
+                const orders = data.data;
+                console.log('Number of orders:', orders.length);
+                
+                // Clear existing options except the first one
+                orderSelect.innerHTML = '<option value="">-- Không chọn đơn hàng --</option>';
+                
+                orders.forEach(order => {
+                    console.log('Processing order:', order);
+                    const option = document.createElement('option');
+                    option.value = order.orderId;
+                    // Lấy tên sản phẩm từ orderDetails
+                    let orderName = 'Đơn hàng';
+                    if (order.orderDetails && order.orderDetails.length > 0) {
+                        // Lấy tên sản phẩm đầu tiên
+                        const productName = order.orderDetails[0].productName;
+                        orderName = `Đơn hàng ${productName}`;
+                        console.log('Order name:', orderName);
+                    } else {
+                        console.warn('Order has no orderDetails:', order);
+                    }
+                    option.textContent = orderName;
+                    orderSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading paid orders:', error);
+                const orderSelect = document.getElementById('order');
+                orderSelect.innerHTML = '<option value="">-- Lỗi khi tải đơn hàng --</option>';
+            });
+        }
+
         // Form submission
         document.getElementById('createTicketForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -288,10 +360,14 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang tạo...';
             
+            const orderSelect = document.getElementById('order');
+            const orderId = orderSelect.value ? parseInt(orderSelect.value) : null;
+            
             const formData = {
                 subject: document.getElementById('subject').value.trim(),
                 description: document.getElementById('description').value.trim(),
-                departmentId: parseInt(document.getElementById('department').value)
+                departmentId: parseInt(document.getElementById('department').value),
+                orderId: orderId
             };
             
             // Validate
