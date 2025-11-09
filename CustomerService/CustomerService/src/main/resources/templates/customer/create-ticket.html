@@ -230,6 +230,15 @@
                     <h5><i class="fas fa-edit"></i>Thông tin Ticket</h5>
                     
                     <div class="mb-3">
+                        <label for="order" class="form-label">
+                            <i class="fas fa-shopping-cart me-1"></i>Đơn hàng liên quan (tùy chọn)
+                        </label>
+                        <select class="form-control" id="order" name="order">
+                            <option value="">-- Không chọn đơn hàng --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label for="subject" class="form-label">
                             <i class="fas fa-heading me-1"></i>Tiêu đề *
                         </label>
@@ -259,16 +268,6 @@
                             <option value="2">Phòng ban Kỹ thuật</option>
                         </select>
                         <div class="form-text">Chọn phòng ban phù hợp với vấn đề của bạn</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="order" class="form-label">
-                            <i class="fas fa-shopping-cart me-1"></i>Đơn hàng liên quan (tùy chọn)
-                        </label>
-                        <select class="form-control" id="order" name="order">
-                            <option value="">-- Không chọn đơn hàng --</option>
-                        </select>
-                        <div class="form-text">Chọn đơn hàng có trạng thái PAID để tạo ticket hỗ trợ (nếu có)</div>
                     </div>
                 </div>
 
@@ -300,34 +299,53 @@
                 },
                 credentials: 'include'
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
-                if (data.success && data.data) {
-                    const orderSelect = document.getElementById('order');
-                    const orders = data.data;
-                    
-                    if (orders.length === 0) {
-                        orderSelect.innerHTML = '<option value="">-- Không có đơn hàng PAID --</option>';
-                        return;
-                    }
-                    
-                    orders.forEach(order => {
-                        const option = document.createElement('option');
-                        option.value = order.orderId;
-                        // Lấy tên sản phẩm từ orderDetails
-                        let orderName = 'Đơn hàng';
-                        if (order.orderDetails && order.orderDetails.length > 0) {
-                            // Lấy tên sản phẩm đầu tiên
-                            const productName = order.orderDetails[0].productName;
-                            orderName = `Đơn hàng ${productName}`;
-                        }
-                        option.textContent = orderName;
-                        orderSelect.appendChild(option);
-                    });
+                console.log('Orders data:', data);
+                const orderSelect = document.getElementById('order');
+                
+                if (!data.success) {
+                    console.error('API returned error:', data.message);
+                    orderSelect.innerHTML = '<option value="">-- Lỗi khi tải đơn hàng --</option>';
+                    return;
                 }
+                
+                if (!data.data || data.data.length === 0) {
+                    orderSelect.innerHTML = '<option value="">-- Không có đơn hàng PAID --</option>';
+                    return;
+                }
+                
+                const orders = data.data;
+                console.log('Number of orders:', orders.length);
+                
+                // Clear existing options except the first one
+                orderSelect.innerHTML = '<option value="">-- Không chọn đơn hàng --</option>';
+                
+                orders.forEach(order => {
+                    console.log('Processing order:', order);
+                    const option = document.createElement('option');
+                    option.value = order.orderId;
+                    // Lấy tên sản phẩm từ orderDetails
+                    let orderName = 'Đơn hàng';
+                    if (order.orderDetails && order.orderDetails.length > 0) {
+                        // Lấy tên sản phẩm đầu tiên
+                        const productName = order.orderDetails[0].productName;
+                        orderName = `Đơn hàng ${productName}`;
+                        console.log('Order name:', orderName);
+                    } else {
+                        console.warn('Order has no orderDetails:', order);
+                    }
+                    option.textContent = orderName;
+                    orderSelect.appendChild(option);
+                });
             })
             .catch(error => {
                 console.error('Error loading paid orders:', error);
+                const orderSelect = document.getElementById('order');
+                orderSelect.innerHTML = '<option value="">-- Lỗi khi tải đơn hàng --</option>';
             });
         }
 

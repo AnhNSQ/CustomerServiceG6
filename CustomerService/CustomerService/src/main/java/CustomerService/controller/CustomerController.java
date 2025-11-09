@@ -21,6 +21,11 @@ import CustomerService.service.OrderService;
 import CustomerService.service.SessionManager;
 import CustomerService.service.TicketReplyService;
 import CustomerService.dto.OrderResponse;
+import CustomerService.dto.OrderDetailResponse;
+import CustomerService.entity.Order;
+import CustomerService.entity.OrderDetail;
+import CustomerService.repository.OrderRepository;
+import CustomerService.repository.OrderDetailRepository;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -49,6 +54,8 @@ public class CustomerController {
     private final EvaluationService evaluationService;
     private final CloudinaryService cloudinaryService;
     private final OrderService orderService;
+    private final OrderRepository orderRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
     /**
      * Đăng ký tài khoản customer mới
@@ -84,11 +91,9 @@ public class CustomerController {
             HttpSession session) {
         try {
             log.info("Nhận yêu cầu đăng nhập từ: {}", request.getEmailOrUsername());
-            
-            // Sử dụng AuthenticationService để xác thực
+
             CustomerResponse customer = authenticationService.authenticateCustomer(request);
-            
-            // Lưu thông tin customer vào session
+
             sessionManager.setCustomerSession(
                 session, 
                 customer.getCustomerId(), 
@@ -672,7 +677,7 @@ public class CustomerController {
     }
 
     /**
-     * CUSTOMER: Lấy danh sách đơn hàng có trạng thái PAID
+     * CUSTOMER: Lấy danh sách đơn hàng có trạng thái PAID (dùng để select trong dropdown khi tạo ticket)
      */
     @GetMapping("/orders/paid")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getPaidOrders(HttpSession session) {
@@ -685,19 +690,75 @@ public class CustomerController {
             Long customerId = sessionManager.getCustomerId(session);
             log.info("CUSTOMER {} lấy danh sách đơn hàng PAID", customerId);
             
-            List<OrderResponse> allOrders = orderService.getOrdersByCustomerId(customerId);
-            List<OrderResponse> paidOrders = allOrders.stream()
-                .filter(order -> "PAID".equals(order.getOrderStatus()))
+            // Dùng query findPaidOrdersByCustomerId trực tiếp từ repository
+            List<Order> paidOrders = orderRepository.findPaidOrdersByCustomerId(customerId);
+            log.info("Found {} PAID orders for customer {}", paidOrders.size(), customerId);
+            
+            // Convert Order entity sang OrderResponse
+            List<OrderResponse> orderResponses = paidOrders.stream()
+                .map(order -> {
+                    List<OrderDetail> orderDetails = orderDetailRepository.findByOrderOrderId(order.getOrderId());
+                    log.info("Order {} has {} orderDetails", order.getOrderId(), orderDetails.size());
+                    OrderResponse response = convertToOrderResponse(order, orderDetails);
+                    log.info("OrderResponse {} has {} orderDetails", response.getOrderId(), 
+                            response.getOrderDetails() != null ? response.getOrderDetails().size() : 0);
+                    return response;
+                })
                 .collect(Collectors.toList());
             
             return ResponseEntity.ok()
-                .body(ApiResponse.success(paidOrders));
+                .body(ApiResponse.success(orderResponses));
                 
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi lấy đơn hàng PAID: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
+    }
+
+    /**
+     * Convert Order entity sang OrderResponse (helper method)
+     */
+    private OrderResponse convertToOrderResponse(Order order, List<OrderDetail> orderDetails) {
+        OrderResponse response = new OrderResponse();
+        response.setOrderId(order.getOrderId());
+        response.setCustomerId(order.getCustomer().getCustomerId());
+        response.setCustomerName(order.getCustomer().getName());
+        response.setOrderDate(order.getOrderDate());
+        response.setTotalAmount(order.getTotalAmount());
+        response.setShippingMethod(order.getShippingMethod());
+        response.setShippingCost(order.getCostEstimate());
+        response.setEstimatedTime(order.getEstimatedTime());
+        response.setShippingAddress(order.getShippingAddress());
+        response.setRecipientName(order.getRecipientName());
+        response.setRecipientPhone(order.getRecipientPhone());
+        response.setOrderStatus(order.getOrderStatus().name());
+        response.setShippingStatus(order.getShippingStatus().name());
+        response.setPaymentMethod(order.getPaymentMethod());
+
+        List<OrderDetailResponse> detailResponses = orderDetails.stream()
+            .map(this::convertToOrderDetailResponse)
+            .collect(Collectors.toList());
+        
+        response.setOrderDetails(detailResponses);
+        
+        return response;
+    }
+
+    /**
+     * Convert OrderDetail entity sang OrderDetailResponse (helper method)
+     */
+    private OrderDetailResponse convertToOrderDetailResponse(OrderDetail orderDetail) {
+        OrderDetailResponse response = new OrderDetailResponse();
+        response.setOrderDetailId(orderDetail.getOrderDetailId());
+        response.setProductId(orderDetail.getProduct().getProductId());
+        response.setProductName(orderDetail.getProduct().getName());
+        response.setProductDescription(orderDetail.getProduct().getDescription());
+        response.setUnitPrice(orderDetail.getUnitPrice());
+        response.setQuantity(orderDetail.getQuantity());
+        response.setSubTotal(orderDetail.getSubTotal());
+        
+        return response;
     }
 
     /**
