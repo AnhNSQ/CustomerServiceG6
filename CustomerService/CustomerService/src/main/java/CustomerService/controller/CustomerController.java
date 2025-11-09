@@ -14,11 +14,13 @@ import CustomerService.dto.TicketReplyResponse;
 import CustomerService.dto.EvaluationRequest;
 import CustomerService.dto.EvaluationResponse;
 import CustomerService.service.AuthenticationService;
-import CustomerService.service.EvaluationService;
 import CustomerService.service.CloudinaryService;
 import CustomerService.service.CustomerService;
+import CustomerService.service.EvaluationService;
+import CustomerService.service.OrderService;
 import CustomerService.service.SessionManager;
 import CustomerService.service.TicketReplyService;
+import CustomerService.dto.OrderResponse;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -46,6 +48,7 @@ public class CustomerController {
     private final TicketReplyService ticketReplyService;
     private final EvaluationService evaluationService;
     private final CloudinaryService cloudinaryService;
+    private final OrderService orderService;
 
     /**
      * Đăng ký tài khoản customer mới
@@ -665,6 +668,99 @@ public class CustomerController {
             log.error("Lỗi không mong muốn khi upload ảnh: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra khi upload ảnh, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Lấy danh sách đơn hàng có trạng thái PAID
+     */
+    @GetMapping("/orders/paid")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getPaidOrders(HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("CUSTOMER {} lấy danh sách đơn hàng PAID", customerId);
+            
+            List<OrderResponse> allOrders = orderService.getOrdersByCustomerId(customerId);
+            List<OrderResponse> paidOrders = allOrders.stream()
+                .filter(order -> "PAID".equals(order.getOrderStatus()))
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(paidOrders));
+                
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy đơn hàng PAID: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Đóng ticket
+     */
+    @PostMapping("/tickets/{ticketId}/close")
+    public ResponseEntity<ApiResponse<TicketResponse>> closeTicket(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("CUSTOMER {} đóng ticket {}", customerId, ticketId);
+            
+            TicketResponse ticket = customerService.closeTicket(ticketId, customerId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(ticket, "Đóng ticket thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi đóng ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi đóng ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * CUSTOMER: Mở lại ticket (chỉ khi chưa đánh giá)
+     */
+    @PostMapping("/tickets/{ticketId}/reopen")
+    public ResponseEntity<ApiResponse<TicketResponse>> reopenTicket(
+            @PathVariable Long ticketId,
+            HttpSession session) {
+        try {
+            if (!sessionManager.isCustomerLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long customerId = sessionManager.getCustomerId(session);
+            log.info("CUSTOMER {} mở lại ticket {}", customerId, ticketId);
+            
+            TicketResponse ticket = customerService.reopenTicket(ticketId, customerId);
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(ticket, "Mở lại ticket thành công"));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi mở lại ticket: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi mở lại ticket: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
     }
 }

@@ -75,8 +75,7 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     @Transactional(readOnly = true)
     public List<TicketResponse> getTicketsByLeaderDepartment(Long leaderId) {
         log.info("Lấy danh sách ticket của phòng ban cho LEADER {}", leaderId);
-        
-        // Lấy thông tin LEADER (với department)
+
         Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
@@ -84,7 +83,6 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
             throw new RuntimeException("Staff is not a LEADER");
         }
         
-        // Lấy ticket của phòng ban
         List<Ticket> tickets = ticketRepository.findByStaffDepartmentIdOrderByCreatedAtDesc(
             leader.getStaffDepartment().getStaffDepartmentId()
         );
@@ -101,21 +99,18 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     @Transactional(readOnly = true)
     public List<TicketResponse> getOpenTicketsByLeaderDepartment(Long leaderId) {
         log.info("Lấy danh sách ticket OPEN của phòng ban cho LEADER {}", leaderId);
-        
-        // Lấy thông tin LEADER (với department)
+
         Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
-        
-        // Lấy tất cả ticket của phòng ban
+
         List<Ticket> departmentTickets = ticketRepository.findByStaffDepartmentIdOrderByCreatedAtDesc(
             leader.getStaffDepartment().getStaffDepartmentId()
         );
-        
-        // Filter chỉ ticket OPEN
+
         List<Ticket> openTickets = departmentTickets.stream()
             .filter(ticket -> ticket.getStatus() == Ticket.Status.OPEN)
             .collect(Collectors.toList());
@@ -132,16 +127,14 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     @Transactional(readOnly = true)
     public List<StaffResponse> getStaffByLeaderDepartment(Long leaderId) {
         log.info("Lấy danh sách nhân viên trong phòng ban cho LEADER {}", leaderId);
-        
-        // Lấy thông tin LEADER (với department)
+
         Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
-        
-        // Lấy nhân viên trong cùng phòng ban (trừ LEADER)
+
         List<Staff> staffList = staffRepository.findByStaffDepartmentIdAndRoleNameNot(
             leader.getStaffDepartment().getStaffDepartmentId(),
             RoleName.LEAD
@@ -159,46 +152,38 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     @Transactional
     public boolean assignTicketToStaff(Long ticketId, Long staffId, Long leaderId) {
         log.info("LEADER {} phân công ticket {} cho staff {}", leaderId, ticketId, staffId);
-        
-        // Kiểm tra LEADER (với department)
+
         Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
-        
-        // Kiểm tra ticket
+
         Ticket ticket = ticketRepository.findByIdWithCustomer(ticketId)
             .orElseThrow(() -> new RuntimeException("Ticket not found with ID: " + ticketId));
-        
-        // Kiểm tra ticket có thuộc phòng ban của LEADER không
+
         if (!ticket.getStaffDepartment().getStaffDepartmentId().equals(leader.getStaffDepartment().getStaffDepartmentId())) {
             throw new RuntimeException("Ticket does not belong to leader's department");
         }
-        
-        // Chỉ được phép phân công ticket có status = OPEN
+
         if (ticket.getStatus() != Ticket.Status.OPEN) {
             throw new RuntimeException("Chỉ có thể phân công ticket có trạng thái OPEN");
         }
-        
-        // Kiểm tra staff (với department)
+
         Staff staff = staffRepository.findByIdWithRoleAndDepartment(staffId)
             .orElseThrow(() -> new RuntimeException("Staff not found with ID: " + staffId));
-        
-        // Kiểm tra staff có cùng phòng ban với LEADER không
+
         if (!staff.getStaffDepartment().getStaffDepartmentId().equals(leader.getStaffDepartment().getStaffDepartmentId())) {
             throw new RuntimeException("Staff does not belong to leader's department");
         }
-        
-        // Tạo ticket assignment
+
         TicketAssign assignment = new TicketAssign();
         assignment.setTicket(ticket);
         assignment.setAssignedTo(staff);
         assignment.setAssignedBy(leader);
         assignment.setAssignedAt(LocalDateTime.now());
 
-        // Xác định roleNeeded dựa trên phòng ban của staff
         String departmentName = staff.getStaffDepartment().getName().toUpperCase();
 
         if (departmentName.contains("FINANCE") || departmentName.contains("TÀI CHÍNH")) {
@@ -206,7 +191,6 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
         } else if (departmentName.contains("TECH") || departmentName.contains("KỸ THUẬT")) {
             assignment.setRoleNeeded(TicketAssign.RoleNeeded.TECHNICAL_SUPPORT);
         } else {
-            // Default fallback (nếu có phòng ban lạ)
             assignment.setRoleNeeded(TicketAssign.RoleNeeded.TECHNICAL_SUPPORT);
         }
 
@@ -227,16 +211,14 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     @Transactional(readOnly = true)
     public TicketDashboardStats getLeaderDashboardStats(Long leaderId) {
         log.info("Lấy thống kê dashboard cho LEADER {}", leaderId);
-        
-        // Lấy thông tin LEADER (với department)
+
         Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
-        
-        // Lấy thống kê ticket của phòng ban
+
         Long departmentId = leader.getStaffDepartment().getStaffDepartmentId();
         
         List<Ticket> departmentTickets = ticketRepository.findByStaffDepartmentIdOrderByCreatedAtDesc(departmentId);
@@ -264,25 +246,21 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
     @Transactional(readOnly = true)
     public List<TicketResponse> getTicketsAssignedToStaff(Long staffId, Long leaderId) {
         log.info("LEADER {} lấy danh sách ticket được phân công cho staff {}", leaderId, staffId);
-        
-        // Kiểm tra LEADER
+
         Staff leader = staffRepository.findByIdWithRoleAndDepartment(leaderId)
             .orElseThrow(() -> new RuntimeException("Leader not found with ID: " + leaderId));
         
         if (!RoleName.LEAD.equals(leader.getRole().getRoleName())) {
             throw new RuntimeException("Staff is not a LEADER");
         }
-        
-        // Kiểm tra staff
+
         Staff staff = staffRepository.findByIdWithRoleAndDepartment(staffId)
             .orElseThrow(() -> new RuntimeException("Staff not found with ID: " + staffId));
-        
-        // Kiểm tra staff có cùng phòng ban với LEADER không
+
         if (!staff.getStaffDepartment().getStaffDepartmentId().equals(leader.getStaffDepartment().getStaffDepartmentId())) {
             throw new RuntimeException("Staff does not belong to leader's department");
         }
-        
-        // Lấy danh sách ticket assignments
+
         List<TicketAssign> assignments = ticketAssignRepository.findByAssignedToStaffIdOrderByAssignedAtDesc(staffId);
         
         return assignments.stream()

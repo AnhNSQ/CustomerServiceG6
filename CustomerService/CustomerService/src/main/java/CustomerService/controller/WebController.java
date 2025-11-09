@@ -2,7 +2,6 @@ package CustomerService.controller;
 
 import CustomerService.dto.CustomerResponse;
 import CustomerService.dto.StaffResponse;
-import CustomerService.dto.TicketResponse;
 import CustomerService.dto.CartResponse;
 import CustomerService.dto.ApiResponse;
 import CustomerService.entity.Product;

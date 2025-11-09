@@ -598,6 +598,9 @@
                     <button type="button" class="btn btn-secondary" onclick="goBack()">
                         <i class="fas fa-arrow-left me-2"></i>Quay lại
                     </button>
+                    <button type="button" class="btn btn-danger" id="closeReopenBtn" style="display: none;" onclick="toggleTicketStatus()">
+                        <!-- Nút sẽ được cập nhật động -->
+                    </button>
                     <button type="button" class="btn btn-danger" onclick="deleteTicket()">
                         <i class="fas fa-trash me-2"></i>Xóa ticket
                     </button>
@@ -770,8 +773,116 @@
                 if (evaluationSection) evaluationSection.style.display = 'none';
             }
 
+            // Hiển thị nút đóng/mở lại ticket
+            updateCloseReopenButton(ticket);
+
             // Hiển thị conversation thread thay vì description đơn thuần
             displayConversation(ticket);
+        }
+
+        function updateCloseReopenButton(ticket) {
+            const closeReopenBtn = document.getElementById('closeReopenBtn');
+            if (!closeReopenBtn) return;
+
+            // Kiểm tra xem ticket đã có evaluation chưa
+            checkEvaluationAndUpdateButton(ticket.ticketId, ticket.status);
+        }
+
+        async function checkEvaluationAndUpdateButton(ticketId, status) {
+            try {
+                const response = await fetch(`/api/customers/tickets/${ticketId}/evaluation`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                const hasEvaluation = data.success && data.data !== null;
+
+                const closeReopenBtn = document.getElementById('closeReopenBtn');
+                if (!closeReopenBtn) return;
+
+                if (status === 'CLOSED') {
+                    if (hasEvaluation) {
+                        // Đã đánh giá rồi, không cho mở lại
+                        closeReopenBtn.style.display = 'none';
+                    } else {
+                        // Chưa đánh giá, cho phép mở lại
+                        closeReopenBtn.style.display = 'inline-block';
+                        closeReopenBtn.className = 'btn btn-success';
+                        closeReopenBtn.innerHTML = '<i class="fas fa-redo me-2"></i>Mở lại ticket';
+                    }
+                } else {
+                    // Ticket chưa đóng, hiển thị nút đóng
+                    closeReopenBtn.style.display = 'inline-block';
+                    closeReopenBtn.className = 'btn btn-warning';
+                    closeReopenBtn.innerHTML = '<i class="fas fa-times-circle me-2"></i>Đóng ticket';
+                }
+            } catch (error) {
+                console.error('Error checking evaluation:', error);
+            }
+        }
+
+        function toggleTicketStatus() {
+            if (!currentTicket) return;
+
+            const ticketId = currentTicket.ticketId;
+            const isClosed = currentTicket.status === 'CLOSED';
+
+            if (isClosed) {
+                reopenTicket(ticketId);
+            } else {
+                closeTicket(ticketId);
+            }
+        }
+
+        function closeTicket(ticketId) {
+            if (confirm('Bạn có chắc chắn muốn đóng ticket này?')) {
+                fetch(`/api/customers/tickets/${ticketId}/close`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Đóng ticket thành công!', 'success');
+                        // Reload ticket details
+                        loadTicketDetails(ticketId);
+                    } else {
+                        showToast(data.message || 'Có lỗi xảy ra khi đóng ticket', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error closing ticket:', error);
+                    showToast('Có lỗi xảy ra khi đóng ticket', 'error');
+                });
+            }
+        }
+
+        function reopenTicket(ticketId) {
+            if (confirm('Bạn có chắc chắn muốn mở lại ticket này?')) {
+                fetch(`/api/customers/tickets/${ticketId}/reopen`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Mở lại ticket thành công!', 'success');
+                        // Reload ticket details
+                        loadTicketDetails(ticketId);
+                    } else {
+                        showToast(data.message || 'Có lỗi xảy ra khi mở lại ticket', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reopening ticket:', error);
+                    showToast('Có lỗi xảy ra khi mở lại ticket', 'error');
+                });
+            }
         }
 
         function displayConversation(ticket) {

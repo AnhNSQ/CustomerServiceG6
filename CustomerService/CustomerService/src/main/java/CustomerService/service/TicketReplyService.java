@@ -18,11 +18,6 @@ public interface TicketReplyService {
      * Lấy tất cả replies của một ticket
      */
     List<TicketReply> getRepliesByTicketId(Long ticketId);
-    
-    /**
-     * Lấy reply theo ID
-     */
-    TicketReply getReplyById(Long replyId);
 }
 
 

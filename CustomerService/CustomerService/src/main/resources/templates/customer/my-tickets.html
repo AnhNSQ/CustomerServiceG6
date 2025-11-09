@@ -577,6 +577,14 @@
                             <button type="button" class="btn btn-sm btn-outline-primary" onclick="viewTicketDetail(${ticket.ticketId})" title="Xem chi tiết">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            ${ticket.status === 'CLOSED' ? 
+                                `<button type="button" class="btn btn-sm btn-outline-success" onclick="reopenTicket(${ticket.ticketId})" title="Mở lại ticket">
+                                    <i class="fas fa-redo"></i>
+                                </button>` : 
+                                `<button type="button" class="btn btn-sm btn-outline-warning" onclick="closeTicket(${ticket.ticketId})" title="Đóng ticket">
+                                    <i class="fas fa-times-circle"></i>
+                                </button>`
+                            }
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteTicket(${ticket.ticketId})" title="Xóa ticket">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -805,6 +813,56 @@
                 .catch(error => {
                     console.error('Error deleting ticket:', error);
                     showAlert('Có lỗi xảy ra khi xóa ticket', 'danger');
+                });
+            }
+        }
+
+        function closeTicket(ticketId) {
+            if (confirm('Bạn có chắc chắn muốn đóng ticket này?')) {
+                fetch(`/api/customers/tickets/${ticketId}/close`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('Đóng ticket thành công!', 'success');
+                        loadTickets(currentPage); // Reload current page
+                    } else {
+                        showAlert(data.message || 'Có lỗi xảy ra khi đóng ticket', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error closing ticket:', error);
+                    showAlert('Có lỗi xảy ra khi đóng ticket', 'danger');
+                });
+            }
+        }
+
+        function reopenTicket(ticketId) {
+            if (confirm('Bạn có chắc chắn muốn mở lại ticket này?')) {
+                fetch(`/api/customers/tickets/${ticketId}/reopen`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('Mở lại ticket thành công!', 'success');
+                        loadTickets(currentPage); // Reload current page
+                    } else {
+                        showAlert(data.message || 'Có lỗi xảy ra khi mở lại ticket', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reopening ticket:', error);
+                    showAlert('Có lỗi xảy ra khi mở lại ticket', 'danger');
                 });
             }
         }

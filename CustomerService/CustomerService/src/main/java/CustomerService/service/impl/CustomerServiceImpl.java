@@ -6,6 +6,7 @@ import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketResponse;
 import CustomerService.dto.ChangePasswordRequest;
 import CustomerService.entity.Customer;
+import CustomerService.entity.Order;
 import CustomerService.entity.Role;
 import CustomerService.entity.StaffDepartment;
 import CustomerService.entity.Ticket;
@@ -13,6 +14,8 @@ import CustomerService.entity.TicketAssign;
 import CustomerService.entity.TicketReply;
 import CustomerService.repository.TicketReplyRepository;
 import CustomerService.repository.CustomerRepository;
+import CustomerService.repository.EvaluationRepository;
+import CustomerService.repository.OrderRepository;
 import CustomerService.repository.RoleRepository;
 import CustomerService.repository.StaffDepartmentRepository;
 import CustomerService.repository.StaffRepository;
@@ -40,6 +43,8 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
     private final PasswordValidator passwordValidator;
     private final UserConverter userConverter;
     private final OrderValidationService orderValidationService;
+    private final OrderRepository orderRepository;
+    private final EvaluationRepository evaluationRepository;
     
     public CustomerServiceImpl(CustomerRepository customerRepository, 
                           StaffRepository staffRepository,
@@ -49,7 +54,9 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
                           StaffDepartmentRepository staffDepartmentRepository,
                           TicketRepository ticketRepository,
                           TicketReplyRepository ticketReplyRepository,
-                          OrderValidationService orderValidationService) {
+                          OrderValidationService orderValidationService,
+                          OrderRepository orderRepository,
+                          EvaluationRepository evaluationRepository) {
         super(customerRepository, staffRepository, passwordValidator, userConverter);
         this.customerRepository = customerRepository;
         this.roleRepository = roleRepository;
@@ -59,6 +66,8 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         this.ticketRepository = ticketRepository;
         this.ticketReplyRepository = ticketReplyRepository;
         this.orderValidationService = orderValidationService;
+        this.orderRepository = orderRepository;
+        this.evaluationRepository = evaluationRepository;
     }
 
     /**
@@ -68,35 +77,29 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
     public CustomerResponse register(CustomerRegisterRequest request) {
         log.info("Bắt đầu đăng ký customer với email: {}", request.getEmail());
 
-        // Kiểm tra email đã tồn tại
         if (customerRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email đã được sử dụng");
         }
 
-        // Kiểm tra username đã tồn tại
         if (customerRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username đã được sử dụng");
         }
 
-        // Mã hóa mật khẩu trước khi lưu
         String encodedPassword = passwordValidator.encodePassword(request.getPassword());
 
-        // Tạo customer mới
         Customer customer = new Customer(
                 request.getName(),
                 request.getEmail(),
                 request.getUsername(),
-                encodedPassword, // Sử dụng mật khẩu đã được mã hóa
+                encodedPassword,
                 request.getPhone(),
-                null // Role sẽ được set sau
+                null
         );
 
-        // Gán role CUSTOMER mặc định
         Role customerRole = roleRepository.findByRoleName(Role.RoleName.CUSTOMER)
                 .orElseThrow(() -> new RuntimeException("Role CUSTOMER không tồn tại"));
         customer.setRole(customerRole);
 
-        // Lưu customer
         Customer savedCustomer = customerRepository.save(customer);
         log.info("Đăng ký thành công customer với ID: {}", savedCustomer.getCustomerId());
 
@@ -148,11 +151,9 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
     public CustomerResponse updateProfile(Long customerId, Map<String, Object> updateData) {
         log.info("Bắt đầu cập nhật profile cho customer ID: {}", customerId);
 
-        // Tìm customer hiện tại
         Customer customer = customerRepository.findByIdWithRole(customerId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy customer với ID: " + customerId));
 
-        // Cập nhật các trường được phép
         updateData.forEach((key, value) -> {
             switch (key) {
                 case "name":
@@ -166,7 +167,6 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             }
         });
 
-        // Lưu customer đã cập nhật
         Customer updatedCustomer = customerRepository.save(customer);
         log.info("Cập nhật profile thành công cho customer ID: {}", customerId);
 
@@ -214,13 +214,42 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             throw new RuntimeException("Customer phải có ít nhất một đơn hàng để tạo ticket hỗ trợ");
         }
 
-        Ticket ticket = new Ticket(
-            customer,
-            staffDepartment,
-            request.getSubject(),
-            request.getDescription(),
-            Ticket.Priority.MEDIUM
-        );
+        // Xử lý orderId nếu có
+        Order order = null;
+        if (request.getOrderId() != null) {
+            order = orderRepository.findByIdWithCustomer(request.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + request.getOrderId()));
+            
+            // Kiểm tra đơn hàng thuộc về customer này
+            if (!order.getCustomer().getCustomerId().equals(customerId)) {
+                throw new RuntimeException("Đơn hàng không thuộc về bạn");
+            }
+            
+            // Kiểm tra đơn hàng có trạng thái PAID
+            if (order.getOrderStatus() != Order.OrderStatus.PAID) {
+                throw new RuntimeException("Chỉ có thể tạo ticket cho đơn hàng có trạng thái PAID");
+            }
+        }
+
+        Ticket ticket;
+        if (order != null) {
+            ticket = new Ticket(
+                customer,
+                order,
+                staffDepartment,
+                request.getSubject(),
+                request.getDescription(),
+                Ticket.Priority.MEDIUM
+            );
+        } else {
+            ticket = new Ticket(
+                customer,
+                staffDepartment,
+                request.getSubject(),
+                request.getDescription(),
+                Ticket.Priority.MEDIUM
+            );
+        }
 
         Ticket savedTicket = ticketRepository.save(ticket);
         log.info("Tạo ticket thành công với ID: {}", savedTicket.getTicketId());
@@ -241,8 +270,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         int total = tickets.size();
         int start = page * size;
         int end = Math.min(start + size, total);
-        
-        // Auto-close các ticket đủ điều kiện trước khi trả về
+
         tickets.subList(start, end).forEach(this::autoCloseIfInactive);
 
         List<TicketResponse> ticketResponses = tickets.subList(start, end)
@@ -267,8 +295,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         log.info("Lấy {} ticket gần đây của customer {}", limit, customerId);
         
         List<Ticket> tickets = ticketRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
-        
-        // Auto-close trước khi map
+
         tickets.stream().limit(limit).forEach(this::autoCloseIfInactive);
 
         return tickets.stream()
@@ -286,8 +313,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         log.info("Lấy danh sách ticket của customer {}", customerId);
         
         List<Ticket> tickets = ticketRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
-        
-        // Auto-close trước khi map
+
         tickets.forEach(this::autoCloseIfInactive);
 
         return tickets.stream()
@@ -328,6 +354,65 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         ticketRepository.delete(ticket);
         log.info("Xóa ticket {} thành công", ticketId);
         return true;
+    }
+
+    /**
+     * Đóng ticket (chỉ customer sở hữu ticket mới được đóng)
+     */
+    @Override
+    @Transactional
+    public TicketResponse closeTicket(Long ticketId, Long customerId) {
+        log.info("Customer {} đóng ticket {}", customerId, ticketId);
+        
+        Ticket ticket = ticketRepository.findByIdWithCustomer(ticketId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy ticket với ID: " + ticketId));
+        
+        if (!ticket.getCustomer().getCustomerId().equals(customerId)) {
+            throw new RuntimeException("Bạn không có quyền đóng ticket này");
+        }
+        
+        if (ticket.getStatus() == Ticket.Status.CLOSED) {
+            throw new RuntimeException("Ticket đã được đóng rồi");
+        }
+        
+        ticket.setStatus(Ticket.Status.CLOSED);
+        ticket.setClosedAt(java.time.LocalDateTime.now());
+        Ticket savedTicket = ticketRepository.save(ticket);
+        
+        log.info("Đóng ticket {} thành công", ticketId);
+        return convertToTicketResponse(savedTicket);
+    }
+
+    /**
+     * Mở lại ticket (chỉ khi ticket đã đóng và chưa có evaluation)
+     */
+    @Override
+    @Transactional
+    public TicketResponse reopenTicket(Long ticketId, Long customerId) {
+        log.info("Customer {} mở lại ticket {}", customerId, ticketId);
+        
+        Ticket ticket = ticketRepository.findByIdWithCustomer(ticketId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy ticket với ID: " + ticketId));
+        
+        if (!ticket.getCustomer().getCustomerId().equals(customerId)) {
+            throw new RuntimeException("Bạn không có quyền mở lại ticket này");
+        }
+        
+        if (ticket.getStatus() != Ticket.Status.CLOSED) {
+            throw new RuntimeException("Chỉ có thể mở lại ticket đã đóng");
+        }
+        
+        // Kiểm tra xem ticket đã có evaluation chưa
+        if (evaluationRepository.existsByTicket_TicketId(ticketId)) {
+            throw new RuntimeException("Không thể mở lại ticket đã được đánh giá");
+        }
+        
+        ticket.setStatus(Ticket.Status.OPEN);
+        ticket.setClosedAt(null);
+        Ticket savedTicket = ticketRepository.save(ticket);
+        
+        log.info("Mở lại ticket {} thành công", ticketId);
+        return convertToTicketResponse(savedTicket);
     }
 
     /**

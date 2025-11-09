@@ -122,7 +122,7 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
             .map(TicketAssign::getTicket)
             .filter(t -> t.getStatus() == Ticket.Status.CLOSED)
             .count();
-        // urgent giữ nguyên nếu có nghiệp vụ riêng
+
         long urgent = assignments.stream()
             .map(TicketAssign::getTicket)
             .filter(t -> t.getPriority() == Ticket.Priority.HIGH && (t.getStatus() == Ticket.Status.IN_PROGRESS || t.getStatus() == Ticket.Status.ASSIGNED))
