@@ -22,8 +22,5 @@ public class CustomerTicketCreateRequest {
     
     @NotNull(message = "Department must be selected")
     private Long departmentId;
-    
-    // Optional: ID của đơn hàng liên quan (chỉ chấp nhận đơn hàng có trạng thái PAID)
-    private Long orderId;
 }
 

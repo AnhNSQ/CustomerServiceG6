@@ -53,13 +53,19 @@ public class TicketAutoCloseServiceImpl implements TicketAutoCloseService {
                 // Lấy replies của ticket
                 List<TicketReply> replies = ticketReplyRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getTicketId());
                 
+                // Lấy thời gian tham chiếu: ưu tiên reopenedAt nếu có, nếu không thì dùng createdAt
+                LocalDateTime referenceTime = ticket.getReopenedAt() != null 
+                    ? ticket.getReopenedAt() 
+                    : ticket.getCreatedAt();
+                
                 if (replies.isEmpty()) {
-                    // Nếu không có reply nào, check nếu ticket được tạo hơn 2 ngày
-                    if (ticket.getCreatedAt().isBefore(twoDaysAgo)) {
+                    // Nếu không có reply nào, check nếu ticket được tạo/mở lại hơn 2 ngày
+                    if (referenceTime != null && referenceTime.isBefore(twoDaysAgo)) {
                         ticket.setStatus(Ticket.Status.CLOSED);
                         ticket.setClosedAt(LocalDateTime.now());
                         ticketRepository.save(ticket);
-                        log.info("Đóng ticket {} vì không có reply nào sau 2 ngày", ticket.getTicketId());
+                        log.info("Đóng ticket {} vì không có reply nào sau 2 ngày (reference time: {})", 
+                            ticket.getTicketId(), referenceTime);
                         closedCount++;
                     }
                 } else {
@@ -70,17 +76,18 @@ public class TicketAutoCloseServiceImpl implements TicketAutoCloseService {
                         .orElse(null);
                     
                     if (lastCustomerReply == null) {
-                        // Chỉ có reply từ staff, check nếu ticket được tạo hơn 2 ngày
-                        if (ticket.getCreatedAt().isBefore(twoDaysAgo)) {
+                        // Chỉ có reply từ staff, check nếu ticket được tạo/mở lại hơn 2 ngày
+                        if (referenceTime != null && referenceTime.isBefore(twoDaysAgo)) {
                             ticket.setStatus(Ticket.Status.CLOSED);
                             ticket.setClosedAt(LocalDateTime.now());
                             ticketRepository.save(ticket);
-                            log.info("Đóng ticket {} vì không có reply từ customer sau 2 ngày", ticket.getTicketId());
+                            log.info("Đóng ticket {} vì không có reply từ customer sau 2 ngày (reference time: {})", 
+                                ticket.getTicketId(), referenceTime);
                             closedCount++;
                         }
                     } else {
                         // Có reply từ customer, check nếu reply cuối cùng hơn 2 ngày
-                        if (lastCustomerReply.getCreatedAt().isBefore(twoDaysAgo)) {
+                        if (lastCustomerReply.getCreatedAt() != null && lastCustomerReply.getCreatedAt().isBefore(twoDaysAgo)) {
                             ticket.setStatus(Ticket.Status.CLOSED);
                             ticket.setClosedAt(LocalDateTime.now());
                             ticketRepository.save(ticket);

@@ -6,7 +6,6 @@ import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketResponse;
 import CustomerService.dto.ChangePasswordRequest;
 import CustomerService.entity.Customer;
-import CustomerService.entity.Order;
 import CustomerService.entity.Role;
 import CustomerService.entity.StaffDepartment;
 import CustomerService.entity.Ticket;
@@ -25,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -214,42 +214,13 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             throw new RuntimeException("Customer phải có ít nhất một đơn hàng để tạo ticket hỗ trợ");
         }
 
-        // Xử lý orderId nếu có
-        Order order = null;
-        if (request.getOrderId() != null) {
-            order = orderRepository.findByIdWithCustomer(request.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + request.getOrderId()));
-            
-            // Kiểm tra đơn hàng thuộc về customer này
-            if (!order.getCustomer().getCustomerId().equals(customerId)) {
-                throw new RuntimeException("Đơn hàng không thuộc về bạn");
-            }
-            
-            // Kiểm tra đơn hàng có trạng thái PAID
-            if (order.getOrderStatus() != Order.OrderStatus.PAID) {
-                throw new RuntimeException("Chỉ có thể tạo ticket cho đơn hàng có trạng thái PAID");
-            }
-        }
-
-        Ticket ticket;
-        if (order != null) {
-            ticket = new Ticket(
-                customer,
-                order,
-                staffDepartment,
-                request.getSubject(),
-                request.getDescription(),
-                Ticket.Priority.MEDIUM
-            );
-        } else {
-            ticket = new Ticket(
-                customer,
-                staffDepartment,
-                request.getSubject(),
-                request.getDescription(),
-                Ticket.Priority.MEDIUM
-            );
-        }
+        Ticket ticket = new Ticket(
+            customer,
+            staffDepartment,
+            request.getSubject(),
+            request.getDescription(),
+            Ticket.Priority.MEDIUM
+        );
 
         Ticket savedTicket = ticketRepository.save(ticket);
         log.info("Tạo ticket thành công với ID: {}", savedTicket.getTicketId());
@@ -409,6 +380,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
         
         ticket.setStatus(Ticket.Status.OPEN);
         ticket.setClosedAt(null);
+        ticket.setReopenedAt(LocalDateTime.now()); // Cập nhật thời gian mở lại
         Ticket savedTicket = ticketRepository.save(ticket);
         
         log.info("Mở lại ticket {} thành công", ticketId);
@@ -487,13 +459,18 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
                 return;
             }
 
-            var now = java.time.LocalDateTime.now();
-            var twoDaysAgo = now.minusDays(2);
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime twoDaysAgo = now.minusDays(2);
 
             List<TicketReply> replies = ticketReplyRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getTicketId());
 
+            // Lấy thời gian tham chiếu: ưu tiên reopenedAt nếu có, nếu không thì dùng createdAt
+            LocalDateTime referenceTime = ticket.getReopenedAt() != null 
+                ? ticket.getReopenedAt() 
+                : ticket.getCreatedAt();
+
             if (replies == null || replies.isEmpty()) {
-                if (ticket.getCreatedAt() != null && ticket.getCreatedAt().isBefore(twoDaysAgo)) {
+                if (referenceTime != null && referenceTime.isBefore(twoDaysAgo)) {
                     ticket.setStatus(Ticket.Status.CLOSED);
                     ticket.setClosedAt(now);
                     ticketRepository.save(ticket);
@@ -507,7 +484,7 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
                 .orElse(null);
 
             if (lastCustomerReply == null) {
-                if (ticket.getCreatedAt() != null && ticket.getCreatedAt().isBefore(twoDaysAgo)) {
+                if (referenceTime != null && referenceTime.isBefore(twoDaysAgo)) {
                     ticket.setStatus(Ticket.Status.CLOSED);
                     ticket.setClosedAt(now);
                     ticketRepository.save(ticket);

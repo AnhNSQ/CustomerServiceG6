@@ -345,11 +345,8 @@
                         <div class="col-md-3">
                             <select class="form-select" id="filterStatus">
                                 <option value="">Tất cả trạng thái</option>
-                                <option value="PENDING">PENDING</option>
                                 <option value="OPEN">OPEN</option>
-                                <option value="ASSIGNED">ASSIGNED</option>
                                 <option value="IN_PROGRESS">IN_PROGRESS</option>
-                                <option value="RESOLVED">RESOLVED</option>
                                 <option value="CLOSED">CLOSED</option>
                             </select>
                         </div>
@@ -408,12 +405,47 @@
         </div>
     </div>
 
+    <!-- Assign Modal -->
+    <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="assignModalLabel">
+                        <i class="fas fa-user-check me-2"></i>Phân công ticket cho nhân viên
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="assignModalLoading" class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </div>
+                    <div id="assignModalContent" style="display: none;">
+                        <p class="mb-3"><i class="fas fa-info-circle me-2"></i>Chọn nhân viên để phân công:</p>
+                        <select id="assignModalStaffSelect" class="form-select form-select-lg mb-3" onchange="onAssignModalStaffSelected()">
+                            <option value="">-- Chọn nhân viên --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmAssignModal" onclick="confirmAssignModal()" disabled>
+                        <i class="fas fa-check me-2"></i>Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
     <script>
         let departmentTickets = [];
         let filteredTickets = [];
+        let currentAssigningTicketId = null;
+        let assignModalStaffList = [];
         
         // Pagination
         const itemsPerPage = 10;
@@ -553,9 +585,16 @@
                     </td>
                     <td>${new Date(ticket.createdAt).toLocaleDateString('vi-VN')}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewTicketDetail(${ticket.ticketId})" title="Xem chi tiết">
-                            <i class="fas fa-eye"></i> View
-                        </button>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewTicketDetail(${ticket.ticketId})" title="Xem chi tiết">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            ${ticket.status === 'OPEN' ? 
+                                `<button class="btn btn-sm btn-primary" onclick="openAssignModal(${ticket.ticketId})" title="Phân công ticket">
+                                    <i class="fas fa-user-check"></i> Phân công
+                                </button>` : ''
+                            }
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -632,8 +671,99 @@
             }
         }
 
-        function assignTicket(ticketId) {
-            alert(`Phân công ticket ${ticketId} - Tính năng sẽ được phát triển`);
+        function openAssignModal(ticketId) {
+            currentAssigningTicketId = ticketId;
+            loadStaffForAssignModal();
+        }
+
+        async function loadStaffForAssignModal() {
+            const modal = new bootstrap.Modal(document.getElementById('assignModal'));
+            modal.show();
+
+            try {
+                document.getElementById('assignModalLoading').style.display = 'block';
+                document.getElementById('assignModalContent').style.display = 'none';
+                document.getElementById('assignModalStaffSelect').innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+                document.getElementById('btnConfirmAssignModal').disabled = true;
+
+                const response = await fetch('/api/leaders/staffs/department', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) throw new Error('Failed to load staff');
+
+                const result = await response.json();
+                if (result.success) {
+                    assignModalStaffList = result.data;
+                    
+                    if (assignModalStaffList.length === 0) {
+                        alert('Không có nhân viên nào trong phòng ban!');
+                        modal.hide();
+                        return;
+                    }
+                    
+                    assignModalStaffList.forEach(staff => {
+                        const option = document.createElement('option');
+                        option.value = staff.staffId;
+                        option.textContent = `${staff.name} (${staff.email})`;
+                        document.getElementById('assignModalStaffSelect').appendChild(option);
+                    });
+                    document.getElementById('assignModalLoading').style.display = 'none';
+                    document.getElementById('assignModalContent').style.display = 'block';
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                console.error('Error loading staff:', error);
+                alert('Không thể tải danh sách nhân viên');
+                modal.hide();
+            }
+        }
+
+        function onAssignModalStaffSelected() {
+            const selectedStaffId = document.getElementById('assignModalStaffSelect').value;
+            document.getElementById('btnConfirmAssignModal').disabled = !selectedStaffId;
+        }
+
+        async function confirmAssignModal() {
+            if (!currentAssigningTicketId) return;
+
+            const selectedStaffId = document.getElementById('assignModalStaffSelect').value;
+            if (!selectedStaffId) {
+                alert('Vui lòng chọn nhân viên');
+                return;
+            }
+
+            const staff = assignModalStaffList.find(s => s.staffId == selectedStaffId);
+            if (!staff) {
+                alert('Không tìm thấy thông tin nhân viên');
+                return;
+            }
+
+            if (!confirm(`Xác nhận phân công ticket cho ${staff.name}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/leaders/tickets/${currentAssigningTicketId}/assign`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ staffId: selectedStaffId, note: '' })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert('Phân công ticket thành công!');
+                    bootstrap.Modal.getInstance(document.getElementById('assignModal')).hide();
+                    loadDepartmentTickets(); // Reload list
+                } else {
+                    alert(`Lỗi: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error assigning ticket:', error);
+                alert('Có lỗi xảy ra khi phân công ticket');
+            }
         }
 
         // UI State functions

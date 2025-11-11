@@ -788,6 +788,39 @@
             checkEvaluationAndUpdateButton(ticket.ticketId, ticket.status);
         }
 
+        /**
+         * Cập nhật UI sau khi thay đổi status của ticket (đóng/mở lại)
+         * Không reload trang, chỉ cập nhật các phần tử UI liên quan
+         */
+        function updateUIAfterStatusChange(newStatus) {
+            // Cập nhật status badge
+            document.getElementById('ticketStatus').innerHTML = `<span class="badge ${getStatusClass(newStatus)}">${getStatusText(newStatus)}</span>`;
+            
+            const replySection = document.getElementById('replySection');
+            const evaluationSection = document.getElementById('evaluationSection');
+            const closeReopenBtn = document.getElementById('closeReopenBtn');
+            
+            if (newStatus === 'CLOSED') {
+                // Ẩn form reply, hiện button đánh giá
+                if (replySection) replySection.style.display = 'none';
+                if (evaluationSection) evaluationSection.style.display = 'flex';
+                
+                // Kiểm tra xem đã đánh giá chưa để quyết định hiển thị button "mở lại"
+                checkEvaluationAndUpdateButton(currentTicket.ticketId, newStatus);
+            } else {
+                // Hiện form reply, ẩn button đánh giá
+                if (replySection) replySection.style.display = 'block';
+                if (evaluationSection) evaluationSection.style.display = 'none';
+                
+                // Hiển thị button đóng ticket
+                if (closeReopenBtn) {
+                    closeReopenBtn.style.display = 'inline-block';
+                    closeReopenBtn.className = 'btn btn-warning';
+                    closeReopenBtn.innerHTML = '<i class="fas fa-times-circle me-2"></i>Đóng ticket';
+                }
+            }
+        }
+
         async function checkEvaluationAndUpdateButton(ticketId, status) {
             try {
                 const response = await fetch(`/api/customers/tickets/${ticketId}/evaluation`, {
@@ -846,8 +879,11 @@
                 .then(data => {
                     if (data.success) {
                         showToast('Đóng ticket thành công!', 'success');
-                        // Reload ticket details
-                        loadTicketDetails(ticketId);
+                        // Cập nhật UI bằng AJAX thay vì reload trang
+                        if (currentTicket) {
+                            currentTicket.status = 'CLOSED';
+                            updateUIAfterStatusChange('CLOSED');
+                        }
                     } else {
                         showToast(data.message || 'Có lỗi xảy ra khi đóng ticket', 'error');
                     }
@@ -872,8 +908,11 @@
                 .then(data => {
                     if (data.success) {
                         showToast('Mở lại ticket thành công!', 'success');
-                        // Reload ticket details
-                        loadTicketDetails(ticketId);
+                        // Cập nhật UI bằng AJAX thay vì reload trang
+                        if (currentTicket) {
+                            currentTicket.status = 'OPEN';
+                            updateUIAfterStatusChange('OPEN');
+                        }
                     } else {
                         showToast(data.message || 'Có lỗi xảy ra khi mở lại ticket', 'error');
                     }
@@ -1379,6 +1418,8 @@
                 if (result.success) {
                     showToast('Gửi đánh giá thành công!', 'success');
                     renderReadonlyEvaluation(score, comment);
+                    // Cập nhật button "mở lại ticket" ngay lập tức - ẩn đi vì đã đánh giá
+                    checkEvaluationAndUpdateButton(currentTicket.ticketId, currentTicket.status);
                 } else {
                     showToast(result.message || 'Không thể gửi đánh giá', 'error');
                 }
