@@ -186,9 +186,9 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
 
         String departmentName = staff.getStaffDepartment().getName().toUpperCase();
 
-        if (departmentName.contains("FINANCE") || departmentName.contains("TÀI CHÍNH")) {
+        if (departmentName.contains("FINANCE")) {
             assignment.setRoleNeeded(TicketAssign.RoleNeeded.FINANCIAL_STAFF);
-        } else if (departmentName.contains("TECH") || departmentName.contains("KỸ THUẬT")) {
+        } else if (departmentName.contains("TECH")) {
             assignment.setRoleNeeded(TicketAssign.RoleNeeded.TECHNICAL_SUPPORT);
         } else {
             assignment.setRoleNeeded(TicketAssign.RoleNeeded.TECHNICAL_SUPPORT);

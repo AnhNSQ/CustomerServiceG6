@@ -291,4 +291,36 @@ public class ProductServiceImpl implements ProductService {
     public boolean existsByName(String name) {
         return productRepository.existsByNameIgnoreCaseAndStatus(name, Product.ProductStatus.ACTIVE);
     }
+
+    /**
+     * Lấy sản phẩm đang hoạt động với phân trang
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> getAllActiveProductsPaginated(int page, int size) {
+        log.info("Fetching paginated active products - page: {}, size: {}", page, size);
+        
+        List<Product> allProducts = productRepository.findByStatus(Product.ProductStatus.ACTIVE);
+        long totalProducts = allProducts.size();
+        int totalPages = (int) Math.ceil((double) totalProducts / size);
+        
+        // Calculate pagination bounds
+        int start = page * size;
+        int end = Math.min(start + size, (int) totalProducts);
+        
+        // Get paginated products
+        List<Product> paginatedProducts = start < totalProducts 
+            ? allProducts.subList(start, end)
+            : java.util.Collections.emptyList();
+        
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        result.put("products", paginatedProducts);
+        result.put("totalProducts", totalProducts);
+        result.put("totalPages", totalPages);
+        result.put("currentPage", page);
+        result.put("pageSize", size);
+        
+        log.info("Paginated products retrieved - showing {} of {} products", paginatedProducts.size(), totalProducts);
+        return result;
+    }
 }
