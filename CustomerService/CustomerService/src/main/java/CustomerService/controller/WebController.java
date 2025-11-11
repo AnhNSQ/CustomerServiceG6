@@ -640,15 +640,16 @@ public class WebController {
     }
 
     /**
-     * Trang catalog - hiển thị tất cả sản phẩm
+     * Trang catalog - hiển thị tất cả sản phẩm với phân trang
      */
     @GetMapping("/catalog")
     public String catalog(Model model,
                           @RequestParam(required = false) String sort,
                           @RequestParam(required = false) String view,
-                          @RequestParam(required = false) String priceRange) {
+                          @RequestParam(required = false) String priceRange,
+                          @RequestParam(required = false, defaultValue = "0") int page) {
         try {
-            log.info("Loading catalog page with sort: {}, view: {}, priceRange: {}", sort, view, priceRange);
+            log.info("Loading catalog page with sort: {}, view: {}, priceRange: {}, page: {}", sort, view, priceRange, page);
 
             // Lấy tất cả sản phẩm đang hoạt động
             var allProducts = productService.getAllActiveProducts();
@@ -663,6 +664,24 @@ public class WebController {
                 allProducts = sortProducts(allProducts, sort);
             }
 
+            // Phân trang - 9 sản phẩm mỗi trang
+            final int PAGE_SIZE = 9;
+            long totalProducts = allProducts.size();
+            int totalPages = (int) Math.ceil((double) totalProducts / PAGE_SIZE);
+            
+            // Ensure page is within valid range
+            if (page < 0) page = 0;
+            if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+            
+            // Calculate pagination bounds
+            int start = page * PAGE_SIZE;
+            int end = Math.min(start + PAGE_SIZE, (int) totalProducts);
+            
+            // Get paginated products
+            var products = start < totalProducts 
+                ? allProducts.subList(start, end)
+                : java.util.Collections.<Product>emptyList();
+
             // Lấy sản phẩm mới nhất cho sidebar
             var newReleases = productService.getLatestProducts(3);
 
@@ -670,15 +689,19 @@ public class WebController {
             var categories = categoryService.getAllActiveCategories();
 
             // Thêm thông tin vào model
-            model.addAttribute("products", allProducts);
+            model.addAttribute("products", products);
             model.addAttribute("newReleases", newReleases);
             model.addAttribute("categories", categories);
             model.addAttribute("currentSort", sort != null ? sort : "default");
             model.addAttribute("currentView", view != null ? view : "grid");
             model.addAttribute("currentPriceRange", priceRange != null ? priceRange : "");
-            model.addAttribute("totalProducts", allProducts.size());
+            model.addAttribute("totalProducts", totalProducts);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("pageSize", PAGE_SIZE);
 
-            log.info("Catalog page loaded successfully with {} products", allProducts.size());
+            log.info("Catalog page loaded successfully - page {} of {}, showing {} products", 
+                    page + 1, totalPages, products.size());
 
             return "catalog";
 
@@ -779,33 +802,55 @@ public class WebController {
     }
 
     /**
-     * Trang catalog theo category
+     * Trang catalog theo category với phân trang
      */
     @GetMapping("/category/{categoryId}")
     public String catalogByCategory(@PathVariable Long categoryId, Model model,
                                     @RequestParam(required = false) String sort,
                                     @RequestParam(required = false) String view,
-                                    @RequestParam(required = false) String priceRange) {
+                                    @RequestParam(required = false) String priceRange,
+                                    @RequestParam(required = false, defaultValue = "0") int page) {
         try {
-            log.info("Loading catalog page for category ID: {} with sort: {}, view: {}, priceRange: {}",
-                    categoryId, sort, view, priceRange);
+            log.info("Loading catalog page for category ID: {} with sort: {}, view: {}, priceRange: {}, page: {}",
+                    categoryId, sort, view, priceRange, page);
 
             // Lấy thông tin category
             var category = categoryService.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy category với ID: " + categoryId));
 
             // Lấy sản phẩm theo category
-            var products = productService.findByCategory(categoryId);
+            var allProducts = productService.findByCategory(categoryId);
 
             // Áp dụng bộ lọc giá nếu có
             if (priceRange != null && !priceRange.isEmpty()) {
-                products = filterProductsByPriceRange(products, priceRange);
+                allProducts = filterProductsByPriceRange(allProducts, priceRange);
             }
 
             // Áp dụng sắp xếp nếu có
             if (sort != null && !sort.isEmpty()) {
-                products = sortProducts(products, sort);
+                allProducts = sortProducts(allProducts, sort);
             }
+
+            // Phân trang - 9 sản phẩm mỗi trang
+            final int PAGE_SIZE = 9;
+            long totalProducts = allProducts.size();
+            // Ensure totalPages is at least 1 to avoid division by zero and sequence errors
+            int totalPages = totalProducts > 0 ? (int) Math.ceil((double) totalProducts / PAGE_SIZE) : 1;
+            
+            // Ensure page is within valid range
+            if (page < 0) page = 0;
+            if (totalPages > 0 && page >= totalPages) {
+                page = totalPages - 1;
+            }
+            
+            // Calculate pagination bounds
+            int start = page * PAGE_SIZE;
+            int end = Math.min(start + PAGE_SIZE, (int) totalProducts);
+            
+            // Get paginated products - handle edge case when start >= totalProducts
+            var products = (start < totalProducts && totalProducts > 0)
+                ? allProducts.subList(start, end)
+                : java.util.Collections.<Product>emptyList();
 
             // Lấy sản phẩm mới nhất cho sidebar
             var newReleases = productService.getLatestProducts(3);
@@ -821,10 +866,13 @@ public class WebController {
             model.addAttribute("currentSort", sort != null ? sort : "default");
             model.addAttribute("currentView", view != null ? view : "grid");
             model.addAttribute("currentPriceRange", priceRange != null ? priceRange : "");
-            model.addAttribute("totalProducts", products.size());
+            model.addAttribute("totalProducts", totalProducts);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("pageSize", PAGE_SIZE);
 
-            log.info("Category catalog page loaded successfully for {} with {} products",
-                    category.getName(), products.size());
+            log.info("Category catalog page loaded successfully for {} - page {} of {}, showing {} products",
+                    category.getName(), page + 1, totalPages, products.size());
 
             return "catalog";
 

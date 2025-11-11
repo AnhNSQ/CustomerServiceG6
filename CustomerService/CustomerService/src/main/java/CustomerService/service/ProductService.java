@@ -118,4 +118,12 @@ public interface ProductService {
      * Kiểm tra sản phẩm có tồn tại không
      */
     boolean existsByName(String name);
+
+    /**
+     * Lấy sản phẩm đang hoạt động với phân trang
+     * @param page số trang (bắt đầu từ 0)
+     * @param size số lượng sản phẩm mỗi trang
+     * @return Map chứa danh sách sản phẩm, tổng số sản phẩm, và tổng số trang
+     */
+    java.util.Map<String, Object> getAllActiveProductsPaginated(int page, int size);
 }
