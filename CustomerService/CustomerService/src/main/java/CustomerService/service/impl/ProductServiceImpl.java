@@ -43,7 +43,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<Product> getAllProducts() {
         log.info("Fetching all products");
-        return productRepository.findAll();
+        return productRepository.findAllWithVendorAndCategory();
     }
 
     /**

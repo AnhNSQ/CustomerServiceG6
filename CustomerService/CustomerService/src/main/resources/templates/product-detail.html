@@ -77,21 +77,76 @@
         .search-box {
             display: flex;
             width: 500px;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
         }
 
         .search-box input {
             flex: 1;
-            padding: 12px 20px;
+            padding: 15px 20px;
             border: 1px solid #ddd;
             font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #d32f2f;
         }
 
         .search-box button {
-            padding: 12px 25px;
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            border-left: none;
+            padding: 15px 25px;
+            background: #d32f2f;
+            border: none;
+            color: white;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-box button:hover {
+            background: #b71c1c;
+        }
+
+        /* Search Suggestions */
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .search-suggestions.show {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s ease;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item i {
+            color: #d32f2f;
+            margin-right: 10px;
         }
 
         .phone-info {
@@ -894,31 +949,118 @@
         event.target.classList.add('active');
     }
 
-    // Search functionality
-    function searchProducts() {
-        const searchTerm = document.querySelector('.search-box input').value;
-        if (searchTerm.trim()) {
-            // TODO: Implement search functionality
-            alert('Tìm kiếm: ' + searchTerm);
-            console.log('Searching for:', searchTerm);
+    // Function để xử lý input tìm kiếm và hiển thị gợi ý
+    function handleSearchInput(event) {
+        const searchTerm = event.target.value.trim();
+        const suggestionsContainer = document.getElementById('searchSuggestions');
+        
+        if (searchTerm.length >= 2) {
+            // Debounce search suggestions
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
+                fetchSearchSuggestions(searchTerm);
+            }, 300);
+        } else {
+            hideSuggestions();
         }
+    }
+
+    // Function để lấy gợi ý tìm kiếm từ API
+    async function fetchSearchSuggestions(query) {
+        try {
+            const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`);
+            const result = await response.json();
+            
+            if (result.success && result.data.length > 0) {
+                showSuggestions(result.data);
+            } else {
+                hideSuggestions();
+            }
+        } catch (error) {
+            console.error('Error fetching search suggestions:', error);
+            hideSuggestions();
+        }
+    }
+
+    // Function để hiển thị gợi ý
+    function showSuggestions(suggestions) {
+        const suggestionsContainer = document.getElementById('searchSuggestions');
+        suggestionsContainer.innerHTML = '';
+        
+        suggestions.forEach(suggestion => {
+            const suggestionItem = document.createElement('div');
+            suggestionItem.className = 'suggestion-item';
+            suggestionItem.innerHTML = `<i class="fas fa-search"></i>${suggestion}`;
+            suggestionItem.onclick = () => selectSuggestion(suggestion);
+            suggestionsContainer.appendChild(suggestionItem);
+        });
+        
+        suggestionsContainer.classList.add('show');
+    }
+
+    // Function để ẩn gợi ý
+    function hideSuggestions() {
+        const suggestionsContainer = document.getElementById('searchSuggestions');
+        if (suggestionsContainer) {
+            suggestionsContainer.classList.remove('show');
+        }
+    }
+
+    // Function để chọn gợi ý
+    function selectSuggestion(suggestion) {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = suggestion;
+            hideSuggestions();
+            searchProducts();
+        }
+    }
+
+    // Function để tìm kiếm sản phẩm
+    function searchProducts() {
+        const searchTerm = document.querySelector('.search-box input')?.value;
+        if (searchTerm && searchTerm.trim()) {
+            // Redirect to search page with query parameter
+            window.location.href = '/search?q=' + encodeURIComponent(searchTerm.trim());
+        } else {
+            // If no search term, redirect to catalog
+            window.location.href = '/catalog';
+        }
+    }
+
+    // Function để tìm kiếm với Enter key
+    function handleSearchKeyPress(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            searchProducts();
+        }
+    }
+
+    // Function để tìm kiếm với click
+    function handleSearchClick() {
+        searchProducts();
     }
 
     // Event listeners
     document.addEventListener('DOMContentLoaded', function() {
         const searchButton = document.querySelector('.search-box button');
         if (searchButton) {
-            searchButton.addEventListener('click', searchProducts);
+            searchButton.addEventListener('click', handleSearchClick);
         }
 
         const searchInput = document.querySelector('.search-box input');
         if (searchInput) {
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchProducts();
-                }
-            });
+            searchInput.addEventListener('keypress', handleSearchKeyPress);
+            searchInput.addEventListener('input', handleSearchInput);
         }
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(event) {
+            const searchBox = document.querySelector('.search-box');
+            if (searchBox && !searchBox.contains(event.target)) {
+                hideSuggestions();
+            }
+        });
     });
 </script>
 </body>
