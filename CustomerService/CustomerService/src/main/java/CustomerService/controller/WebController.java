@@ -446,6 +446,39 @@ public class WebController {
     }
 
     /**
+     * Admin Products Management Page
+     */
+    @GetMapping("/admin/products")
+    public String adminProducts(Model model, HttpSession session) {
+        try {
+            Long staffId = (Long) session.getAttribute("staffId");
+            
+            if (staffId == null) {
+                log.warn("Unauthorized access to admin products page - redirecting to staff login");
+                return "redirect:/staff/login";
+            }
+            
+            log.info("Loading admin products management page for staff ID: {}", staffId);
+            
+            // Lấy thông tin staff từ database
+            StaffResponse staff = staffService.findById(staffId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin staff"));
+            
+            model.addAttribute("staff", staff);
+            model.addAttribute("staffName", staff.getName());
+            model.addAttribute("staffEmail", staff.getEmail());
+            model.addAttribute("staffRoles", staff.getRoles());
+
+            log.info("Admin products management page loaded successfully for staff {}", staffId);
+            return "admin/products";
+            
+        } catch (Exception e) {
+            log.error("Error loading admin products management page: ", e);
+            return "redirect:/staff/login";
+        }
+    }
+
+    /**
      * Admin Order Detail Page
      */
     @GetMapping("/admin/orders/{orderId}")

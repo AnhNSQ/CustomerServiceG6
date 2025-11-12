@@ -1,5 +1,6 @@
 package CustomerService.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class Vendor {
     private String contactInfo;
 
     // Quan hệ với Products
+    @JsonIgnore
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
 

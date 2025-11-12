@@ -87,4 +87,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      */
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.vendor LEFT JOIN FETCH p.category WHERE p.productId = :productId")
     Optional<Product> findByIdWithVendorAndCategory(@Param("productId") Long productId);
+
+    /**
+     * Lấy tất cả sản phẩm với vendor và category (cho admin)
+     */
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.vendor LEFT JOIN FETCH p.category")
+    List<Product> findAllWithVendorAndCategory();
 }

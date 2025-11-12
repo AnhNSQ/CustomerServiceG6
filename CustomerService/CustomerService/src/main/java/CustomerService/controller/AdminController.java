@@ -1,9 +1,11 @@
 package CustomerService.controller;
 
 import CustomerService.dto.*;
+import CustomerService.entity.Product;
 import CustomerService.entity.StaffDepartment;
 import jakarta.validation.Valid;
 import CustomerService.service.AdminService;
+import CustomerService.service.ProductService;
 import CustomerService.service.SessionManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final SessionManager sessionManager;
+    private final ProductService productService;
 
     /**
      * ADMIN: Lấy tất cả ticket trong hệ thống
@@ -446,6 +449,37 @@ public class AdminController {
                 .body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             log.error("Lỗi không mong muốn khi phê duyệt đơn hàng: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
+        }
+    }
+
+    /**
+     * ADMIN: Lấy tất cả sản phẩm trong hệ thống
+     */
+    @GetMapping("/products")
+    public ResponseEntity<ApiResponse<List<Product>>> getAllProducts(HttpSession session) {
+        try {
+            if (!sessionManager.isStaffLoggedIn(session)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Authentication required"));
+            }
+            
+            Long staffId = sessionManager.getStaffId(session);
+            
+            log.info("ADMIN {} lấy tất cả sản phẩm trong hệ thống", staffId);
+            
+            List<Product> products = productService.getAllProducts();
+            
+            return ResponseEntity.ok()
+                .body(ApiResponse.success(products));
+                
+        } catch (RuntimeException e) {
+            log.error("Lỗi lấy sản phẩm: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            log.error("Lỗi không mong muốn khi lấy sản phẩm: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Có lỗi xảy ra, vui lòng thử lại sau"));
         }
