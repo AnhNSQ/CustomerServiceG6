@@ -223,20 +223,27 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
         
         List<Ticket> departmentTickets = ticketRepository.findByStaffDepartmentIdOrderByCreatedAtDesc(departmentId);
         
+        // 1. Tổng ticket được tạo và gửi cho phòng ban
         long total = departmentTickets.size();
-        long pending = departmentTickets.stream()
-            .mapToLong(ticket -> ticket.getStatus() == Ticket.Status.OPEN ? 1 : 0)
+        
+        // 2. Ticket của phòng ban đang ở status IN_PROGRESS
+        long inProgress = departmentTickets.stream()
+            .mapToLong(ticket -> ticket.getStatus() == Ticket.Status.IN_PROGRESS ? 1 : 0)
             .sum();
-        long resolved = departmentTickets.stream()
+        
+        // 3. Ticket của phòng ban ở status CLOSED
+        long closed = departmentTickets.stream()
             .mapToLong(ticket -> ticket.getStatus() == Ticket.Status.CLOSED ? 1 : 0)
             .sum();
+        
+        // Urgent: ticket có priority HIGH và đang IN_PROGRESS
         long urgent = departmentTickets.stream()
             .mapToLong(ticket -> 
                 ticket.getPriority() == Ticket.Priority.HIGH && 
-                ticket.getStatus() == Ticket.Status.OPEN ? 1 : 0)
+                ticket.getStatus() == Ticket.Status.IN_PROGRESS ? 1 : 0)
             .sum();
             
-        return new TicketDashboardStats(total, pending, resolved, urgent);
+        return new TicketDashboardStats(total, inProgress, closed, urgent);
     }
 
     /**

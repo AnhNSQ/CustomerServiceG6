@@ -361,7 +361,7 @@
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-number text-warning" id="pendingDepartmentTickets">-</div>
-                        <div class="stat-label">Đang chờ xử lý</div>
+                        <div class="stat-label">Đang xử lý</div>
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-6 mb-3">
@@ -370,7 +370,7 @@
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <div class="stat-number text-success" id="resolvedDepartmentTickets">-</div>
-                        <div class="stat-label">Đã giải quyết</div>
+                        <div class="stat-label">Đã đóng</div>
                     </div>
                 </div>
             </div>
@@ -558,9 +558,9 @@
         // Update stats display
         function updateStatsDisplay() {
             if (departmentStats) {
-                document.getElementById('totalDepartmentTickets').textContent = departmentStats.total || 0;
-                document.getElementById('pendingDepartmentTickets').textContent = departmentStats.pending || 0;
-                document.getElementById('resolvedDepartmentTickets').textContent = departmentStats.resolved || 0;
+                document.getElementById('totalDepartmentTickets').textContent = departmentStats.totalTickets || 0;
+                document.getElementById('pendingDepartmentTickets').textContent = departmentStats.pendingTickets || 0;
+                document.getElementById('resolvedDepartmentTickets').textContent = departmentStats.resolvedTickets || 0;
             }
         }
 

@@ -116,7 +116,7 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
         long total = assignments.size();
         long processing = assignments.stream()
             .map(TicketAssign::getTicket)
-            .filter(t -> t.getStatus() == Ticket.Status.IN_PROGRESS || t.getStatus() == Ticket.Status.ASSIGNED)
+            .filter(t -> t.getStatus() == Ticket.Status.IN_PROGRESS)
             .count();
         long closed = assignments.stream()
             .map(TicketAssign::getTicket)
@@ -125,7 +125,7 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
 
         long urgent = assignments.stream()
             .map(TicketAssign::getTicket)
-            .filter(t -> t.getPriority() == Ticket.Priority.HIGH && (t.getStatus() == Ticket.Status.IN_PROGRESS || t.getStatus() == Ticket.Status.ASSIGNED))
+            .filter(t -> t.getPriority() == Ticket.Priority.HIGH && t.getStatus() == Ticket.Status.IN_PROGRESS)
             .count();
 
         return new TicketDashboardStats(total, (int)processing, (int)closed, (int)urgent);
