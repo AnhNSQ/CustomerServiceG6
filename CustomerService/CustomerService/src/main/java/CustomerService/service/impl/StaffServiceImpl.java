@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -99,7 +100,15 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
         
         List<TicketAssign> assignments = ticketAssignRepository.findByAssignedToStaffIdOrderByAssignedAtDesc(staffId);
         
-        return assignments.stream()
+        // Chỉ lấy assignment mới nhất cho mỗi ticket (tránh duplicate khi ticket được reopen và phân công lại)
+        Map<Long, TicketAssign> latestAssignmentsByTicket = assignments.stream()
+            .collect(Collectors.toMap(
+                assignment -> assignment.getTicket().getTicketId(),
+                assignment -> assignment,
+                (existing, replacement) -> existing // Giữ assignment đầu tiên (đã được sort DESC theo assignedAt)
+            ));
+        
+        return latestAssignmentsByTicket.values().stream()
             .map(assignment -> convertToTicketResponse(assignment.getTicket()))
             .collect(Collectors.toList());
     }
@@ -113,18 +122,27 @@ public class StaffServiceImpl extends BaseUserService implements StaffService {
         log.info("Lấy thống kê ticket được phân công cho staff {}", staffId);
         List<TicketAssign> assignments = ticketAssignRepository.findByAssignedToStaffIdOrderByAssignedAtDesc(staffId);
 
-        long total = assignments.size();
-        long processing = assignments.stream()
+        // Chỉ lấy assignment mới nhất cho mỗi ticket (tránh duplicate khi ticket được reopen và phân công lại)
+        Map<Long, TicketAssign> latestAssignmentsByTicket = assignments.stream()
+            .collect(Collectors.toMap(
+                assignment -> assignment.getTicket().getTicketId(),
+                assignment -> assignment,
+                (existing, replacement) -> existing // Giữ assignment đầu tiên (đã được sort DESC theo assignedAt)
+            ));
+
+        List<Ticket> uniqueTickets = latestAssignmentsByTicket.values().stream()
             .map(TicketAssign::getTicket)
+            .collect(Collectors.toList());
+
+        long total = uniqueTickets.size();
+        long processing = uniqueTickets.stream()
             .filter(t -> t.getStatus() == Ticket.Status.IN_PROGRESS)
             .count();
-        long closed = assignments.stream()
-            .map(TicketAssign::getTicket)
+        long closed = uniqueTickets.stream()
             .filter(t -> t.getStatus() == Ticket.Status.CLOSED)
             .count();
 
-        long urgent = assignments.stream()
-            .map(TicketAssign::getTicket)
+        long urgent = uniqueTickets.stream()
             .filter(t -> t.getPriority() == Ticket.Priority.HIGH && t.getStatus() == Ticket.Status.IN_PROGRESS)
             .count();
 

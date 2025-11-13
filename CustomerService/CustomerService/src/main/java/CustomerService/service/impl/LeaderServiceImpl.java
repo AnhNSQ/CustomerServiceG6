@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -270,7 +271,15 @@ public class LeaderServiceImpl extends BaseUserService implements LeaderService 
 
         List<TicketAssign> assignments = ticketAssignRepository.findByAssignedToStaffIdOrderByAssignedAtDesc(staffId);
         
-        return assignments.stream()
+        // Chỉ lấy assignment mới nhất cho mỗi ticket (tránh duplicate khi ticket được reopen và phân công lại)
+        Map<Long, TicketAssign> latestAssignmentsByTicket = assignments.stream()
+            .collect(Collectors.toMap(
+                assignment -> assignment.getTicket().getTicketId(),
+                assignment -> assignment,
+                (existing, replacement) -> existing // Giữ assignment đầu tiên (đã được sort DESC theo assignedAt)
+            ));
+        
+        return latestAssignmentsByTicket.values().stream()
             .map(assignment -> convertToTicketResponse(assignment.getTicket()))
             .collect(Collectors.toList());
     }
