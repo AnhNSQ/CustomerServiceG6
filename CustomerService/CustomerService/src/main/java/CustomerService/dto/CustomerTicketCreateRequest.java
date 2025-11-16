@@ -22,5 +22,8 @@ public class CustomerTicketCreateRequest {
     
     @NotNull(message = "Department must be selected")
     private Long departmentId;
+    
+    @NotNull(message = "Order must be selected")
+    private Long orderId;
 }
 

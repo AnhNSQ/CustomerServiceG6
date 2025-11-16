@@ -261,6 +261,16 @@
                         <div class="form-text">Chọn phòng ban phù hợp với vấn đề của bạn</div>
                     </div>
 
+                    <div class="mb-3">
+                        <label for="orderId" class="form-label">
+                            <i class="fas fa-shopping-cart me-1"></i>Đơn hàng liên quan *
+                        </label>
+                        <select class="form-control" id="orderId" name="orderId" required>
+                            <option value="">-- Chọn đơn hàng --</option>
+                        </select>
+                        <div class="form-text">Chọn đơn hàng cần hỗ trợ</div>
+                    </div>
+
                 </div>
 
                 <!-- Action Buttons -->
@@ -279,6 +289,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
 
+        // Load orders when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
+        });
+
+        function loadOrders() {
+            fetch('/api/orders', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                credentials: 'include'
+            })
+            .then(async response => {
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    const orders = data.data || [];
+                    const orderSelect = document.getElementById('orderId');
+                    
+                    // Clear existing options except the first one
+                    orderSelect.innerHTML = '<option value="">-- Chọn đơn hàng --</option>';
+                    
+                    if (orders.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'Không có đơn hàng nào';
+                        option.disabled = true;
+                        orderSelect.appendChild(option);
+                    } else {
+                        orders.forEach(order => {
+                            const option = document.createElement('option');
+                            option.value = order.orderId;
+                            // Format order display: Order ID - Date - Status - Total
+                            const orderDate = new Date(order.orderDate).toLocaleDateString('vi-VN');
+                            const totalAmount = new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(order.totalAmount);
+                            const status = order.orderStatus || 'N/A';
+                            option.textContent = `Đơn hàng #${order.orderId} - ${orderDate} - ${status} - ${totalAmount}`;
+                            orderSelect.appendChild(option);
+                        });
+                    }
+                } else {
+                    console.error('Error loading orders:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading orders:', error);
+            });
+        }
+
         // Form submission
         document.getElementById('createTicketForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -290,15 +352,18 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang tạo...';
             
+            const orderIdValue = document.getElementById('orderId').value;
+            
             const formData = {
                 subject: document.getElementById('subject').value.trim(),
                 description: document.getElementById('description').value.trim(),
-                departmentId: parseInt(document.getElementById('department').value)
+                departmentId: parseInt(document.getElementById('department').value),
+                orderId: orderIdValue ? parseInt(orderIdValue) : null
             };
             
             // Validate
-            if (!formData.subject || !formData.description || !formData.departmentId) {
-                showAlert('Vui lòng điền đầy đủ thông tin và chọn phòng ban', 'danger');
+            if (!formData.subject || !formData.description || !formData.departmentId || !formData.orderId) {
+                showAlert('Vui lòng điền đầy đủ thông tin, chọn phòng ban và đơn hàng', 'danger');
                 resetSubmitBtn(submitBtn, originalText);
                 return;
             }

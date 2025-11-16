@@ -6,6 +6,7 @@ import CustomerService.dto.CustomerTicketCreateRequest;
 import CustomerService.dto.TicketResponse;
 import CustomerService.dto.ChangePasswordRequest;
 import CustomerService.entity.Customer;
+import CustomerService.entity.Order;
 import CustomerService.entity.Role;
 import CustomerService.entity.StaffDepartment;
 import CustomerService.entity.Ticket;
@@ -214,13 +215,22 @@ public class CustomerServiceImpl extends BaseUserService implements CustomerServ
             throw new RuntimeException("Customer phải có ít nhất một đơn hàng để tạo ticket hỗ trợ");
         }
 
+        Order order = orderRepository.findById(request.getOrderId())
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với ID: " + request.getOrderId()));
+
+        if (!order.getCustomer().getCustomerId().equals(customerId)) {
+            throw new RuntimeException("Đơn hàng không thuộc về customer này");
+        }
+        
         Ticket ticket = new Ticket(
             customer,
+            order,
             staffDepartment,
             request.getSubject(),
             request.getDescription(),
             Ticket.Priority.MEDIUM
         );
+        log.info("Tạo ticket với đơn hàng ID: {}", request.getOrderId());
 
         Ticket savedTicket = ticketRepository.save(ticket);
         log.info("Tạo ticket thành công với ID: {}", savedTicket.getTicketId());
