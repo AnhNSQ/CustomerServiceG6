@@ -691,7 +691,7 @@ public class CustomerController {
             log.info("CUSTOMER {} lấy danh sách đơn hàng PAID", customerId);
             
             // Dùng query findPaidOrdersByCustomerId trực tiếp từ repository
-            List<Order> paidOrders = orderRepository.findPaidOrdersByCustomerId(customerId);
+            List<Order> paidOrders = orderRepository.findPaidOrdersByCustomerId(customerId, Order.OrderStatus.PAID);
             log.info("Found {} PAID orders for customer {}", paidOrders.size(), customerId);
             
             // Convert Order entity sang OrderResponse

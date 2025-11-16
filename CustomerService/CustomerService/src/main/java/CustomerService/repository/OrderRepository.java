@@ -39,8 +39,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     /**
      * Tìm tất cả đơn hàng PAID của một customer
      */
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.customer WHERE o.customer.customerId = :customerId AND o.orderStatus = 'PAID' ORDER BY o.orderDate DESC")
-    List<Order> findPaidOrdersByCustomerId(@Param("customerId") Long customerId);
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.customer WHERE o.customer.customerId = :customerId AND o.orderStatus = :orderStatus ORDER BY o.orderDate DESC")
+    List<Order> findPaidOrdersByCustomerId(@Param("customerId") Long customerId, @Param("orderStatus") Order.OrderStatus orderStatus);
 
     /**
      * Tìm tất cả đơn hàng với customer, sắp xếp theo ngày tạo (mới nhất trước)

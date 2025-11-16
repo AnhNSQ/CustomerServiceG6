@@ -295,7 +295,8 @@
         });
 
         function loadOrders() {
-            fetch('/api/orders', {
+            console.log('Loading orders...');
+            fetch('/api/customers/orders/paid', {
                 method: 'GET',
                 headers: {
                     'Accept': 'application/json'
@@ -303,21 +304,32 @@
                 credentials: 'include'
             })
             .then(async response => {
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Response data:', data);
+                
                 if (response.ok && data.success) {
                     const orders = data.data || [];
+                    console.log('Orders found:', orders.length, orders);
                     const orderSelect = document.getElementById('orderId');
+                    
+                    if (!orderSelect) {
+                        console.error('Order select element not found!');
+                        return;
+                    }
                     
                     // Clear existing options except the first one
                     orderSelect.innerHTML = '<option value="">-- Chọn đơn hàng --</option>';
                     
                     if (orders.length === 0) {
+                        console.log('No orders found, showing empty message');
                         const option = document.createElement('option');
                         option.value = '';
                         option.textContent = 'Không có đơn hàng nào';
                         option.disabled = true;
                         orderSelect.appendChild(option);
                     } else {
+                        console.log('Adding orders to dropdown:', orders.length);
                         orders.forEach(order => {
                             const option = document.createElement('option');
                             option.value = order.orderId;
@@ -331,13 +343,16 @@
                             option.textContent = `Đơn hàng #${order.orderId} - ${orderDate} - ${status} - ${totalAmount}`;
                             orderSelect.appendChild(option);
                         });
+                        console.log('Orders added to dropdown successfully');
                     }
                 } else {
-                    console.error('Error loading orders:', data.message);
+                    console.error('Error loading orders - response not ok or success false:', data);
+                    showAlert('Không thể tải danh sách đơn hàng: ' + (data.message || 'Lỗi không xác định'), 'danger');
                 }
             })
             .catch(error => {
                 console.error('Error loading orders:', error);
+                showAlert('Có lỗi xảy ra khi tải danh sách đơn hàng. Vui lòng thử lại sau.', 'danger');
             });
         }
 
