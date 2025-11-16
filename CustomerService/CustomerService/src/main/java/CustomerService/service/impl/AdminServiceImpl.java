@@ -29,6 +29,7 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
     private final OrderRepository orderRepository;
     private final OrderDetailRepository orderDetailRepository;
     private final OrderHistoryRepository orderHistoryRepository;
+    private final ProductRepository productRepository;
     
     public AdminServiceImpl(CustomerRepository customerRepository,
                            StaffRepository staffRepository,
@@ -39,7 +40,8 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
                            RoleRepository roleRepository,
                            OrderRepository orderRepository,
                            OrderDetailRepository orderDetailRepository,
-                           OrderHistoryRepository orderHistoryRepository) {
+                           OrderHistoryRepository orderHistoryRepository,
+                           ProductRepository productRepository) {
         super(customerRepository, staffRepository, passwordValidator, userConverter);
         this.staffRepository = staffRepository;
         this.ticketRepository = ticketRepository;
@@ -49,6 +51,7 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
         this.orderRepository = orderRepository;
         this.orderDetailRepository = orderDetailRepository;
         this.orderHistoryRepository = orderHistoryRepository;
+        this.productRepository = productRepository;
     }
 
     /**
@@ -432,6 +435,32 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
         Staff staff = staffRepository.findById(staffId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy staff với ID: " + staffId));
         
+        // Lấy tất cả order details để kiểm tra và trừ tồn kho
+        List<OrderDetail> orderDetails = orderDetailRepository.findByOrderOrderId(orderId);
+        
+        // Kiểm tra và trừ tồn kho cho từng sản phẩm
+        for (OrderDetail orderDetail : orderDetails) {
+            Product product = orderDetail.getProduct();
+            Integer orderedQuantity = orderDetail.getQuantity();
+            Integer currentQuantity = product.getQuantity();
+            
+            // Kiểm tra tồn kho có đủ không
+            if (currentQuantity < orderedQuantity) {
+                throw new RuntimeException(
+                    String.format("Không đủ tồn kho cho sản phẩm '%s'. Tồn kho hiện tại: %d, số lượng đặt: %d",
+                        product.getName(), currentQuantity, orderedQuantity)
+                );
+            }
+            
+            // Trừ tồn kho
+            Integer newQuantity = currentQuantity - orderedQuantity;
+            product.setQuantity(newQuantity);
+            productRepository.save(product);
+            
+            log.info("Đã trừ {} sản phẩm '{}' khỏi tồn kho. Tồn kho còn lại: {}", 
+                orderedQuantity, product.getName(), newQuantity);
+        }
+        
         // Lưu trạng thái cũ
         String oldStatus = order.getOrderStatus().name();
         
@@ -454,7 +483,7 @@ public class AdminServiceImpl extends BaseUserService implements AdminService {
         );
         orderHistoryRepository.save(history);
         
-        log.info("Đơn hàng {} đã được phê duyệt thành công", orderId);
+        log.info("Đơn hàng {} đã được phê duyệt thành công và đã trừ tồn kho", orderId);
         
         // Return updated order detail
         return getOrderDetailById(orderId)
